@@ -6,57 +6,116 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/28 14:27:59 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/08/29 10:01:11 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/08/31 20:10:03 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+#include "server.h"
 
-void	exit_error(char *msg)
+void	init_clients(int *clients)
 {
-	perror(msg);
-	exit(EXIT_FAILURE);
+	int	i;
+
+	i = 0;
+	while (i < 10)
+	{
+		clients[i] = 0;
+		i++;
+	}
 }
 
-int	init_server(struct sockaddr_in *address)
+int	setup_fd_set(int server_fd, int *clients, fd_set *readfds)
 {
-	int	server_fd;
-	int	opt;
+	int	i;
+	int	max_sd;
+	int	sd;
 
-	opt = 1;
-	server_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (server_fd == -1)
-		exit_error("Error socket");
-	setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-	address->sin_family = AF_INET;
-	address->sin_addr.s_addr = INADDR_ANY;
-	address->sin_port = htons(4242);
-	if (bind(server_fd, (struct sockaddr *)address, sizeof(*address)) < 0)
-		exit_error("Error bind");
-	if (listen(server_fd, 3) < 0)
-		exit_error("Error listen");
-	return (server_fd);
+	FD_ZERO(readfds);
+	FD_SET(server_fd, readfds);
+	max_sd = server_fd;
+	i = 0;
+	while (i < 10)
+	{
+		sd = clients[i];
+		if (sd > 0)
+			FD_SET(sd, readfds);
+		if (sd > max_sd)
+			max_sd = sd;
+		i++;
+	}
+	return (max_sd);
+}
+
+void	handle_new_connection(int server_fd, int *clients)
+{
+	int					new_socket;
+	struct sockaddr_in	address;
+	socklen_t			addrlen;
+	int					i;
+
+	addrlen = sizeof(address);
+	new_socket = accept(server_fd, (struct sockaddr *)&address, &addrlen);
+	if (new_socket < 0)
+		exit_error("Accept error");
+	printf("New player connected!\n");
+	i = 0;
+	while (i < 10)
+	{
+		if (clients[i] == 0)
+		{
+			clients[i] = new_socket;
+			break ;
+		}
+		i++;
+	}
+}
+
+void	handle_client_messages(int *clients, fd_set *readfds)
+{
+	int		i;
+	int		sd;
+	char	buffer[1024];
+
+	i = 0;
+	while (i < 10)
+	{
+		sd = clients[i];
+		if (sd > 0 && FD_ISSET(sd, readfds))
+		{
+			memset(buffer, 0, 1024);
+			if (read(sd, buffer, 1023) == 0)
+			{
+				printf("A player disconnected.\n");
+				close(sd);
+				clients[i] = 0;
+			}
+			else
+			{
+				process_command(sd, buffer);
+			}
+		}
+		i++;
+	}
 }
 
 int	main(void)
 {
-	int					server_fd;
-	int					new_socket;
-	struct sockaddr_in	address;
-	socklen_t			addrlen;
+	int		server_fd;
+	int		clients[10];
+	fd_set	readfds;
+	int		max_sd;
 
-	addrlen = sizeof(address);
-	server_fd = init_server(&address);
-	printf("Server TAP listen on port 4242...\n");
-	new_socket = accept(server_fd, (struct sockaddr *)&address, &addrlen);
-	if (new_socket < 0)
-		exit_error("Erreur accept");
-	printf("Un joueur vient de se connecter !\n");
-	close(new_socket);
-	close(server_fd);
+	server_fd = init_server();
+	init_clients(clients);
+	printf("TAP Multiplayer server listening on port 4242...\n");
+	while (1)
+	{
+		max_sd = setup_fd_set(server_fd, clients, &readfds);
+		if (select(max_sd + 1, &readfds, NULL, NULL, NULL) < 0)
+			exit_error("Select error");
+		if (FD_ISSET(server_fd, &readfds))
+			handle_new_connection(server_fd, clients);
+		handle_client_messages(clients, &readfds);
+	}
 	return (0);
 }
