@@ -1,16 +1,20 @@
 CC = cc
 CFLAGS = -Wall -Wextra -Werror
 
-SERVER = server
-CLIENT = client
+SERVER = server_app
+CLIENT = client_app
+GUI = gui_app
 
 all: $(SERVER) $(CLIENT)
 
-$(SERVER): src/server.c
-	$(CC) $(CFLAGS) src/server.c -o $(SERVER)
+$(SERVER): server/src/server.c
+	$(CC) $(CFLAGS) -I server/include -I common/include server/src/server.c -o $(SERVER)
 
-$(CLIENT): src/client.c
-	$(CC) $(CFLAGS) src/client.c -o $(CLIENT)
+$(CLIENT): cli/src/client.c
+	$(CC) $(CFLAGS) -I cli/include -I common/include cli/src/client.c -o $(CLIENT)
+
+$(GUI):
+	@echo "GUI not done yet"
 
 run-server: $(SERVER)
 	./$(SERVER)
@@ -18,10 +22,13 @@ run-server: $(SERVER)
 run-client: $(CLIENT)
 	./$(CLIENT)
 
+run-client-gui: $(GUI)
+	./$(GUI)
+
 clean:
-	rm -f $(SERVER) $(CLIENT)
+	rm -f $(SERVER) $(CLIENT) $(GUI)
 
 lint:
-	norminette src/
+	norminette
 
-.PHONY: all clean run-server run-client lint
+.PHONY: all clean run-server run-client run-client-gui lint
