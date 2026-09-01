@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   server_utils.c                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/09/01 09:44:01 by ayhammou          #+#    #+#             */
+/*   Updated: 2026/09/01 10:29:00 by ayhammou         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "server.h"
 
 void	exit_error(char *msg)
@@ -14,7 +26,7 @@ int	init_server(void)
 
 	opt = 1;
 	server_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (server_fd == 0)
+	if (server_fd < 0)
 		exit_error("Socket error");
 	setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 	memset(&address, 0, sizeof(address));
