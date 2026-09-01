@@ -1,0 +1,131 @@
+{
+  "world": {
+    "locations": {
+      "airlock": {
+        "name": "Airlock",
+        "description": "A cold, metallic airlock. The shuttle door is sealed behind you.",
+        "exits": { "north": "main_corridor" },
+        "items": [],
+        "spawns": []
+      },
+      "main_corridor": {
+        "name": "Main Corridor",
+        "description": "The central artery of the station. Red emergency lights are flashing.",
+        "exits": { "south": "airlock", "east": "crew_quarters", "west": "maintenance_bay", "north": "armory" },
+        "items": [],
+        "spawns": [ { "npc_type": "sec_drone", "count": 1 } ]
+      },
+      "crew_quarters": {
+        "name": "Crew Quarters",
+        "description": "Unmade beds and belongings scattered in a hurry.",
+        "exits": { "west": "main_corridor", "north": "cafeteria" },
+        "items": ["energy_cell"],
+        "spawns": []
+      },
+      "cafeteria": {
+        "name": "Cafeteria",
+        "description": "Overturned meal trays on the tables. An atmosphere of frozen panic.",
+        "exits": { "south": "crew_quarters", "west": "medbay" },
+        "items": ["red_keycard"],
+        "spawns": []
+      },
+      "medbay": {
+        "name": "Medbay",
+        "description": "Secured area. The surgical equipment is still powered on.",
+        "exits": { "east": "cafeteria", "south": "armory" },
+        "items": [],
+        "spawns": [ { "npc_type": "injured_engineer", "count": 1 } ]
+      },
+      "armory": {
+        "name": "Armory",
+        "description": "The weapon racks have been completely stripped.",
+        "exits": { "north": "medbay", "south": "main_corridor" },
+        "items": ["laser_pistol"],
+        "spawns": [ { "npc_type": "sec_drone", "count": 1 } ]
+      },
+      "maintenance_bay": {
+        "name": "Maintenance Bay",
+        "description": "A room filled with live wires and heavy tools.",
+        "exits": { "east": "main_corridor", "west": "ai_core" },
+        "items": ["central_generator"],
+        "spawns": []
+      },
+      "ai_core": {
+        "name": "AI Core",
+        "description": "A vast room dominated by a monolith of humming servers.",
+        "exits": { "east": "maintenance_bay" },
+        "items": [],
+        "spawns": [ 
+          { "npc_type": "ai_terminal", "count": 1 }, 
+          { "npc_type": "alpha_drone", "count": 1 } 
+        ]
+      }
+    },
+    "items": {
+      "red_keycard": {
+        "name": "Red Keycard",
+        "description": "Level 3 security pass.",
+        "obtainable": true
+      },
+      "energy_cell": {
+        "name": "Energy Cell",
+        "description": "A compact battery crackling with energy.",
+        "obtainable": true
+      },
+      "laser_pistol": {
+        "name": "Laser Pistol",
+        "description": "Standard security sidearm.",
+        "obtainable": true
+      },
+      "central_generator": {
+        "name": "Central Generator",
+        "description": "Heavy equipment welded to the floor.",
+        "obtainable": false
+      }
+    },
+    "npcs": {
+      "sec_drone": {
+        "name": "Security Drone",
+        "description": "An armed automaton with failing sensors.",
+        "dialogue": ["*Beep* Intrusion detected.", "Eradication in progress."],
+        "role": "enemy",
+        "stats": { "hp": 30 }
+      },
+      "injured_engineer": {
+        "name": "Injured Engineer",
+        "description": "A technician leaning against the wall, clutching a bleeding side.",
+        "dialogue": ["Help me...", "I need an energy cell to activate the stasis pod."],
+        "role": "quest_giver",
+        "stats": { "hp": 50 }
+      },
+      "ai_terminal": {
+        "name": "AI Terminal",
+        "description": "A screen displaying a static red eye.",
+        "dialogue": ["The crew has failed.", "Disable the Alpha Drone to restore my containment protocols."],
+        "role": "dialogue",
+        "stats": { "hp": 9999 }
+      },
+      "alpha_drone": {
+        "name": "Alpha Drone",
+        "description": "A heavily armored combat robot.",
+        "dialogue": ["*Static screech*"],
+        "role": "enemy",
+        "stats": { "hp": 80 }
+      }
+    },
+    "quests": {
+      "power_up": {
+        "name": "Vital Surge",
+        "giver": "injured_engineer",
+        "objective": { "type": "deliver", "target": "energy_cell" },
+        "reward": "laser_pistol"
+      },
+      "system_override": {
+        "name": "System Purge",
+        "giver": "ai_terminal",
+        "objective": { "type": "kill", "target": "alpha_drone" },
+        "reward": "red_keycard"
+      }
+    }
+  }
+}
