@@ -6,11 +6,18 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 20:08:00 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/02 11:24:56 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/02 11:41:25 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server.h"
+
+
+void	handle_quit(t_player *player)
+{
+	printf("PLayer %s (socket %d) disconnected.\n", player->name, player->sd);
+	write(player->sd, "OK goodbye\n", 11);
+}
 
 void	handle_connect(t_player *player, int words, char *arg)
 {
@@ -30,74 +37,25 @@ void	handle_connect(t_player *player, int words, char *arg)
 	}
 }
 
-void	handle_look(t_player *player, char *world_data)
-{
-	char	search_key[64];
-	char	room_name[64];
-	char	response[256];
-
-	sprintf(search_key, "\"%s\": {\n        \"name\":", player->location);
-	extract_json_value(world_data, search_key, room_name);
-
-	if (strlen(room_name) > 0)
-	{
-		sprintf(response, "Salle actuelle : %s\n", room_name);
-		write(player->sd, response, strlen(response));
-	}
-	else
-		write(player->sd, "ERR room not found\n", 19);
-}
-
-void	handle_quit(t_player *player)
-{
-	printf("PLayer %s (socket %d) disconnected.\n", player->name, player->sd);
-	write(player->sd, "OK goodbye\n", 11);
-}
-
-void	handle_move(t_player *player, int words, char *arg, char *world)
-{
-	char	dest[32];
-	char	response[64];
-
-	if (words != 2)
-	{
-		write(player->sd, "ERR missing direction\n", 22);
-		return ;
-	}
-
-	get_room_exit(world, player->location, arg, dest);
-
-	if (strlen(dest) > 0)
-	{
-		strncpy(player->location, dest, 31);
-		player->location[31] = '\0';
-
-		printf("Player %s moved to : %s\n", player->name, dest);
-		sprintf(response, "OK moved to %s\n", dest);
-		write(player->sd, response, strlen(response));
-	}
-	else
-	{
-		write(player->sd, "ERR invalid direction\n", 22);
-	}
-}
-
 void	handle_who(t_player *player, t_player *clients)
 {
 	int		i;
-	char	msg[128];
+	char	msg[512];
+	char	line[64];
 
-	write(player->sd, "Plauer online:\n", 19);
+	strcpy(msg, "Joueurs en ligne :\n");
 	i = 0;
 	while (i < 10)
 	{
 		if (clients[i].is_active == 1)
 		{
-			sprintf(msg, "- %s (Salle: %s)\n", clients[i].name, clients[i].location);
-			write(player->sd, msg, strlen(msg));
+			sprintf(line, "- %s (Salle: %s)\n",
+				clients[i].name, clients[i].location);
+			strcat(msg, line);
 		}
 		i++;
 	}
+	write(player->sd, msg, strlen(msg));
 }
 
 void	process_command(t_player *player, t_player *clients,

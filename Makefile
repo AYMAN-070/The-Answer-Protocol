@@ -7,8 +7,8 @@ GUI = gui_app
 
 all: $(SERVER) $(CLIENT)
 
-$(SERVER): server/src/server.c server/src/server_utils.c server/src/server_cmd.c server/src/server_world.c server/src/server_json.c
-	$(CC) $(CFLAGS) -I server/include -I common/include server/src/server.c server/src/server_utils.c server/src/server_cmd.c server/src/server_world.c server/src/server_json.c -o $(SERVER)
+$(SERVER): server/src/server.c server/src/server_utils.c server/src/server_cmd.c server/src/server_cmd_2.c server/src/server_world.c server/src/server_json.c
+	$(CC) $(CFLAGS) -I server/include -I common/include server/src/server.c server/src/server_utils.c server/src/server_cmd.c server/src/server_cmd_2.c server/src/server_world.c server/src/server_json.c -o $(SERVER)
 
 $(CLIENT): cli/src/client.c
 	$(CC) $(CFLAGS) -I cli/include -I common/include cli/src/client.c -o $(CLIENT)
