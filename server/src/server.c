@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/28 14:27:59 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/01 11:25:42 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/02 11:21:23 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,8 @@ void	handle_new_connection(int server_fd, t_player *clients)
 	}
 }
 
-void	handle_client_messages(t_player *clients, fd_set *readfds)
+void	handle_client_messages(t_player *clients,
+	fd_set *readfds, char *world_data)
 {
 	int		i;
 	char	buffer[1024];
@@ -92,7 +93,7 @@ void	handle_client_messages(t_player *clients, fd_set *readfds)
 				clients[i].is_active = 0;
 			}
 			else
-				process_command(&clients[i], buffer);
+				process_command(&clients[i], clients, buffer, world_data);
 		}
 		i++;
 	}
@@ -119,7 +120,7 @@ int	main(void)
 			exit_error("Select error");
 		if (FD_ISSET(server_fd, &readfds))
 			handle_new_connection(server_fd, clients);
-		handle_client_messages(clients, &readfds);
+		handle_client_messages(clients, &readfds, world_data);
 	}
 	return (0);
 }
