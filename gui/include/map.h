@@ -10,10 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-
 #ifndef MAP_H
-#define MAP_H
+# define MAP_H
 
-void render_minimap(int bottom_left_x, int bottom_left_y);
+void	render_minimap(int bottom_left_x, int bottom_left_y);
 
 #endif

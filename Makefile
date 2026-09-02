@@ -15,7 +15,7 @@ else
 	GUI_LDFLAGS += -lGL -ldl -lrt -lX11
 endif
 
-GUI_SRC = gui/src/main.c gui/src/layout.c gui/src/map.c gui/src/graphics.c $(LIB_DIR)/cJSON.c
+GUI_SRC = gui/src/main.c gui/src/layout.c gui/src/room_view.c gui/src/map.c gui/src/graphics.c $(LIB_DIR)/cJSON.c
 GUI_OBJ = $(GUI_SRC:.c=.o)
 GUI_EXEC = client_gui
 

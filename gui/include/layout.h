@@ -11,8 +11,18 @@
 /* ************************************************************************** */
 
 #ifndef LAYOUT_H
-#define LAYOUT_H
+# define LAYOUT_H
 
-void render_main_layout(void);
+# include "raylib.h"
+# include "graphics.h"
+
+typedef struct s_hud_layout
+{
+	Rectangle	room;
+	Rectangle	inventory;
+	Rectangle	chat;
+}	t_hud_layout;
+
+void	render_main_layout(const t_room_assets *assets);
 
 #endif

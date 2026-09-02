@@ -14,24 +14,22 @@
 #include "layout.h"
 #include "graphics.h"
 
-int main(void) {
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(1280, 720, "Prometheus Station - GUI Client");
-    SetTargetFPS(60);
+int	main(void)
+{
+	t_room_assets	assets;
 
-    init_graphics_assets();
-
-    while (!WindowShouldClose()) {
-        BeginDrawing();
-        
-        ClearBackground(BLACK);
-        render_main_layout();
-        
-        EndDrawing();
-    }
-
-    unload_graphics_assets();
-    CloseWindow();
-    
-    return 0;
+	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+	InitWindow(1280, 720, "Prometheus Station - GUI Client");
+	SetTargetFPS(60);
+	init_graphics_assets(&assets);
+	while (!WindowShouldClose())
+	{
+		BeginDrawing();
+		ClearBackground(BLACK);
+		render_main_layout(&assets);
+		EndDrawing();
+	}
+	unload_graphics_assets(&assets);
+	CloseWindow();
+	return (0);
 }

@@ -11,14 +11,27 @@
 /* ************************************************************************** */
 
 #ifndef GRAPHICS_H
-#define GRAPHICS_H
+# define GRAPHICS_H
 
-#include "raylib.h"
+# include "raylib.h"
 
-void init_graphics_assets(void);
+# define MAX_ROOMS 8
 
-void unload_graphics_assets(void);
+typedef struct s_room_asset
+{
+	char		name[64];
+	Texture2D	texture;
+}	t_room_asset;
 
-Texture2D get_room_texture(const char* room_name);
+typedef struct s_room_assets
+{
+	t_room_asset	rooms[MAX_ROOMS];
+	int				count;
+}	t_room_assets;
+
+void		init_graphics_assets(t_room_assets *assets);
+void		unload_graphics_assets(t_room_assets *assets);
+Texture2D	get_room_texture(const t_room_assets *assets,
+				const char *room_name);
 
 #endif

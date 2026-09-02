@@ -13,47 +13,66 @@
 #include "raylib.h"
 #include "map.h"
 
-static void draw_minimap_node(int x, int y, int is_current) {
-    Color node_color = is_current ? GREEN : DARKGRAY;
-    Color border_color = is_current ? LIGHTGRAY : GRAY;
-    
-    // Scale reduced to 20x10 for overlay sizing
-    DrawRectangle(x - 10, y - 5, 20, 10, node_color);
-    DrawRectangleLines(x - 10, y - 5, 20, 10, border_color);
+static void	draw_minimap_node(int x, int y, int is_current)
+{
+	Color	node_color;
+	Color	border_color;
+
+	if (is_current)
+		node_color = GREEN;
+	else
+		node_color = DARKGRAY;
+	if (is_current)
+		border_color = LIGHTGRAY;
+	else
+		border_color = GRAY;
+	DrawRectangle(x - 10, y - 5, 20, 10, node_color);
+	DrawRectangleLines(x - 10, y - 5, 20, 10, border_color);
 }
 
-void render_minimap(int bottom_left_x, int bottom_left_y) {
-    int spacing = 35; 
-    // Increased width to accommodate the western AI Core branch
-    int map_width = spacing * 5; 
-    int map_height = spacing * 3 + 20; 
-    
-    // HUD Overlay background
-    int start_y = bottom_left_y - map_height;
-    DrawRectangle(bottom_left_x, start_y, map_width, map_height, Fade(BLACK, 0.8f));
-    DrawRectangleLines(bottom_left_x, start_y, map_width, map_height, Fade(LIGHTGRAY, 0.5f));
-    DrawText("MINIMAP", bottom_left_x + 5, start_y + 5, 10, Fade(WHITE, 0.6f));
+static void	draw_minimap_background(int x, int y, int width, int height)
+{
+	DrawRectangle(x, y, width, height, Fade(BLACK, 0.8f));
+	DrawRectangleLines(x, y, width, height, Fade(LIGHTGRAY, 0.5f));
+	DrawText("MINIMAP", x + 5, y + 5, 10, Fade(WHITE, 0.6f));
+}
 
-    // Calculate dynamic center, shifted right (+17) to center the asymmetrical graph
-    int cx = bottom_left_x + (map_width / 2) + 17;
-    int cy = start_y + (map_height / 2) + 10; 
+static void	draw_minimap_connections(int cx, int cy, int spacing)
+{
+	DrawLine(cx, cy, cx, cy + spacing, GRAY);
+	DrawLine(cx, cy, cx + spacing, cy, GRAY);
+	DrawLine(cx + spacing, cy, cx + spacing, cy - spacing, GRAY);
+	DrawLine(cx + spacing, cy - spacing, cx, cy - spacing, GRAY);
+	DrawLine(cx, cy - spacing, cx, cy, GRAY);
+	DrawLine(cx, cy, cx - spacing, cy, GRAY);
+	DrawLine(cx - spacing, cy, cx - (spacing * 2), cy, GRAY);
+}
 
-    // Connections (Drawn first to appear under nodes)
-    DrawLine(cx, cy, cx, cy + spacing, GRAY);
-    DrawLine(cx, cy, cx + spacing, cy, GRAY);
-    DrawLine(cx + spacing, cy, cx + spacing, cy - spacing, GRAY);
-    DrawLine(cx + spacing, cy - spacing, cx, cy - spacing, GRAY);
-    DrawLine(cx, cy - spacing, cx, cy, GRAY);
-    DrawLine(cx, cy, cx - spacing, cy, GRAY);
-    DrawLine(cx - spacing, cy, cx - (spacing * 2), cy, GRAY); // West branch to AI Core
-    
-    // Nodes
-    draw_minimap_node(cx, cy + spacing, 0);           // Airlock
-    draw_minimap_node(cx, cy, 1);                     // Corridor (Current)
-    draw_minimap_node(cx + spacing, cy, 0);           // Quarters
-    draw_minimap_node(cx + spacing, cy - spacing, 0); // Cafeteria
-    draw_minimap_node(cx, cy - spacing, 0);           // Medbay
-    draw_minimap_node(cx, cy - (spacing/2), 0);       // Armory
-    draw_minimap_node(cx - spacing, cy, 0);           // Maint. Bay
-    draw_minimap_node(cx - (spacing * 2), cy, 0);     // AI Core
+static void	draw_minimap_nodes(int cx, int cy, int spacing)
+{
+	draw_minimap_node(cx, cy + spacing, 0);
+	draw_minimap_node(cx, cy, 1);
+	draw_minimap_node(cx + spacing, cy, 0);
+	draw_minimap_node(cx + spacing, cy - spacing, 0);
+	draw_minimap_node(cx, cy - spacing, 0);
+	draw_minimap_node(cx, cy - (spacing / 2), 0);
+	draw_minimap_node(cx - spacing, cy, 0);
+	draw_minimap_node(cx - (spacing * 2), cy, 0);
+}
+
+void	render_minimap(int bottom_left_x, int bottom_left_y)
+{
+	int	spacing;
+	int	start_y;
+	int	cx;
+	int	cy;
+
+	spacing = 35;
+	start_y = bottom_left_y - (spacing * 3 + 20);
+	draw_minimap_background(bottom_left_x, start_y,
+		spacing * 5, spacing * 3 + 20);
+	cx = bottom_left_x + ((spacing * 5) / 2) + 17;
+	cy = start_y + ((spacing * 3 + 20) / 2) + 10;
+	draw_minimap_connections(cx, cy, spacing);
+	draw_minimap_nodes(cx, cy, spacing);
 }

@@ -14,57 +14,61 @@
 #include <string.h>
 #include <stdio.h>
 
-#define MAX_ROOMS 8
+static void	preload_room(t_room_assets *assets, const char *room_name)
+{
+	char		filepath[256];
+	Texture2D	tex;
 
-typedef struct {
-    char name[64];
-    Texture2D texture;
-} RoomAsset;
-
-static RoomAsset room_assets[MAX_ROOMS];
-static int loaded_rooms_count = 0;
-
-static void preload_room(const char* room_name) {
-    if (loaded_rooms_count >= MAX_ROOMS) return;
-
-    char filepath[256];
-    snprintf(filepath, sizeof(filepath), "assets/pictures/rooms/%s.png", room_name);
-    
-    Texture2D tex = LoadTexture(filepath);
-    
-    strncpy(room_assets[loaded_rooms_count].name, room_name, sizeof(room_assets[loaded_rooms_count].name) - 1);
-    room_assets[loaded_rooms_count].texture = tex;
-    
-    loaded_rooms_count++;
+	if (assets->count >= MAX_ROOMS)
+		return ;
+	snprintf(filepath, sizeof(filepath),
+		"assets/pictures/rooms/%s.png", room_name);
+	tex = LoadTexture(filepath);
+	strncpy(assets->rooms[assets->count].name, room_name,
+		sizeof(assets->rooms[assets->count].name) - 1);
+	assets->rooms[assets->count].texture = tex;
+	assets->count++;
 }
 
-void init_graphics_assets(void) {
-    loaded_rooms_count = 0;
-
-    preload_room("Airlock");
-    preload_room("Main Corridor");
-    preload_room("Crew Quarters");
-    preload_room("Cafeteria");
-    preload_room("Medbay");
-    preload_room("Armory");
-    preload_room("Maintenance Bay");
-    preload_room("AI Core");
+void	init_graphics_assets(t_room_assets *assets)
+{
+	assets->count = 0;
+	preload_room(assets, "Airlock");
+	preload_room(assets, "Main Corridor");
+	preload_room(assets, "Crew Quarters");
+	preload_room(assets, "Cafeteria");
+	preload_room(assets, "Medbay");
+	preload_room(assets, "Armory");
+	preload_room(assets, "Maintenance Bay");
+	preload_room(assets, "AI Core");
 }
 
-void unload_graphics_assets(void) {
-    for (int i = 0; i < loaded_rooms_count; i++) {
-        UnloadTexture(room_assets[i].texture);
-    }
-    loaded_rooms_count = 0;
+void	unload_graphics_assets(t_room_assets *assets)
+{
+	int	i;
+
+	i = 0;
+	while (i < assets->count)
+	{
+		UnloadTexture(assets->rooms[i].texture);
+		i++;
+	}
+	assets->count = 0;
 }
 
-Texture2D get_room_texture(const char* room_name) {
-    for (int i = 0; i < loaded_rooms_count; i++) {
-        if (strcmp(room_assets[i].name, room_name) == 0) {
-            return room_assets[i].texture;
-        }
-    }
+Texture2D	get_room_texture(const t_room_assets *assets,
+		const char *room_name)
+{
+	int			i;
+	Texture2D	empty;
 
-    Texture2D empty = { 0 };
-    return empty;
+	i = 0;
+	while (i < assets->count)
+	{
+		if (strcmp(assets->rooms[i].name, room_name) == 0)
+			return (assets->rooms[i].texture);
+		i++;
+	}
+	memset(&empty, 0, sizeof(empty));
+	return (empty);
 }
