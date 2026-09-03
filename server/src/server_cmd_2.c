@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/02 11:40:23 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/02 11:41:21 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/03 09:55:35 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,11 +23,25 @@ void	handle_look(t_player *player, char *world_data)
 
 	if (strlen(room_name) > 0)
 	{
-		sprintf(response, "Salle actuelle : %s\n", room_name);
+		sprintf(response, "Current Room : %s\n", room_name);
 		write(player->sd, response, strlen(response));
 	}
 	else
 		write(player->sd, "ERR room not found\n", 19);
+}
+
+int	has_item(t_player *player, char *item)
+{
+	int	i;
+
+	i = 0;
+	while (i < 5)
+	{
+		if (strcmp(player->inventory[i], item) == 0)
+			return (1);
+		i++;
+	}
+	return (0);
 }
 
 void	handle_move(t_player *player, int words, char *arg, char *world)
@@ -40,20 +54,49 @@ void	handle_move(t_player *player, int words, char *arg, char *world)
 		write(player->sd, "ERR missing direction\n", 22);
 		return ;
 	}
-
 	get_room_exit(world, player->location, arg, dest);
-
-	if (strlen(dest) > 0)
-	{
-		strncpy(player->location, dest, 31);
-		player->location[31] = '\0';
-
-		printf("Player %s moved to : %s\n", player->name, dest);
-		sprintf(response, "OK moved to %s\n", dest);
-		write(player->sd, response, strlen(response));
-	}
-	else
+	if (strlen(dest) == 0)
 	{
 		write(player->sd, "ERR invalid direction\n", 22);
+		return ;
 	}
+	if (strcmp(dest, "ai_core") == 0 && has_item(player, "red_keycard") == 0)
+	{
+		write(player->sd, "ERR access denied : red_keycard required\n", 41);
+		return ;
+	}
+	strncpy(player->location, dest, 31);
+	player->location[31] = '\0';
+	sprintf(response, "OK moved to %s\n", dest);
+	write(player->sd, response, strlen(response));
+	handle_look(player, world);
+}
+
+void	handle_take(t_player *player, int words, char *item, char *world)
+{
+	int	i;
+
+	if (words != 2)
+	{
+		write(player->sd, "ERR missing item\n", 17);
+		return ;
+	}
+	if (check_item_in_room(world, player->location, item) == 0)
+	{
+		write(player->sd, "ERR item not here\n", 18);
+		return ;
+	}
+	i = 0;
+	while (i < 5)
+	{
+		if (player->inventory[i][0] == '\0')
+		{
+			strncpy(player->inventory[i], item, 31);
+			player->inventory[i][31] = '\0';
+			write(player->sd, "OK item taken\n", 14);
+			return ;
+		}
+		i++;
+	}
+	write(player->sd, "ERR inventory full\n", 19);
 }
