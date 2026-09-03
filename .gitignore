@@ -16,3 +16,4 @@ gui/lib/raylib-*/
 .vscode/
 .idea/
 *.swp
+dev

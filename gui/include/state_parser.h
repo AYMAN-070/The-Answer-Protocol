@@ -1,0 +1,38 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   state_parser.h                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/09/03 08:18:25 by qdecross          #+#    #+#             */
+/*   Updated: 2026/09/03 08:18:36 by qdecross         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#ifndef STATE_PARSER_H
+# define STATE_PARSER_H
+
+# include "action_panel.h"
+
+typedef struct s_entity
+{
+	char	id[32];
+	char	name[32];
+}	t_entity;
+
+typedef struct s_room_state
+{
+	char		name[64];
+	char		description[256];
+	char		exits[4][16];
+	int			exit_count;
+	t_entity	items[5];
+	int			item_count;
+	t_entity	npcs[5];
+	int			npc_count;
+}	t_room_state;
+
+void	build_actions_from_state(t_action_list *list, t_room_state *state);
+
+#endif
