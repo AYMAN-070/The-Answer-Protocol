@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 10:08:08 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/03 08:28:38 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/03 09:54:42 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ typedef struct s_hud_layout
 	Rectangle	chat;
 }	t_hud_layout;
 
-void	render_main_layout(const t_room_assets *assets, t_room_state *state,
-			t_action_list *actions);
+void	render_main_layout(const t_game_assets *assets, t_room_state *state,
+			t_action_list *actions, t_player_state *player);
 
 #endif

@@ -5,7 +5,7 @@ INC_DIR = gui/include
 LIB_DIR = gui/lib
 
 GUI_CC = gcc
-GUI_CFLAGS = -Wall -Wextra -I$(INC_DIR)
+GUI_CFLAGS = -Wall -Wextra -Werror -I$(INC_DIR)
 GUI_LDFLAGS = -L$(LIB_DIR) -lraylib -lm -lpthread
 
 # Dynamic linking based on OS
@@ -15,7 +15,7 @@ else
 	GUI_LDFLAGS += -lGL -ldl -lrt -lX11
 endif
 
-GUI_SRC = gui/src/main.c gui/src/layout.c gui/src/room_view.c gui/src/map.c gui/src/graphics.c gui/src/action_panel.c gui/src/network.c gui/src/network_parser.c gui/src/state_parser.c $(LIB_DIR)/cJSON.c
+GUI_SRC = gui/src/main.c gui/src/layout.c gui/src/room_view.c gui/src/map.c gui/src/graphics.c gui/src/graphics_items.c gui/src/action_panel.c gui/src/network.c gui/src/network_parser.c gui/src/state_parser.c gui/src/status_panel.c $(LIB_DIR)/cJSON.c
 GUI_OBJ = $(GUI_SRC:.c=.o)
 GUI_EXEC = client_gui
 

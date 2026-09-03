@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 13:21:58 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/01 13:36:47 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/03 09:50:13 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,43 +30,45 @@ static void	preload_room(t_room_assets *assets, const char *room_name)
 	assets->count++;
 }
 
-void	init_graphics_assets(t_room_assets *assets)
+void	init_graphics_assets(t_game_assets *assets)
 {
-	assets->count = 0;
-	preload_room(assets, "Airlock");
-	preload_room(assets, "Main Corridor");
-	preload_room(assets, "Crew Quarters");
-	preload_room(assets, "Cafeteria");
-	preload_room(assets, "Medbay");
-	preload_room(assets, "Armory");
-	preload_room(assets, "Maintenance Bay");
-	preload_room(assets, "AI Core");
+	assets->rooms.count = 0;
+	preload_room(&assets->rooms, "Airlock");
+	preload_room(&assets->rooms, "Main Corridor");
+	preload_room(&assets->rooms, "Crew Quarters");
+	preload_room(&assets->rooms, "Cafeteria");
+	preload_room(&assets->rooms, "Medbay");
+	preload_room(&assets->rooms, "Armory");
+	preload_room(&assets->rooms, "Maintenance Bay");
+	preload_room(&assets->rooms, "AI Core");
+	init_item_assets(&assets->items);
 }
 
-void	unload_graphics_assets(t_room_assets *assets)
+void	unload_graphics_assets(t_game_assets *assets)
 {
 	int	i;
 
 	i = 0;
-	while (i < assets->count)
+	while (i < assets->rooms.count)
 	{
-		UnloadTexture(assets->rooms[i].texture);
+		UnloadTexture(assets->rooms.rooms[i].texture);
 		i++;
 	}
-	assets->count = 0;
+	assets->rooms.count = 0;
+	unload_item_assets(&assets->items);
 }
 
-Texture2D	get_room_texture(const t_room_assets *assets,
+Texture2D	get_room_texture(const t_game_assets *assets,
 		const char *room_name)
 {
 	int			i;
 	Texture2D	empty;
 
 	i = 0;
-	while (i < assets->count)
+	while (i < assets->rooms.count)
 	{
-		if (strcmp(assets->rooms[i].name, room_name) == 0)
-			return (assets->rooms[i].texture);
+		if (strcmp(assets->rooms.rooms[i].name, room_name) == 0)
+			return (assets->rooms.rooms[i].texture);
 		i++;
 	}
 	memset(&empty, 0, sizeof(empty));

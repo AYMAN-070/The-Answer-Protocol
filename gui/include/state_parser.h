@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 08:18:25 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/03 08:18:36 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/03 09:39:32 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,14 @@ typedef struct s_room_state
 	t_entity	npcs[5];
 	int			npc_count;
 }	t_room_state;
+
+typedef struct s_player_state
+{
+	int			hp;
+	int			max_hp;
+	t_entity	inventory[10];
+	int			inv_count;
+}	t_player_state;
 
 void	build_actions_from_state(t_action_list *list, t_room_state *state);
 

@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 13:27:53 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/01 13:57:05 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/03 10:44:29 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,14 +26,19 @@ static Rectangle	get_room_view_bounds(Rectangle room_panel)
 	return (view);
 }
 
-static void	draw_room_background(const t_room_assets *assets,
-		Rectangle room_view)
+static void	draw_room_background(const t_game_assets *assets,
+		t_room_state *state, Rectangle room_view)
 {
 	Texture2D	bg;
 	Rectangle	source;
 	Vector2		origin;
+	const char	*tex_name;
 
-	bg = get_room_texture(assets, "Main Corridor");
+	if (state && state->name[0] != '\0')
+		tex_name = state->name;
+	else
+		tex_name = "Main Corridor";
+	bg = get_room_texture(assets, tex_name);
 	if (bg.id == 0)
 		return ;
 	source.x = 0.0f;
@@ -78,14 +83,25 @@ static void	draw_minimap_overlay(Rectangle room_panel)
 	render_minimap(map_anchor_x, map_anchor_y);
 }
 
-void	draw_room_view(const t_room_assets *assets, Rectangle room_panel)
+void	draw_room_view(const t_game_assets *assets, t_room_state *state,
+			Rectangle room_panel)
 {
 	Rectangle	view;
+	const char	*title;
+	const char	*desc;
 
 	view = get_room_view_bounds(room_panel);
-	draw_room_background(assets, view);
-	draw_room_description_overlay("Main Corridor",
-		"The central artery of the station. Red emergency lights are flashing.",
-		view);
+	draw_room_background(assets, state, view);
+	if (state && state->name[0] != '\0')
+	{
+		title = state->name;
+		desc = state->description;
+	}
+	else
+	{
+		title = "Awaiting Connection";
+		desc = "Synchronizing telemetry with Prometheus Station...";
+	}
+	draw_room_description_overlay(title, desc, view);
 	draw_minimap_overlay(room_panel);
 }
