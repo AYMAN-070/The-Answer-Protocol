@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 09:00:00 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/08 13:16:09 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/08 14:11:35 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,8 @@ static void	set_display_name(const char *id, char *dest)
 		strncpy(dest, "Injured Engineer", 31);
 	else if (strcmp(id, "alpha_drone") == 0)
 		strncpy(dest, "Alpha Drone", 31);
+	else if (strcmp(id, "cleaning_bot") == 0)
+		strncpy(dest, "Cleaning Bot", 31);
 	else
 		strncpy(dest, id, 31);
 }

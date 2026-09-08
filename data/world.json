@@ -27,7 +27,7 @@
         "description": "Overturned meal trays on the tables. An atmosphere of frozen panic.",
         "exits": { "south": "crew_quarters", "west": "medbay" },
         "items": ["red_keycard"],
-        "spawns": []
+        "spawns": [ { "npc_type": "cleaning_bot", "count": 1 } ]
       },
       "medbay": {
         "name": "Medbay",
@@ -91,6 +91,13 @@
         "role": "enemy",
         "stats": { "hp": 30 }
       },
+      "alpha_drone": {
+        "name": "Alpha Drone",
+        "description": "A heavily armored combat robot.",
+        "dialogue": ["*Static screech*"],
+        "role": "enemy",
+        "stats": { "hp": 80 }
+      },
       "injured_engineer": {
         "name": "Injured Engineer",
         "description": "A technician leaning against the wall, clutching a bleeding side.",
@@ -102,15 +109,15 @@
         "name": "AI Terminal",
         "description": "A screen displaying a static red eye.",
         "dialogue": ["The crew has failed.", "Disable the Alpha Drone to restore my containment protocols."],
-        "role": "dialogue",
+        "role": "quest_giver",
         "stats": { "hp": 9999 }
       },
-      "alpha_drone": {
-        "name": "Alpha Drone",
-        "description": "A heavily armored combat robot.",
-        "dialogue": ["*Static screech*"],
-        "role": "enemy",
-        "stats": { "hp": 80 }
+      "cleaning_bot": {
+        "name": "Cleaning Bot",
+        "description": "A small automated vacuum moving aimlessly around the debris.",
+        "dialogue": ["*Whirrr* Please clear the floor area.", "Biohazard detected in sector 4."],
+        "role": "dialogue",
+        "stats": { "hp": 10 }
       }
     },
     "quests": {
