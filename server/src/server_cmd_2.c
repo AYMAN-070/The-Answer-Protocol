@@ -6,11 +6,17 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/02 11:40:23 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/03 09:55:35 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/08 16:29:04 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server.h"
+
+void	handle_quit(t_player *player)
+{
+	printf("PLayer %s (socket %d) disconnected.\n", player->name, player->sd);
+	write(player->sd, "OK goodbye\n", 11);
+}
 
 void	handle_look(t_player *player, char *world_data)
 {
@@ -47,7 +53,6 @@ int	has_item(t_player *player, char *item)
 void	handle_move(t_player *player, int words, char *arg, char *world)
 {
 	char	dest[32];
-	char	response[64];
 
 	if (words != 2)
 	{
@@ -65,10 +70,9 @@ void	handle_move(t_player *player, int words, char *arg, char *world)
 		write(player->sd, "ERR access denied : red_keycard required\n", 41);
 		return ;
 	}
+	strncpy(player->last_location, player->location, 31);
 	strncpy(player->location, dest, 31);
 	player->location[31] = '\0';
-	sprintf(response, "OK moved to %s\n", dest);
-	write(player->sd, response, strlen(response));
 	handle_look(player, world);
 }
 

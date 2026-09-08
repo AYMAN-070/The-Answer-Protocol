@@ -6,18 +6,11 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 20:08:00 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/03 09:56:20 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/08 17:25:31 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server.h"
-
-
-void	handle_quit(t_player *player)
-{
-	printf("PLayer %s (socket %d) disconnected.\n", player->name, player->sd);
-	write(player->sd, "OK goodbye\n", 11);
-}
 
 void	handle_connect(t_player *player, int words, char *arg)
 {
@@ -28,6 +21,7 @@ void	handle_connect(t_player *player, int words, char *arg)
 		strncpy(player->name, arg, 31);
 		player->name[31] = '\0';
 		strncpy(player->location, "airlock", 31);
+		strncpy(player->last_location, "airlock", 31);
 		player->location[31] = '\0';
 		player->hp = 100;
 		player->max_hp = 100;
@@ -42,10 +36,7 @@ void	handle_connect(t_player *player, int words, char *arg)
 		write(player->sd, "OK connected\n", 13);
 	}
 	else
-	{
-		printf("Error socket %d : missing name to CONNECT.\n", player->sd);
 		write(player->sd, "ERR missing name\n", 17);
-	}
 }
 
 void	handle_who(t_player *player, t_player *clients)
@@ -95,6 +86,20 @@ void	handle_inventory(t_player *player)
 	write(player->sd, msg, strlen(msg));
 }
 
+int	process_combat_cmd(t_player *player, char *cmd,
+	char *arg, int w, char *world)
+{
+	if (w >= 1 && strcmp(cmd, "ATTACK") == 0)
+		handle_attack(player, w, arg, world);
+	else if (w >= 1 && strcmp(cmd, "DEFEND") == 0)
+		handle_defend(player, w, arg, world);
+	else if (w >= 1 && strcmp(cmd, "FLEE") == 0)
+		handle_flee(player, world);
+	else
+		return (0);
+	return (1);
+}
+
 void	process_command(t_player *player, t_player *clients,
 	char *buffer, char *world_data)
 {
@@ -117,8 +122,11 @@ void	process_command(t_player *player, t_player *clients,
 		handle_inventory(player);
 	else if (words >= 1 && strcmp(cmd, "TAKE") == 0)
 		handle_take(player, words, arg, world_data);
+	else if (words >= 1 && strcmp(cmd, "TALK") == 0)
+		handle_talk(player, words, arg, world_data);
 	else if (words >= 1 && strcmp(cmd, "QUIT") == 0)
 		handle_quit(player);
-	else
+	else if (process_combat_cmd(player, cmd, arg, words, world_data) == 0)
 		write(player->sd, "ERR unknown command\n", 20);
 }
+
