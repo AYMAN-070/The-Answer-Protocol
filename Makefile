@@ -77,6 +77,7 @@ fclean: clean
 re: fclean all
 
 clean-deps: fclean
-	rm -rf $(INC_DIR) $(LIB_DIR)
+	rm -rf $(LIB_DIR)
+	rm -f $(INC_DIR)/raylib.h $(INC_DIR)/cJSON.h
 
 .PHONY: all clean fclean re install-deps run-server run-client run-client-gui clean-deps lint
