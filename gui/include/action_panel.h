@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/02 11:18:17 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/03 08:00:26 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/08 09:55:17 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,10 +25,11 @@ typedef struct s_action_btn
 
 typedef struct s_action_list
 {
-	t_action_btn	buttons[10];
+	t_action_btn	buttons[32];
 	int				count;
 }	t_action_list;
 
-void	render_action_panel(Rectangle inv_panel, t_action_list *list);
+void	render_action_panel(Rectangle inv_panel, t_action_list *list,
+			int sock_fd);
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 08:18:25 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/03 09:39:32 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/08 09:58:31 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,10 @@ typedef struct s_player_state
 	int			inv_count;
 }	t_player_state;
 
-void	build_actions_from_state(t_action_list *list, t_room_state *state);
+void	add_action(t_action_list *list, const char *lbl, const char *cmd);
+void	add_global_actions(t_action_list *list);
+void	add_inventory_actions(t_action_list *list, t_player_state *player);
+void	build_actions_from_state(t_action_list *list, t_room_state *state,
+			t_player_state *player);
 
 #endif
