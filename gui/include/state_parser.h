@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 08:18:25 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/08 09:58:31 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/08 13:15:48 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,10 @@ typedef struct s_room_state
 	int			item_count;
 	t_entity	npcs[5];
 	int			npc_count;
+	int			room_players;
+	int			server_players;
+	char		current_npc[64];
+	char		current_dialogue[256];
 }	t_room_state;
 
 typedef struct s_player_state
