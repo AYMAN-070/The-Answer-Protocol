@@ -16,3 +16,6 @@ gui/lib/raylib-*/
 .vscode/
 .idea/
 *.swp
+
+server_app
+client_app
