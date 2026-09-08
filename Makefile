@@ -2,7 +2,6 @@ CC = cc
 CFLAGS = -Wall -Wextra -Werror
 OS = $(shell uname)
 
-# Exécutables
 SERVER = server_app
 CLIENT = client_app
 GUI_EXEC = client_gui
@@ -14,20 +13,28 @@ LIB_DIR = gui/lib
 GUI_CFLAGS = -Wall -Wextra -I$(INC_DIR)
 GUI_LDFLAGS = -L$(LIB_DIR) -lraylib -lm -lpthread
 
-# Détection de l'OS pour le linkage de Raylib
 ifeq ($(OS), Darwin)
 	GUI_LDFLAGS += -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL
 else
 	GUI_LDFLAGS += -lGL -ldl -lrt -lX11
 endif
 
-GUI_SRC = gui/src/main.c gui/src/layout.c gui/src/room_view.c gui/src/map.c gui/src/graphics.c $(LIB_DIR)/cJSON.c
+GUI_SRC = gui/src/main.c gui/src/layout.c gui/src/room_view.c gui/src/map.c \
+          gui/src/graphics.c gui/src/graphics_items.c gui/src/action_panel.c \
+          gui/src/network.c gui/src/network_parser.c gui/src/state_parser.c \
+          gui/src/status_panel.c gui/src/state_parser_extra.c gui/src/chat_panel.c \
+          $(LIB_DIR)/cJSON.c
+
 GUI_OBJ = $(GUI_SRC:.c=.o)
+
 
 all: $(SERVER) $(CLIENT) $(GUI_EXEC)
 
 $(SERVER):
-	$(CC) $(CFLAGS) -I server/include -I common/include server/src/server.c server/src/server_utils.c server/src/server_cmd.c server/src/server_cmd_2.c server/src/server_world.c server/src/server_json.c server/src/server_cmd_combat.c server/src/server_cmd_talk.c -o $(SERVER)
+	$(CC) $(CFLAGS) -I server/include -I common/include server/src/server.c \
+	server/src/server_utils.c server/src/server_cmd.c server/src/server_cmd_2.c \
+	server/src/server_world.c server/src/server_json.c server/src/server_cmd_combat.c \
+	server/src/server_cmd_talk.c -o $(SERVER)
 
 $(CLIENT):
 	$(CC) $(CFLAGS) -I cli/include -I common/include cli/src/client.c -o $(CLIENT)

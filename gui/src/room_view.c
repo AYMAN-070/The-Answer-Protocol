@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 13:27:53 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/01 13:57:05 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/08 13:16:44 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,26 +14,21 @@
 #include "room_view.h"
 #include "map.h"
 #include "graphics.h"
+#include <stdio.h>
 
-static Rectangle	get_room_view_bounds(Rectangle room_panel)
-{
-	Rectangle	view;
-
-	view.x = room_panel.x + 2;
-	view.y = room_panel.y + 30;
-	view.width = room_panel.width - 4;
-	view.height = room_panel.height - 32;
-	return (view);
-}
-
-static void	draw_room_background(const t_room_assets *assets,
-		Rectangle room_view)
+static void	draw_room_background(const t_game_assets *assets,
+		t_room_state *state, Rectangle room_view)
 {
 	Texture2D	bg;
 	Rectangle	source;
 	Vector2		origin;
+	const char	*tex_name;
 
-	bg = get_room_texture(assets, "Main Corridor");
+	if (state && state->name[0] != '\0')
+		tex_name = state->name;
+	else
+		tex_name = "Main Corridor";
+	bg = get_room_texture(assets, tex_name);
 	if (bg.id == 0)
 		return ;
 	source.x = 0.0f;
@@ -45,27 +40,36 @@ static void	draw_room_background(const t_room_assets *assets,
 	DrawTexturePro(bg, source, room_view, origin, 0.0f, WHITE);
 }
 
-static void	draw_room_description_overlay(const char *title,
-		const char *description, Rectangle view_rect)
+static void	draw_room_description_overlay(t_room_state *state,
+		Rectangle view_rect)
 {
-	int			box_width;
-	int			box_height;
-	int			box_x;
-	int			box_y;
 	Rectangle	bounds;
+	const char	*title;
+	const char	*desc;
 
-	box_height = 120;
-	box_width = (int)view_rect.width - 100;
-	box_x = (int)view_rect.x + 50;
-	box_y = (int)view_rect.y + (int)view_rect.height - box_height - 30;
-	bounds.x = (float)box_x;
-	bounds.y = (float)box_y;
-	bounds.width = (float)box_width;
-	bounds.height = (float)box_height;
+	bounds.height = 120;
+	bounds.width = view_rect.width - 100;
+	bounds.x = view_rect.x + 50;
+	bounds.y = view_rect.y + view_rect.height - bounds.height - 30;
+	if (state && state->current_dialogue[0] != '\0')
+	{
+		title = state->current_npc;
+		desc = state->current_dialogue;
+	}
+	else if (state && state->name[0] != '\0')
+	{
+		title = state->name;
+		desc = state->description;
+	}
+	else
+	{
+		title = "Awaiting Connection";
+		desc = "Synchronizing telemetry with Prometheus Station...";
+	}
 	DrawRectangleRec(bounds, Fade(BLACK, 0.75f));
 	DrawRectangleLinesEx(bounds, 2.0f, Fade(LIGHTGRAY, 0.5f));
-	DrawText(title, box_x + 15, box_y + 15, 24, WHITE);
-	DrawText(description, box_x + 15, box_y + 50, 18, LIGHTGRAY);
+	DrawText(title, (int)bounds.x + 15, (int)bounds.y + 15, 24, WHITE);
+	DrawText(desc, (int)bounds.x + 15, (int)bounds.y + 50, 18, LIGHTGRAY);
 }
 
 static void	draw_minimap_overlay(Rectangle room_panel)
@@ -78,14 +82,34 @@ static void	draw_minimap_overlay(Rectangle room_panel)
 	render_minimap(map_anchor_x, map_anchor_y);
 }
 
-void	draw_room_view(const t_room_assets *assets, Rectangle room_panel)
+static void	draw_player_counters(Rectangle room_panel, t_room_state *state)
+{
+	int		bx;
+	int		by;
+	char	txt_rm[64];
+	char	txt_sv[64];
+
+	bx = (int)room_panel.x + 15;
+	by = (int)room_panel.y + 45;
+	snprintf(txt_rm, 64, "Room Players: %d", state->room_players);
+	snprintf(txt_sv, 64, "Server Total: %d", state->server_players);
+	DrawRectangle(bx - 5, by - 5, 180, 50, Fade(BLACK, 0.75f));
+	DrawRectangleLines(bx - 5, by - 5, 180, 50, Fade(LIGHTGRAY, 0.5f));
+	DrawText(txt_rm, bx, by, 16, SKYBLUE);
+	DrawText(txt_sv, bx, by + 22, 16, SKYBLUE);
+}
+
+void	draw_room_view(const t_game_assets *assets, t_room_state *state,
+			Rectangle room_panel)
 {
 	Rectangle	view;
 
-	view = get_room_view_bounds(room_panel);
-	draw_room_background(assets, view);
-	draw_room_description_overlay("Main Corridor",
-		"The central artery of the station. Red emergency lights are flashing.",
-		view);
+	view.x = room_panel.x + 2;
+	view.y = room_panel.y + 30;
+	view.width = room_panel.width - 4;
+	view.height = room_panel.height - 32;
+	draw_room_background(assets, state, view);
+	draw_room_description_overlay(state, view);
 	draw_minimap_overlay(room_panel);
+	draw_player_counters(room_panel, state);
 }
