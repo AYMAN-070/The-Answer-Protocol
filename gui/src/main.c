@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 09:21:28 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/09 09:25:59 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/09 09:31:05 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,11 +47,16 @@ static void	load_local_world(t_ui_context *ctx)
 
 static int	init_client(t_game_assets *assets, t_ui_context *ctx)
 {
+	int	fd;
+
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(1280, 720, "Prometheus Station - GUI Client");
 	SetTargetFPS(60);
 	init_graphics_assets(assets);
 	memset(&ctx->state, 0, sizeof(t_room_state));
+	memset(&ctx->player, 0, sizeof(t_player_state));
+	ctx->chat.count = 0;
+	ctx->logs.count = 0;
 	ctx->actions.count = 0;
 	
 	load_local_world(ctx);
@@ -82,14 +87,12 @@ int	main(void)
 	t_ui_context	ctx;
 
 	ctx.sock_fd = init_client(&assets, &ctx);
-	mock_data(&ctx);
 	run_client(&assets, &ctx);
 	net_disconnect(&ctx.sock_fd);
 	unload_graphics_assets(&assets);
 	
 	if (ctx.world_db)
 		cJSON_Delete(ctx.world_db);
-		
 	CloseWindow();
 	return (0);
 }

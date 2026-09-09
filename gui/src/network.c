@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 08:09:19 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/09 09:25:45 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/09 09:32:09 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ void	net_disconnect(int *sock_fd)
 	}
 }
 
-int	net_receive_state(int sock_fd, t_room_state *state)
+int	net_receive_state(int sock_fd, t_ui_context *ctx)
 {
 	char	buffer[2048];
 	int		bytes_read;
