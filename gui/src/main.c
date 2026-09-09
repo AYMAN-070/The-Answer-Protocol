@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 09:21:28 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/09 09:31:05 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/09 09:40:33 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,7 @@ static void	run_client(t_game_assets *assets, t_ui_context *ctx)
 {
 	while (!WindowShouldClose())
 	{
-		if (net_receive_state(ctx->sock_fd, &ctx->state))
+		if (net_receive_state(ctx->sock_fd, ctx))
 			build_actions_from_state(&ctx->actions, &ctx->state, &ctx->player);
 		BeginDrawing();
 		ClearBackground(BLACK);

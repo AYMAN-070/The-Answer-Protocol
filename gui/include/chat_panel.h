@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/08 10:24:53 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/08 10:25:03 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/09 09:42:04 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,5 +23,6 @@ typedef struct s_message_buffer
 
 void	render_message_panel(Rectangle bounds, t_message_buffer *buffer,
 			Color text_color);
+void	add_message(t_message_buffer *buffer, const char *msg);
 
 #endif

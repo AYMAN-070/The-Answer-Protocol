@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 13:27:53 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/08 13:16:44 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/09 09:48:28 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,15 +22,18 @@ static void	draw_room_background(const t_game_assets *assets,
 	Texture2D	bg;
 	Rectangle	source;
 	Vector2		origin;
-	const char	*tex_name;
 
-	if (state && state->name[0] != '\0')
-		tex_name = state->name;
-	else
-		tex_name = "Main Corridor";
-	bg = get_room_texture(assets, tex_name);
-	if (bg.id == 0)
+	if (!state || state->name[0] == '\0')
+	{
+		DrawRectangleRec(room_view, BLACK);
 		return ;
+	}
+	bg = get_room_texture(assets, state->name);
+	if (bg.id == 0)
+	{
+		DrawRectangleRec(room_view, BLACK);
+		return ;
+	}
 	source.x = 0.0f;
 	source.y = 0.0f;
 	source.width = (float)bg.width;
