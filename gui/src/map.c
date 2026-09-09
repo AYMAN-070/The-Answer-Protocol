@@ -6,31 +6,29 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 10:18:03 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/01 10:30:07 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/09 13:32:17 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "raylib.h"
 #include "map.h"
+#include "layout.h"
+#include <string.h>
 
-static void	draw_minimap_node(int x, int y, int is_current)
+static void	draw_node(int x, int y, t_room_state *st, const char *id)
 {
-	Color	node_color;
-	Color	border_color;
+	int		is_cur;
+	Color	n_col;
+	Color	b_col;
 
-	if (is_current)
-		node_color = GREEN;
-	else
-		node_color = DARKGRAY;
-	if (is_current)
-		border_color = LIGHTGRAY;
-	else
-		border_color = GRAY;
-	DrawRectangle(x - 10, y - 5, 20, 10, node_color);
-	DrawRectangleLines(x - 10, y - 5, 20, 10, border_color);
+	is_cur = (st && st->name[0] && !strcmp(st->name, id));
+	n_col = is_cur ? GREEN : DARKGRAY;
+	b_col = is_cur ? LIGHTGRAY : GRAY;
+	DrawRectangle(x - 10, y - 5, 20, 10, n_col);
+	DrawRectangleLines(x - 10, y - 5, 20, 10, b_col);
 }
 
-static void	draw_minimap_background(int x, int y, int width, int height)
+static void	draw_bg(int x, int y, int width, int height)
 {
 	DrawRectangle(x, y, width, height, Fade(BLACK, 0.8f));
 	DrawRectangleLines(x, y, width, height, Fade(LIGHTGRAY, 0.5f));
@@ -48,31 +46,30 @@ static void	draw_minimap_connections(int cx, int cy, int spacing)
 	DrawLine(cx - spacing, cy, cx - (spacing * 2), cy, GRAY);
 }
 
-static void	draw_minimap_nodes(int cx, int cy, int spacing)
+static void	draw_minimap_nodes(int cx, int cy, int spc, t_room_state *st)
 {
-	draw_minimap_node(cx, cy + spacing, 0);
-	draw_minimap_node(cx, cy, 1);
-	draw_minimap_node(cx + spacing, cy, 0);
-	draw_minimap_node(cx + spacing, cy - spacing, 0);
-	draw_minimap_node(cx, cy - spacing, 0);
-	draw_minimap_node(cx, cy - (spacing / 2), 0);
-	draw_minimap_node(cx - spacing, cy, 0);
-	draw_minimap_node(cx - (spacing * 2), cy, 0);
+	draw_node(cx, cy + spc, st, "Airlock");
+	draw_node(cx, cy, st, "Main Corridor");
+	draw_node(cx + spc, cy, st, "Armory");
+	draw_node(cx + spc, cy - spc, st, "Medbay");
+	draw_node(cx, cy - spc, st, "AI Core");
+	draw_node(cx, cy - (spc / 2), st, "Maintenance Bay");
+	draw_node(cx - spc, cy, st, "Cafeteria");
+	draw_node(cx - (spc * 2), cy, st, "Crew Quarters");
 }
 
-void	render_minimap(int bottom_left_x, int bottom_left_y)
+void	render_minimap(int bl_x, int bl_y, t_room_state *st)
 {
-	int	spacing;
+	int	spc;
 	int	start_y;
 	int	cx;
 	int	cy;
 
-	spacing = 35;
-	start_y = bottom_left_y - (spacing * 3 + 20);
-	draw_minimap_background(bottom_left_x, start_y,
-		spacing * 5, spacing * 3 + 20);
-	cx = bottom_left_x + ((spacing * 5) / 2) + 17;
-	cy = start_y + ((spacing * 3 + 20) / 2) + 10;
-	draw_minimap_connections(cx, cy, spacing);
-	draw_minimap_nodes(cx, cy, spacing);
+	spc = 35;
+	start_y = bl_y - (spc * 3 + 20);
+	draw_bg(bl_x, start_y, spc * 5, spc * 3 + 20);
+	cx = bl_x + ((spc * 5) / 2) + 17;
+	cy = start_y + ((spc * 3 + 20) / 2) + 10;
+	draw_minimap_connections(cx, cy, spc);
+	draw_minimap_nodes(cx, cy, spc, st);
 }

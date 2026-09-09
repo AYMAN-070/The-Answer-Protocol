@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/02 11:18:17 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/08 09:55:17 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/09 11:25:48 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,21 +15,8 @@
 
 # include "raylib.h"
 
-typedef struct s_action_btn
-{
-	Rectangle	bounds;
-	char		label[32];
-	char		command[64];
-	int			active;
-}	t_action_btn;
+struct s_ui_context;
 
-typedef struct s_action_list
-{
-	t_action_btn	buttons[32];
-	int				count;
-}	t_action_list;
-
-void	render_action_panel(Rectangle inv_panel, t_action_list *list,
-			int sock_fd);
+void	render_action_panel(Rectangle inv_panel, struct s_ui_context *ctx);
 
 #endif

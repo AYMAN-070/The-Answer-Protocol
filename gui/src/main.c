@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 09:21:28 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/09 09:54:15 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/09 11:40:32 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include "layout.h"
 #include "graphics.h"
 #include "network.h"
-#include "state_parser.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -55,14 +54,10 @@ static int	init_client(t_game_assets *assets, t_ui_context *ctx)
 	init_graphics_assets(assets);
 	memset(&ctx->state, 0, sizeof(t_room_state));
 	memset(&ctx->player, 0, sizeof(t_player_state));
-	ctx->chat.count = 0;
-	ctx->logs.count = 0;
-	ctx->actions.count = 0;
 	load_local_world(ctx);
 	fd = net_connect("127.0.0.1", 4242);
 	if (fd >= 0)
 		net_send_command(fd, "CONNECT gui_user\n");
-	add_action(&ctx->actions, "LOOK", "LOOK\n");
 	return (fd);
 }
 
@@ -70,8 +65,7 @@ static void	run_client(t_game_assets *assets, t_ui_context *ctx)
 {
 	while (!WindowShouldClose())
 	{
-		if (net_receive_state(ctx->sock_fd, ctx))
-			build_actions_from_state(&ctx->actions, &ctx->state, &ctx->player);
+		net_receive_state(ctx->sock_fd, ctx);
 		BeginDrawing();
 		ClearBackground(BLACK);
 		render_main_layout(assets, ctx);

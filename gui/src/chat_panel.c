@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/08 10:25:22 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/09 09:52:37 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/09 13:13:13 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,14 +18,19 @@ void	render_message_panel(Rectangle bounds, t_message_buffer *buffer,
 			Color text_color)
 {
 	int	i;
-	int	y_offset;
+	int	start;
+	int	max_lines;
 
+	max_lines = ((int)bounds.height - 45) / 20;
+	start = 0;
+	if (buffer->count > max_lines)
+		start = buffer->count - max_lines;
 	i = 0;
-	while (i < buffer->count && i < 15)
+	while (start < buffer->count && i < max_lines)
 	{
-		y_offset = (int)bounds.y + 35 + (i * 20);
-		DrawText(buffer->messages[i], (int)bounds.x + 15, y_offset,
-			16, text_color);
+		DrawText(buffer->messages[start], (int)bounds.x + 15,
+			(int)bounds.y + 35 + (i * 20), 16, text_color);
+		start++;
 		i++;
 	}
 }
@@ -37,6 +42,7 @@ void	add_message(t_message_buffer *buffer, const char *msg)
 	if (buffer->count < 15)
 	{
 		strncpy(buffer->messages[buffer->count], msg, 127);
+		buffer->messages[buffer->count][127] = '\0';
 		buffer->count++;
 	}
 	else
@@ -48,5 +54,6 @@ void	add_message(t_message_buffer *buffer, const char *msg)
 			i++;
 		}
 		strncpy(buffer->messages[14], msg, 127);
+		buffer->messages[14][127] = '\0';
 	}
 }

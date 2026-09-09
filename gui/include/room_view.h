@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 13:27:53 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/03 09:55:01 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/09 13:28:27 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,8 @@
 
 # include "raylib.h"
 # include "graphics.h"
-# include "state_parser.h"
+# include "layout.h"
 
-void	draw_room_view(const t_game_assets *assets, t_room_state *state,
-			Rectangle room_panel);
+void draw_room_view(const t_game_assets *assets, t_ui_context *ctx, Rectangle room_panel);
 
 #endif

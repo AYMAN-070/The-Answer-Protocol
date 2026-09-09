@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 09:39:53 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/03 09:51:30 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/09 11:46:16 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 # define STATUS_PANEL_H
 
 # include "raylib.h"
-# include "state_parser.h"
+# include "layout.h"
 # include "graphics.h"
 
 void	render_status_panel(Rectangle bounds, t_player_state *player,

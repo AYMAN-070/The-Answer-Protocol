@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 13:27:53 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/08 10:29:14 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/09 13:28:58 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include "layout.h"
 #include "room_view.h"
 #include "action_panel.h"
-#include "state_parser.h"
 #include "status_panel.h"
 
 #define HUD_PADDING 10
@@ -67,9 +66,9 @@ void	render_main_layout(const t_game_assets *assets, t_ui_context *ctx)
 	draw_ui_panel(layout.inventory, "Inventory & Status");
 	draw_ui_panel(layout.chat, "Chat");
 	draw_ui_panel(layout.logs, "Action Logs");
-	draw_room_view(assets, &ctx->state, layout.room);
+	draw_room_view(assets, ctx, layout.room);
 	render_status_panel(layout.inventory, &ctx->player, assets);
-	render_action_panel(layout.inventory, &ctx->actions, ctx->sock_fd);
+	render_action_panel(layout.inventory, ctx);
 	render_message_panel(layout.chat, &ctx->chat, WHITE);
 	render_message_panel(layout.logs, &ctx->logs, LIGHTGRAY);
 }

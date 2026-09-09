@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 13:27:53 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/09 09:57:16 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/09 13:34:19 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,9 @@
 #include "room_view.h"
 #include "map.h"
 #include "graphics.h"
+#include "layout.h"
 #include <stdio.h>
+#include <string.h>
 
 static void	draw_room_background(const t_game_assets *assets,
 		t_room_state *state, Rectangle room_view)
@@ -71,16 +73,6 @@ static void	draw_room_description_overlay(t_room_state *st, Rectangle rect)
 	DrawText(desc, (int)bounds.x + 15, (int)bounds.y + 50, 18, LIGHTGRAY);
 }
 
-static void	draw_minimap_overlay(Rectangle room_panel)
-{
-	int	map_anchor_x;
-	int	map_anchor_y;
-
-	map_anchor_x = (int)(room_panel.x + room_panel.width) - 175 - 15;
-	map_anchor_y = (int)room_panel.y + 30 + 15 + 125;
-	render_minimap(map_anchor_x, map_anchor_y);
-}
-
 static void	draw_player_counters(Rectangle room_panel, t_room_state *state)
 {
 	int		bx;
@@ -98,17 +90,43 @@ static void	draw_player_counters(Rectangle room_panel, t_room_state *state)
 	DrawText(txt_sv, bx, by + 22, 16, SKYBLUE);
 }
 
-void	draw_room_view(const t_game_assets *assets, t_room_state *state,
+static void	apply_room_lighting(Rectangle b, t_ui_context *ctx)
+{
+	int	i;
+	int	known;
+
+	if (ctx->state.name[0] == '\0')
+		return ;
+	known = 0;
+	i = -1;
+	while (++i < ctx->player.known_count)
+		if (!strcmp(ctx->player.known_rooms[i], ctx->state.name))
+			known = 1;
+	if (!known)
+	{
+		DrawRectangleRec(b, Fade(BLACK, 0.80f));
+		DrawText("Unexplored area. Use LOOK to survey.", (int)b.x + 20,
+			(int)b.y + 20, 20, LIGHTGRAY);
+		ctx->state.description[0] = '\0';
+	}
+}
+
+void	draw_room_view(const t_game_assets *assets, t_ui_context *ctx,
 			Rectangle room_panel)
 {
 	Rectangle	view;
+	int			map_x;
+	int			map_y;
 
 	view.x = room_panel.x + 2;
 	view.y = room_panel.y + 30;
 	view.width = room_panel.width - 4;
 	view.height = room_panel.height - 32;
-	draw_room_background(assets, state, view);
-	draw_room_description_overlay(state, view);
-	draw_minimap_overlay(room_panel);
-	draw_player_counters(room_panel, state);
+	draw_room_background(assets, &ctx->state, view);
+	apply_room_lighting(view, ctx);
+	draw_room_description_overlay(&ctx->state, view);
+	map_x = (int)(room_panel.x + room_panel.width) - 190;
+	map_y = (int)room_panel.y + 170;
+	render_minimap(map_x, map_y, &ctx->state);
+	draw_player_counters(room_panel, &ctx->state);
 }
