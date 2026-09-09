@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 13:27:53 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/09 09:53:53 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/09 09:57:16 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,31 +43,27 @@ static void	draw_room_background(const t_game_assets *assets,
 	DrawTexturePro(bg, source, room_view, origin, 0.0f, WHITE);
 }
 
-static void	draw_room_description_overlay(t_room_state *state,
-		Rectangle view_rect)
+static void	draw_room_description_overlay(t_room_state *st, Rectangle rect)
 {
 	Rectangle	bounds;
 	const char	*title;
 	const char	*desc;
 
+	title = "Awaiting Connection";
+	desc = "Synchronizing telemetry with Prometheus Station...";
 	bounds.height = 120;
-	bounds.width = view_rect.width - 100;
-	bounds.x = view_rect.x + 50;
-	bounds.y = view_rect.y + view_rect.height - bounds.height - 30;
-	if (state && state->current_dialogue[0] != '\0')
+	bounds.width = rect.width - 100;
+	bounds.x = rect.x + 50;
+	bounds.y = rect.y + rect.height - 150;
+	if (st && st->current_dialogue[0] != '\0')
 	{
-		title = state->current_npc;
-		desc = state->current_dialogue;
+		title = st->current_npc;
+		desc = st->current_dialogue;
 	}
-	else if (state && state->name[0] != '\0')
+	else if (st && st->name[0] != '\0')
 	{
-		title = state->name;
-		desc = state->description;
-	}
-	else
-	{
-		title = "Awaiting Connection";
-		desc = "Synchronizing telemetry with Prometheus Station...";
+		title = st->name;
+		desc = st->description;
 	}
 	DrawRectangleRec(bounds, Fade(BLACK, 0.75f));
 	DrawRectangleLinesEx(bounds, 2.0f, Fade(LIGHTGRAY, 0.5f));
