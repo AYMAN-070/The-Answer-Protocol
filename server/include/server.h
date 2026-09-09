@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 10:28:08 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/08 17:24:25 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/09 22:22:01 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 # include <sys/socket.h>
 # include <netinet/in.h>
 # include <sys/select.h>
+# include <arpa/inet.h>
 
 typedef struct s_player
 {
@@ -32,6 +33,9 @@ typedef struct s_player
 	int		max_hp;
 	int		in_combat;
 	char	inventory[5][32];
+	char	ip[16];
+	long	last_cmd_time;
+	int		cmd_count;
 }	t_player;
 
 void	exit_error(char *msg);
@@ -53,6 +57,11 @@ void	handle_attack(t_player *player, int words, char *target, char *world);
 void	give_item(t_player *player, char *item);
 void	handle_defend(t_player *player, int words, char *tgt, char *world);
 void	handle_flee(t_player *player, char *world);
+void	handle_drop(t_player *player, int words, char *item);
 void	handle_talk(t_player *player, int words, char *npc, char *world);
+void	handle_status(t_player *player);
+void	handle_quest(t_player *player);
+void	server_log(char *level, char *ip, char *player, char *msg);
+int		check_abuse(t_player *player);
 
 #endif
