@@ -6,14 +6,13 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/08 10:25:22 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/09 09:45:24 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/09 09:52:37 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "chat_panel.h"
 #include "raylib.h"
 #include <string.h>
-
 
 void	render_message_panel(Rectangle bounds, t_message_buffer *buffer,
 			Color text_color)

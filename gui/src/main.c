@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 09:21:28 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/09 09:40:33 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/09 09:54:15 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,9 +58,7 @@ static int	init_client(t_game_assets *assets, t_ui_context *ctx)
 	ctx->chat.count = 0;
 	ctx->logs.count = 0;
 	ctx->actions.count = 0;
-	
 	load_local_world(ctx);
-
 	fd = net_connect("127.0.0.1", 4242);
 	if (fd >= 0)
 		net_send_command(fd, "CONNECT gui_user\n");
@@ -90,7 +88,6 @@ int	main(void)
 	run_client(&assets, &ctx);
 	net_disconnect(&ctx.sock_fd);
 	unload_graphics_assets(&assets);
-	
 	if (ctx.world_db)
 		cJSON_Delete(ctx.world_db);
 	CloseWindow();
