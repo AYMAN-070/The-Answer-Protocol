@@ -34,7 +34,7 @@ $(SERVER):
 	$(CC) $(CFLAGS) -I server/include -I common/include server/src/server.c \
 	server/src/server_utils.c server/src/server_cmd.c server/src/server_cmd_2.c \
 	server/src/server_world.c server/src/server_json.c server/src/server_cmd_combat.c \
-	server/src/server_cmd_talk.c -o $(SERVER)
+	server/src/server_cmd_talk.c server/src/server_logs.c server/src/server_cmd_3.c -o $(SERVER)
 
 $(CLIENT):
 	$(CC) $(CFLAGS) -I cli/include -I common/include cli/src/client.c -o $(CLIENT)

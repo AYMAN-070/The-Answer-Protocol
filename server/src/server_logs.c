@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 20:56:31 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/09 22:27:25 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/09 23:16:46 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ void	server_log(char *level, char *ip, char *player, char *msg)
 	strftime(time_str, 32, "%Y-%m-%dT%H:%M:%S", tm_info);
 	printf("{\"time\":\"%s\", \"lvl\":\"%s\", \"ip\":\"%s\", "
 		"\"player\":\"%s\", \"msg\":\"%s\"}\n",
-		time_str, level, s_ip, s_pl, msg);
+		time_str, level, ip, player, msg);
 }
 
 int	check_abuse(t_player *player)
