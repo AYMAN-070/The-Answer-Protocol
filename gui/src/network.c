@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 08:09:19 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/03 08:49:19 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/09 09:25:45 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,22 +64,15 @@ void	net_disconnect(int *sock_fd)
 int	net_receive_state(int sock_fd, t_room_state *state)
 {
 	char	buffer[2048];
-	int		bytes;
-	cJSON	*json;
+	int		bytes_read;
 
-	if (sock_fd < 0)
-		return (0);
-	bytes = recv(sock_fd, buffer, sizeof(buffer) - 1, 0);
-	if (bytes > 0)
+	memset(buffer, 0, sizeof(buffer));
+	bytes_read = recv(sock_fd, buffer, sizeof(buffer) - 1, MSG_DONTWAIT);
+	if (bytes_read > 0)
 	{
-		buffer[bytes] = '\0';
-		json = cJSON_Parse(buffer);
-		if (json)
-		{
-			populate_state(json, state);
-			cJSON_Delete(json);
-			return (1);
-		}
+		buffer[bytes_read] = '\0';
+		parse_server_text(buffer, ctx);
+		return (1);
 	}
 	return (0);
 }

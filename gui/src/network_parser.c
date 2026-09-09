@@ -6,107 +6,105 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 09:00:00 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/08 14:11:35 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/09 09:24:51 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "network_parser.h"
+#include "chat_panel.h"
 #include <string.h>
 
-static void	set_display_name(const char *id, char *dest)
+static void	add_entity(t_entity *dest, int *count, char *value)
 {
-	if (strcmp(id, "red_keycard") == 0)
-		strncpy(dest, "Red Keycard", 31);
-	else if (strcmp(id, "laser_pistol") == 0)
-		strncpy(dest, "Laser Pistol", 31);
-	else if (strcmp(id, "energy_cell") == 0)
-		strncpy(dest, "Energy Cell", 31);
-	else if (strcmp(id, "sec_drone") == 0)
-		strncpy(dest, "Security Drone", 31);
-	else if (strcmp(id, "injured_engineer") == 0)
-		strncpy(dest, "Injured Engineer", 31);
-	else if (strcmp(id, "alpha_drone") == 0)
-		strncpy(dest, "Alpha Drone", 31);
-	else if (strcmp(id, "cleaning_bot") == 0)
-		strncpy(dest, "Cleaning Bot", 31);
-	else
-		strncpy(dest, id, 31);
+	strncpy(dest[*count].id, value, 31);
+	strncpy(dest[*count].name, value, 31);
+	(*count)++;
 }
 
-static void	parse_entities(cJSON *array, t_entity *dest, int *count)
+static void	parse_entities(cJSON *arr, t_entity *dest, int *count)
 {
 	cJSON	*item;
+	cJSON	*type;
 
 	*count = 0;
-	if (!cJSON_IsArray(array))
+	if (!arr || !cJSON_IsArray(arr))
 		return ;
-	item = array->child;
-	while (item != NULL && *count < 5)
+	item = arr->child;
+	while (item && *count < 10)
 	{
 		if (cJSON_IsString(item))
+			add_entity(dest, count, item->valuestring);
+		else if (cJSON_IsObject(item))
 		{
-			strncpy(dest[*count].id, item->valuestring, 31);
-			set_display_name(item->valuestring, dest[*count].name);
-			(*count)++;
+			type = cJSON_GetObjectItem(item, "npc_type");
+			if (type && cJSON_IsString(type))
+				add_entity(dest, count, type->valuestring);
 		}
 		item = item->next;
 	}
 }
 
-static void	parse_exits(cJSON *tmp, t_room_state *state)
+static void	parse_exits(cJSON *exits_obj, t_room_state *state)
 {
 	cJSON	*ext;
 
-	if (!cJSON_IsArray(tmp))
+	state->exit_count = 0;
+	if (!exits_obj || !cJSON_IsObject(exits_obj))
 		return ;
-	ext = tmp->child;
-	while (ext != NULL && state->exit_count < 4)
+	ext = exits_obj->child;
+	while (ext && state->exit_count < 4)
 	{
-		if (cJSON_IsString(ext))
-			strncpy(state->exits[state->exit_count++],
-				ext->valuestring, 15);
+		strncpy(state->exits[state->exit_count++], ext->string, 15);
 		ext = ext->next;
 	}
 }
 
-static void	parse_player_counts(cJSON *json, t_room_state *state)
+static void	fetch_room_data(t_ui_context *ctx, char *room_name)
 {
+	cJSON	*world;
+	cJSON	*room;
 	cJSON	*tmp;
 
-	tmp = cJSON_GetObjectItem(json, "players");
-	if (!tmp)
-		tmp = cJSON_GetObjectItem(json, "room");
-	if (cJSON_IsArray(tmp))
-		state->room_players = cJSON_GetArraySize(tmp);
-	tmp = cJSON_GetObjectItem(json, "server");
-	if (cJSON_IsNumber(tmp))
-		state->server_players = tmp->valueint;
+	world = cJSON_GetObjectItem(ctx->world_db, "world");
+	room = cJSON_GetObjectItem(world, "locations")->child;
+	while (room)
+	{
+		tmp = cJSON_GetObjectItem(room, "name");
+		if (tmp && strcmp(tmp->valuestring, room_name) == 0)
+		{
+			memset(&ctx->state, 0, sizeof(t_room_state));
+			strncpy(ctx->state.name, tmp->valuestring, 63);
+			tmp = cJSON_GetObjectItem(room, "description");
+			if (tmp)
+				strncpy(ctx->state.description, tmp->valuestring, 255);
+			parse_exits(cJSON_GetObjectItem(room, "exits"), &ctx->state);
+			parse_entities(cJSON_GetObjectItem(room, "items"),
+				ctx->state.items, &ctx->state.item_count);
+			tmp = cJSON_GetObjectItem(room, "spawns");
+			parse_entities(tmp, ctx->state.npcs, &ctx->state.npc_count);
+			break ;
+		}
+		room = room->next;
+	}
 }
 
-void	populate_state(cJSON *json, t_room_state *state)
+void	parse_server_text(char *buffer, t_ui_context *ctx)
 {
-	cJSON	*tmp;
+	char	room_name[64];
 
-	tmp = cJSON_GetObjectItem(json, "room_name");
-	if (!cJSON_IsString(tmp))
+	if (strncmp(buffer, "Current Room : ", 15) == 0)
 	{
-		tmp = cJSON_GetObjectItem(json, "npc");
-		if (cJSON_IsString(tmp))
-			strncpy(state->current_npc, tmp->valuestring, 63);
-		tmp = cJSON_GetObjectItem(json, "dialogue");
-		if (cJSON_IsString(tmp))
-			strncpy(state->current_dialogue, tmp->valuestring, 255);
-		return ;
+		strncpy(room_name, buffer + 15, 63);
+		room_name[strcspn(room_name, "\n")] = 0;
+		fetch_room_data(ctx, room_name);
+		add_message(&ctx->logs, buffer);
 	}
-	memset(state, 0, sizeof(t_room_state));
-	strncpy(state->name, tmp->valuestring, 63);
-	tmp = cJSON_GetObjectItem(json, "description");
-	if (cJSON_IsString(tmp))
-		strncpy(state->description, tmp->valuestring, 255);
-	parse_exits(cJSON_GetObjectItem(json, "exits"), state);
-	parse_entities(cJSON_GetObjectItem(json, "items"), state->items,
-		&state->item_count);
-	parse_entities(cJSON_GetObjectItem(json, "npcs"), state->npcs,
-		&state->npc_count);
-	parse_player_counts(json, state);
+	else if (strncmp(buffer, "NPC:", 4) == 0)
+		add_message(&ctx->chat, buffer + 4);
+	else if (strncmp(buffer, "COMBAT:", 7) == 0)
+		add_message(&ctx->logs, buffer + 7);
+	else if (strncmp(buffer, "EVENT:", 6) == 0)
+		add_message(&ctx->logs, buffer + 6);
+	else
+		add_message(&ctx->logs, buffer);
 }

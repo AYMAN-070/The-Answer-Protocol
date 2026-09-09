@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 09:21:28 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/08 19:12:29 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/09 09:25:59 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,34 @@
 #include "network.h"
 #include "state_parser.h"
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+static void	load_local_world(t_ui_context *ctx)
+{
+	FILE	*file;
+	long	length;
+	char	*buffer;
+
+	file = fopen("data/world.json", "rb");
+	if (!file)
+	{
+		perror("Client error: Cannot open world.json");
+		exit(EXIT_FAILURE);
+	}
+	fseek(file, 0, SEEK_END);
+	length = ftell(file);
+	fseek(file, 0, SEEK_SET);
+	buffer = calloc(length + 1, sizeof(char));
+	if (!buffer)
+		exit(EXIT_FAILURE);
+	fread(buffer, 1, length, file);
+	fclose(file);
+	ctx->world_db = cJSON_Parse(buffer);
+	free(buffer);
+	if (!ctx->world_db)
+		exit(EXIT_FAILURE);
+}
 
 static int	init_client(t_game_assets *assets, t_ui_context *ctx)
 {
@@ -25,33 +53,14 @@ static int	init_client(t_game_assets *assets, t_ui_context *ctx)
 	init_graphics_assets(assets);
 	memset(&ctx->state, 0, sizeof(t_room_state));
 	ctx->actions.count = 0;
-	return (net_connect("127.0.0.1", 4242));
-}
-
-static void	mock_data(t_ui_context *ctx)
-{
-	memset(&ctx->player, 0, sizeof(t_player_state));
-	ctx->player.max_hp = 100;
-	ctx->player.hp = 80;
-	ctx->player.inv_count = 2;
-	strncpy(ctx->player.inventory[0].id, "red_keycard", 31);
-	strncpy(ctx->player.inventory[0].name, "Red Keycard", 31);
-	strncpy(ctx->player.inventory[1].id, "energy_cell", 31);
-	strncpy(ctx->player.inventory[1].name, "Energy Cell", 31);
 	
-	ctx->state.room_players = 2;
-	ctx->state.server_players = 5;
+	load_local_world(ctx);
 
-	strncpy(ctx->state.current_npc, "Station AI", 63);
-	strncpy(ctx->state.current_dialogue, "Welcome to Prometheus Station. Please proceed to the airlock.", 255);
-
-	ctx->chat.count = 2;
-	strncpy(ctx->chat.messages[0], "[Global] Alice: Server is up!", 127);
-	strncpy(ctx->chat.messages[1], "[Room] Bob: I need a keycard.", 127);
-	ctx->logs.count = 3;
-	strncpy(ctx->logs.messages[0], "> CONNECT alice", 127);
-	strncpy(ctx->logs.messages[1], "> OK connected", 127);
-	strncpy(ctx->logs.messages[2], "> EVT ROOM ENTER bob", 127);
+	fd = net_connect("127.0.0.1", 4242);
+	if (fd >= 0)
+		net_send_command(fd, "CONNECT gui_user\n");
+	add_action(&ctx->actions, "LOOK", "LOOK\n");
+	return (fd);
 }
 
 static void	run_client(t_game_assets *assets, t_ui_context *ctx)
@@ -77,6 +86,10 @@ int	main(void)
 	run_client(&assets, &ctx);
 	net_disconnect(&ctx.sock_fd);
 	unload_graphics_assets(&assets);
+	
+	if (ctx.world_db)
+		cJSON_Delete(ctx.world_db);
+		
 	CloseWindow();
 	return (0);
 }
