@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/02 11:40:23 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/08 16:29:04 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/09 22:32:13 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 void	handle_quit(t_player *player)
 {
-	printf("PLayer %s (socket %d) disconnected.\n", player->name, player->sd);
+	server_log("INFO", player->ip, player->name, "Player quit");
 	write(player->sd, "OK goodbye\n", 11);
 }
 
@@ -26,7 +26,6 @@ void	handle_look(t_player *player, char *world_data)
 
 	sprintf(search_key, "\"%s\": {\n        \"name\":", player->location);
 	extract_json_value(world_data, search_key, room_name);
-
 	if (strlen(room_name) > 0)
 	{
 		sprintf(response, "Current Room : %s\n", room_name);
@@ -62,11 +61,14 @@ void	handle_move(t_player *player, int words, char *arg, char *world)
 	get_room_exit(world, player->location, arg, dest);
 	if (strlen(dest) == 0)
 	{
+		server_log("WARN", player->ip, player->name, "Invalid direction");
 		write(player->sd, "ERR invalid direction\n", 22);
 		return ;
 	}
 	if (strcmp(dest, "ai_core") == 0 && has_item(player, "red_keycard") == 0)
 	{
+		server_log("WARN", player->ip, player->name,
+			"Access denied: missing keycard");
 		write(player->sd, "ERR access denied : red_keycard required\n", 41);
 		return ;
 	}
@@ -81,26 +83,20 @@ void	handle_take(t_player *player, int words, char *item, char *world)
 	int	i;
 
 	if (words != 2)
-	{
-		write(player->sd, "ERR missing item\n", 17);
-		return ;
-	}
+		return ((void)write(player->sd, "ERR missing item\n", 17));
 	if (check_item_in_room(world, player->location, item) == 0)
-	{
-		write(player->sd, "ERR item not here\n", 18);
-		return ;
-	}
-	i = 0;
-	while (i < 5)
+		return ((void)write(player->sd, "ERR item not here\n", 18));
+	i = -1;
+	while (++i < 5)
 	{
 		if (player->inventory[i][0] == '\0')
 		{
 			strncpy(player->inventory[i], item, 31);
 			player->inventory[i][31] = '\0';
-			write(player->sd, "OK item taken\n", 14);
-			return ;
+			server_log("INFO", player->ip, player->name, "Item taken");
+			return ((void)write(player->sd, "OK item taken\n", 14));
 		}
-		i++;
 	}
+	server_log("WARN", player->ip, player->name, "Inventory Full");
 	write(player->sd, "ERR inventory full\n", 19);
 }

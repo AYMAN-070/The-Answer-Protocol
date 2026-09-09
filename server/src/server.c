@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/28 14:27:59 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/02 11:21:23 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/09 22:31:02 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,12 +54,14 @@ void	handle_new_connection(int server_fd, t_player *clients)
 	struct sockaddr_in	addr;
 	socklen_t			len;
 	int					i;
+	char				*ip_str;
 
 	len = sizeof(addr);
 	new_sd = accept(server_fd, (struct sockaddr *)&addr, &len);
 	if (new_sd < 0)
 		exit_error("Accept error");
-	printf("New connection established on the socket %d.\n", new_sd);
+	ip_str = inet_ntoa(addr.sin_addr);
+	server_log("INFO", ip_str, "unknown", "New connection established");
 	i = 0;
 	while (i < 10)
 	{
@@ -67,6 +69,8 @@ void	handle_new_connection(int server_fd, t_player *clients)
 		{
 			clients[i].sd = new_sd;
 			clients[i].is_active = 1;
+			strncpy(clients[i].ip, ip_str, 15);
+			clients[i].ip[15] = '\0';
 			break ;
 		}
 		i++;
@@ -87,8 +91,8 @@ void	handle_client_messages(t_player *clients,
 			memset(buffer, 0, 1024);
 			if (read(clients[i].sd, buffer, 1023) <= 0)
 			{
-				printf("Player %s (socket %d) disconnected.\n",
-					clients[i].name, clients[i].sd);
+				server_log("INFO", clients[i].ip, clients[i].name,
+					"Disconnected");
 				close(clients[i].sd);
 				clients[i].is_active = 0;
 			}
@@ -110,9 +114,8 @@ int	main(void)
 	server_fd = init_server();
 	init_clients(clients);
 	world_data = load_world("data/world.json");
-	printf("World charged : %ld octets.\n", strlen(world_data));
-
-	printf("TAP server on port 4242...\n");
+	server_log("INFO", "sys", "none", "World loaded successfully");
+	server_log("INFO", "sys", "none", "TAP server started on port 4242");
 	while (1)
 	{
 		max_sd = setup_fd_set(server_fd, clients, &readfds);

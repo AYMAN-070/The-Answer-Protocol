@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 20:08:00 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/08 17:25:31 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/09 23:04:31 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ void	handle_connect(t_player *player, int words, char *arg)
 			player->inventory[i][0] = '\0';
 			i++;
 		}
-		printf("Player (socket %d) is called : %s\n", player->sd, player->name);
+		server_log("INFO", player->ip, player->name, "Connected to server");
 		write(player->sd, "OK connected\n", 13);
 	}
 	else
@@ -86,47 +86,59 @@ void	handle_inventory(t_player *player)
 	write(player->sd, msg, strlen(msg));
 }
 
-int	process_combat_cmd(t_player *player, char *cmd,
-	char *arg, int w, char *world)
+int	process_combat_cmd(t_player *p, char *cmd, char *arg, char *wld)
 {
-	if (w >= 1 && strcmp(cmd, "ATTACK") == 0)
-		handle_attack(player, w, arg, world);
-	else if (w >= 1 && strcmp(cmd, "DEFEND") == 0)
-		handle_defend(player, w, arg, world);
-	else if (w >= 1 && strcmp(cmd, "FLEE") == 0)
-		handle_flee(player, world);
+	int	w;
+
+	w = 1;
+	if (arg[0] != '\0')
+		w = 2;
+	if (strcmp(cmd, "ATTACK") == 0)
+		handle_attack(p, w, arg, wld);
+	else if (strcmp(cmd, "DEFEND") == 0)
+		handle_defend(p, w, arg, wld);
+	else if (strcmp(cmd, "FLEE") == 0)
+		handle_flee(p, wld);
+	else if (strcmp(cmd, "DROP") == 0)
+		handle_drop(p, w, arg);
+	else if (strcmp(cmd, "TAKE") == 0)
+		handle_take(p, w, arg, wld);
+	else if (strcmp(cmd, "TALK") == 0)
+		handle_talk(p, w, arg, wld);
+	else if (strcmp(cmd, "STATUS") == 0)
+		handle_status(p);
+	else if (strcmp(cmd, "QUEST") == 0 || strcmp(cmd, "QUESTS") == 0)
+		handle_quest(p);
 	else
 		return (0);
 	return (1);
 }
 
-void	process_command(t_player *player, t_player *clients,
-	char *buffer, char *world_data)
+void	process_command(t_player *p, t_player *c, char *b, char *wld)
 {
 	char	cmd[32];
 	char	arg[32];
-	int		words;
+	int		w;
 
+	if (check_abuse(p) == 1)
+		return ;
 	memset(cmd, 0, 32);
 	memset(arg, 0, 32);
-	words = sscanf(buffer, "%31s %31s", cmd, arg);
-	if (words >= 1 && strcmp(cmd, "CONNECT") == 0)
-		handle_connect(player, words, arg);
-	else if (words >= 1 && strcmp(cmd, "LOOK") == 0)
-		handle_look(player, world_data);
-	else if (words >= 1 && strcmp(cmd, "MOVE") == 0)
-		handle_move(player, words, arg, world_data);
-	else if (words >= 1 && strcmp(cmd, "WHO") == 0)
-		handle_who(player, clients);
-	else if (words >= 1 && strcmp(cmd, "INVENTORY") == 0)
-		handle_inventory(player);
-	else if (words >= 1 && strcmp(cmd, "TAKE") == 0)
-		handle_take(player, words, arg, world_data);
-	else if (words >= 1 && strcmp(cmd, "TALK") == 0)
-		handle_talk(player, words, arg, world_data);
-	else if (words >= 1 && strcmp(cmd, "QUIT") == 0)
-		handle_quit(player);
-	else if (process_combat_cmd(player, cmd, arg, words, world_data) == 0)
-		write(player->sd, "ERR unknown command\n", 20);
+	w = sscanf(b, "%31s %31s", cmd, arg);
+	if (w >= 1)
+		server_log("INFO", p->ip, p->name, cmd);
+	if (w >= 1 && strcmp(cmd, "CONNECT") == 0)
+		handle_connect(p, w, arg);
+	else if (w >= 1 && strcmp(cmd, "LOOK") == 0)
+		handle_look(p, wld);
+	else if (w >= 1 && strcmp(cmd, "MOVE") == 0)
+		handle_move(p, w, arg, wld);
+	else if (w >= 1 && strcmp(cmd, "WHO") == 0)
+		handle_who(p, c);
+	else if (w >= 1 && strcmp(cmd, "INVENTORY") == 0)
+		handle_inventory(p);
+	else if (w >= 1 && strcmp(cmd, "QUIT") == 0)
+		handle_quit(p);
+	else if (process_combat_cmd(p, cmd, arg, wld) == 0)
+		write(p->sd, "ERR unknown command\n", 20);
 }
-

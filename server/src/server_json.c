@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 11:07:12 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/08 15:12:04 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/09 22:32:00 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,6 @@ void	extract_json_value(char *json, char *key, char *result)
 	strncpy(result, start, len);
 	result[len] = '\0';
 }
-
 
 void	get_room_exit(char *json, char *room, char *dir, char *dest)
 {
@@ -73,11 +72,9 @@ int	check_item_in_room(char *json, char *room, char *item)
 	pos = strstr(json, key);
 	if (!pos)
 		return (0);
-
 	limit = strstr(pos, "\"spawns\":");
 	sprintf(key, "\"%s\"", item);
 	pos = strstr(pos, key);
-
 	if (pos && (!limit || pos < limit))
 		return (1);
 	return (0);
@@ -96,7 +93,6 @@ int	check_npc_in_room(char *json, char *room, char *npc)
 	pos = strstr(pos, "\"spawns\":");
 	if (!pos)
 		return (0);
-
 	limit = strchr(pos, ']');
 	sprintf(key, "\"%s\"", npc);
 	pos = strstr(pos, key);
