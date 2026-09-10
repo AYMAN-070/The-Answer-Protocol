@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 13:27:53 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/09 13:34:19 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/10 14:38:06 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,23 +92,28 @@ static void	draw_player_counters(Rectangle room_panel, t_room_state *state)
 
 static void	apply_room_lighting(Rectangle b, t_ui_context *ctx)
 {
-	int	i;
-	int	known;
+	int				i;
+	t_player_state	*p;
 
+	p = &ctx->player;
 	if (ctx->state.name[0] == '\0')
-		return ;
-	known = 0;
-	i = -1;
-	while (++i < ctx->player.known_count)
-		if (!strcmp(ctx->player.known_rooms[i], ctx->state.name))
-			known = 1;
-	if (!known)
 	{
-		DrawRectangleRec(b, Fade(BLACK, 0.80f));
-		DrawText("Unexplored area. Use LOOK to survey.", (int)b.x + 20,
-			(int)b.y + 20, 20, LIGHTGRAY);
-		ctx->state.description[0] = '\0';
+		DrawText("No data. Use LOOK.", (int)b.x + ((int)b.width - 200) / 2,
+			(int)b.y + ((int)b.height - 20) / 2, 20, GRAY);
+		return ;
 	}
+	if (p->known_rooms[31][0] == 'P' && p->known_count < 31)
+		strcpy(p->known_rooms[p->known_count++], ctx->state.name);
+	p->known_rooms[31][0] = '\0';
+	i = -1;
+	while (++i < p->known_count)
+		if (!strcmp(p->known_rooms[i], ctx->state.name))
+			return ;
+	DrawRectangleRec(b, Fade(BLACK, 0.65f));
+	DrawText("Unexplored area. Use LOOK.",
+		(int)b.x + ((int)b.width - 280) / 2,
+		(int)b.y + ((int)b.height - 20) / 2, 20, LIGHTGRAY);
+	ctx->state.description[0] = '\0';
 }
 
 void	draw_room_view(const t_game_assets *assets, t_ui_context *ctx,
