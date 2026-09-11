@@ -54,6 +54,11 @@ static int	init_client(t_game_assets *assets, t_ui_context *ctx)
 	init_graphics_assets(assets);
 	memset(&ctx->state, 0, sizeof(t_room_state));
 	memset(&ctx->player, 0, sizeof(t_player_state));
+	memset(&ctx->chat, 0, sizeof(t_message_buffer));
+	memset(&ctx->global_chat, 0, sizeof(t_message_buffer));
+	memset(&ctx->logs, 0, sizeof(t_message_buffer));
+	ctx->chat_input[0] = '\0';
+	ctx->chat_channel = 0;
 	ctx->player.hp = 100;
 	ctx->player.max_hp = 100;
 	load_local_world(ctx);

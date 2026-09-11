@@ -18,6 +18,10 @@ void	route_message(char *line, t_ui_context *ctx)
 {
 	if (!strncmp(line, "NPC:", 4))
 		add_message(&ctx->chat, line + 4);
+	else if (!strncmp(line, "RCHAT:", 6))
+		add_message(&ctx->chat, line + 6);
+	else if (!strncmp(line, "GCHAT:", 6))
+		add_message(&ctx->global_chat, line + 6);
 	else if (!strncmp(line, "COMBAT:", 7))
 		add_message(&ctx->logs, line + 7);
 	else if (!strncmp(line, "EVENT:", 6))

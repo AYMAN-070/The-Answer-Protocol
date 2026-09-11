@@ -62,11 +62,11 @@ void	render_main_layout(const t_game_assets *assets, t_ui_context *ctx)
 	layout = compute_hud_layout(GetScreenWidth(), GetScreenHeight());
 	draw_ui_panel(layout.room, "Room View");
 	draw_ui_panel(layout.inventory, "Inventory & Status");
-	draw_ui_panel(layout.chat, "Chat");
+	draw_ui_panel(layout.chat, "Chat (TAB: Room/Global)");
 	draw_ui_panel(layout.logs, "Action Logs");
 	draw_room_view(assets, ctx, layout.room);
 	render_status_panel(layout.inventory, &ctx->player, assets);
 	render_action_panel(layout.inventory, ctx);
-	render_message_panel(layout.chat, &ctx->chat, WHITE);
+	render_chat_panel(layout.chat, ctx);
 	render_message_panel(layout.logs, &ctx->logs, LIGHTGRAY);
 }

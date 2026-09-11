@@ -62,7 +62,10 @@ typedef struct s_ui_context
 {
 	int					sock_fd;
 	t_message_buffer	chat;
+	t_message_buffer	global_chat;
 	t_message_buffer	logs;
+	char				chat_input[128];
+	int					chat_channel;
 	cJSON				*world_db;
 	t_room_state		state;
 	t_player_state		player;
