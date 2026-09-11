@@ -20,7 +20,7 @@
         "description": "Unmade beds and belongings scattered in a hurry.",
         "exits": { "west": "main_corridor", "north": "cafeteria" },
         "items": ["energy_cell"],
-        "spawns": []
+        "spawns": [ { "npc_type": "sec_drone", "count": 1 } ]
       },
       "cafeteria": {
         "name": "Cafeteria",
@@ -41,7 +41,7 @@
         "description": "The weapon racks have been completely stripped.",
         "exits": { "north": "medbay", "south": "main_corridor" },
         "items": ["laser_pistol"],
-        "spawns": [ { "npc_type": "sec_drone", "count": 1 } ]
+        "spawns": []
       },
       "maintenance_bay": {
         "name": "Maintenance Bay",

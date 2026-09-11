@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/11 09:03:53 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/11 10:05:27 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/11 10:18:40 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ static Vector3	get_layout(const char *id)
 {
 	const char	*ids[5] = {"sec_drone", "alpha_drone", "injured_engineer",
 		"ai_terminal", "cleaning_bot"};
-	const float	sc[5] = {0.6f, 0.7f, 1.0f, 1.0f, 0.35f};
+	const float	sc[5] = {0.6f, 0.7f, 1.0f, 1.0f, 0.3f};
 	const float	px[5] = {0.6f, 0.5f, 0.65f, 0.5f, 0.65f};
 	const float	py[5] = {0.65f, 0.55f, 0.70f, 0.4f, 0.65f};
 	Vector3		v;
