@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 13:27:53 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/10 14:38:06 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/11 09:49:34 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,30 +19,24 @@
 #include <string.h>
 
 static void	draw_room_background(const t_game_assets *assets,
-		t_room_state *state, Rectangle room_view)
+		t_room_state *state, Rectangle view)
 {
 	Texture2D	bg;
-	Rectangle	source;
-	Vector2		origin;
+	Vector2		pos;
+	float		sc;
 
+	DrawRectangleRec(view, BLACK);
 	if (!state || state->name[0] == '\0')
-	{
-		DrawRectangleRec(room_view, BLACK);
 		return ;
-	}
 	bg = get_room_texture(assets, state->name);
 	if (bg.id == 0)
-	{
-		DrawRectangleRec(room_view, BLACK);
 		return ;
-	}
-	source.x = 0.0f;
-	source.y = 0.0f;
-	source.width = (float)bg.width;
-	source.height = (float)bg.height;
-	origin.x = 0.0f;
-	origin.y = 0.0f;
-	DrawTexturePro(bg, source, room_view, origin, 0.0f, WHITE);
+	sc = view.width / (float)bg.width;
+	if (view.height / (float)bg.height < sc)
+		sc = view.height / (float)bg.height;
+	pos.x = view.x + (view.width - ((float)bg.width * sc)) / 2.0f;
+	pos.y = view.y + (view.height - ((float)bg.height * sc)) / 2.0f;
+	DrawTextureEx(bg, pos, 0.0f, sc, WHITE);
 }
 
 static void	draw_room_description_overlay(t_room_state *st, Rectangle rect)
@@ -128,6 +122,7 @@ void	draw_room_view(const t_game_assets *assets, t_ui_context *ctx,
 	view.width = room_panel.width - 4;
 	view.height = room_panel.height - 32;
 	draw_room_background(assets, &ctx->state, view);
+	draw_room_npcs(assets, ctx, view);
 	apply_room_lighting(view, ctx);
 	draw_room_description_overlay(&ctx->state, view);
 	map_x = (int)(room_panel.x + room_panel.width) - 190;

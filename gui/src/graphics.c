@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 13:21:58 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/03 09:50:13 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/11 09:13:30 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ void	init_graphics_assets(t_game_assets *assets)
 	preload_room(&assets->rooms, "Maintenance Bay");
 	preload_room(&assets->rooms, "AI Core");
 	init_item_assets(&assets->items);
+	init_npc_assets(&assets->npcs);
 }
 
 void	unload_graphics_assets(t_game_assets *assets)
@@ -56,6 +57,7 @@ void	unload_graphics_assets(t_game_assets *assets)
 	}
 	assets->rooms.count = 0;
 	unload_item_assets(&assets->items);
+	unload_npc_assets(&assets->npcs);
 }
 
 Texture2D	get_room_texture(const t_game_assets *assets,

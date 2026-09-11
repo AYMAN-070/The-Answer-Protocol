@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 13:27:53 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/09 13:28:58 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/11 09:59:24 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,29 +32,25 @@ static void	draw_ui_panel(Rectangle bounds, const char *title)
 
 static t_hud_layout	compute_hud_layout(int sw, int sh)
 {
-	t_hud_layout	layout;
-	int				bottom_y;
-	int				bottom_h;
+	t_hud_layout	l;
 
-	layout.room.x = HUD_PADDING;
-	layout.room.y = HUD_PADDING;
-	layout.room.width = (sw * 65) / 100;
-	layout.room.height = (sh * 70) / 100;
-	layout.inventory.x = layout.room.width + (HUD_PADDING * 2);
-	layout.inventory.y = HUD_PADDING;
-	layout.inventory.width = sw - layout.room.width - (HUD_PADDING * 3);
-	layout.inventory.height = layout.room.height;
-	bottom_y = layout.room.height + (HUD_PADDING * 2);
-	bottom_h = sh - layout.room.height - (HUD_PADDING * 3);
-	layout.chat.x = HUD_PADDING;
-	layout.chat.y = bottom_y;
-	layout.chat.width = layout.room.width;
-	layout.chat.height = bottom_h;
-	layout.logs.x = layout.inventory.x;
-	layout.logs.y = bottom_y;
-	layout.logs.width = layout.inventory.width;
-	layout.logs.height = bottom_h;
-	return (layout);
+	l.room.x = 10;
+	l.room.y = 10;
+	l.room.width = (sw * 65) / 100;
+	l.room.height = (sh * 70) / 100;
+	l.inventory.x = l.room.width + 20;
+	l.inventory.y = 10;
+	l.inventory.width = sw - l.room.width - 30;
+	l.inventory.height = l.room.height;
+	l.chat.x = 10;
+	l.chat.y = l.room.height + 20;
+	l.chat.width = l.room.width;
+	l.chat.height = sh - l.room.height - 30;
+	l.logs.x = l.inventory.x;
+	l.logs.y = l.chat.y;
+	l.logs.width = l.inventory.width;
+	l.logs.height = l.chat.height;
+	return (l);
 }
 
 void	render_main_layout(const t_game_assets *assets, t_ui_context *ctx)
