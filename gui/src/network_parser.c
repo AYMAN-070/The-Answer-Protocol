@@ -6,41 +6,40 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 09:00:00 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/09 09:24:51 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/11 10:45:48 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "network_parser.h"
 #include "chat_panel.h"
 #include <string.h>
-
-static void	add_entity(t_entity *dest, int *count, char *value)
-{
-	strncpy(dest[*count].id, value, 31);
-	strncpy(dest[*count].name, value, 31);
-	(*count)++;
-}
+#include <stdio.h>
 
 static void	parse_entities(cJSON *arr, t_entity *dest, int *count)
 {
-	cJSON	*item;
-	cJSON	*type;
+	cJSON	*i;
+	cJSON	*t;
+	char	*s;
 
 	*count = 0;
 	if (!arr || !cJSON_IsArray(arr))
 		return ;
-	item = arr->child;
-	while (item && *count < 10)
+	i = arr->child;
+	while (i && *count < 10)
 	{
-		if (cJSON_IsString(item))
-			add_entity(dest, count, item->valuestring);
-		else if (cJSON_IsObject(item))
+		s = NULL;
+		t = cJSON_GetObjectItem(i, "npc_type");
+		if (cJSON_IsString(i))
+			s = i->valuestring;
+		else if (cJSON_IsObject(i) && t && cJSON_IsString(t))
+			s = t->valuestring;
+		if (s)
 		{
-			type = cJSON_GetObjectItem(item, "npc_type");
-			if (type && cJSON_IsString(type))
-				add_entity(dest, count, type->valuestring);
+			strncpy(dest[*count].id, s, 31);
+			strncpy(dest[*count].name, s, 31);
+			(*count)++;
 		}
-		item = item->next;
+		i = i->next;
 	}
 }
 
@@ -88,23 +87,55 @@ static void	fetch_room_data(t_ui_context *ctx, char *room_name)
 	}
 }
 
+static void	parse_player_state(char *buffer, t_player_state *p)
+{
+	char	*tok;
+	int		i;
+
+	if (strncmp(buffer, "DEAD:", 5) == 0)
+		p->hp = 50;
+	if (strstr(buffer, "HP:"))
+		sscanf(strstr(buffer, "HP:"), "HP:%d", &p->hp);
+	if (strncmp(buffer, "INVENTORY:", 10) != 0)
+		return ;
+	i = -1;
+	while (++i < 5)
+		p->inventory[i].id[0] = '\0';
+	p->inv_count = 0;
+	if (strstr(buffer, "empty"))
+		return ;
+	tok = strtok(buffer + 10, ",\n");
+	while (tok && p->inv_count < 5)
+	{
+		strncpy(p->inventory[p->inv_count].id, tok, 31);
+		strncpy(p->inventory[p->inv_count].name, tok, 31);
+		p->inv_count++;
+		tok = strtok(NULL, ",\n");
+	}
+}
+
 void	parse_server_text(char *buffer, t_ui_context *ctx)
 {
-	char	room_name[64];
+	char	r_name[64];
+	char	*r_ptr;
 
-	if (strncmp(buffer, "Current Room : ", 15) == 0)
+	parse_player_state(buffer, &ctx->player);
+	r_ptr = strstr(buffer, "Current Room : ");
+	if (r_ptr)
 	{
-		strncpy(room_name, buffer + 15, 63);
-		room_name[strcspn(room_name, "\n")] = 0;
-		fetch_room_data(ctx, room_name);
-		add_message(&ctx->logs, buffer);
+		strncpy(r_name, r_ptr + 15, 63);
+		r_name[strcspn(r_name, "\n")] = 0;
+		fetch_room_data(ctx, r_name);
 	}
-	else if (strncmp(buffer, "NPC:", 4) == 0)
+	if (strncmp(buffer, "NPC:", 4) == 0)
 		add_message(&ctx->chat, buffer + 4);
 	else if (strncmp(buffer, "COMBAT:", 7) == 0)
 		add_message(&ctx->logs, buffer + 7);
 	else if (strncmp(buffer, "EVENT:", 6) == 0)
 		add_message(&ctx->logs, buffer + 6);
-	else
+	else if (strncmp(buffer, "DEAD:", 5) == 0)
+		add_message(&ctx->logs, buffer + 5);
+	else if (strncmp(buffer, "INVENTORY:", 10) != 0
+		&& strncmp(buffer, "STATUS:", 7) != 0)
 		add_message(&ctx->logs, buffer);
 }
