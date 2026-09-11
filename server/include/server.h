@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 10:28:08 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/09 22:22:01 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/11 18:14:56 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,11 +57,20 @@ void	handle_attack(t_player *player, int words, char *target, char *world);
 void	give_item(t_player *player, char *item);
 void	handle_defend(t_player *player, int words, char *tgt, char *world);
 void	handle_flee(t_player *player, char *world);
-void	handle_drop(t_player *player, int words, char *item);
+void	handle_drop(t_player *player, int words, char *item, char *world_data);
 void	handle_talk(t_player *player, int words, char *npc, char *world);
 void	handle_status(t_player *player);
 void	handle_quest(t_player *player);
 void	server_log(char *level, char *ip, char *player, char *msg);
 int		check_abuse(t_player *player);
+void	handle_chat(t_player *player, t_player *clients, char *cmd, char *msg);
+
+typedef struct s_drop
+{
+	char	room[32];
+	char	item[32];
+}	t_drop;
+
+char	*manage_dropped(int mode, char *room, char *item, char *buf);
 
 #endif

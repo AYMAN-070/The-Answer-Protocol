@@ -6,14 +6,14 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/08 14:53:02 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/09 23:04:02 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/11 16:52:58 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server.h"
 #include <stdlib.h>
 
-void	handle_death(t_player *player)
+void	handle_death(t_player *player, char *world)
 {
 	int	i;
 
@@ -25,8 +25,11 @@ void	handle_death(t_player *player)
 	}
 	strncpy(player->location, "medbay", 31);
 	player->location[31] = '\0';
-	player->hp = 50;
+	player->hp = 100;
 	write(player->sd, "DEAD:You died! Respawned in medbay.\n", 36);
+	handle_look(player, world);
+	handle_inventory(player);
+	handle_status(player);
 }
 
 void	give_item(t_player *player, char *item)
@@ -70,7 +73,7 @@ void	handle_attack(t_player *p, int w, char *tgt, char *wld)
 	dmg[1] = 10 + (rand() % 11);
 	p->hp -= dmg[1];
 	if (p->hp <= 0)
-		return (handle_death(p));
+		return (handle_death(p, wld));
 	sprintf(msg, "COMBAT:Hit %d. Npc hit %d. HP:%d\n", dmg[0], dmg[1], p->hp);
 	write(p->sd, msg, strlen(msg));
 }
@@ -85,7 +88,7 @@ void	handle_defend(t_player *player, int words, char *tgt, char *world)
 	n_dmg = (10 + (rand() % 11)) / 2;
 	player->hp -= n_dmg;
 	if (player->hp <= 0)
-		return (handle_death(player));
+		return (handle_death(player, world));
 	sprintf(msg, "COMBAT:You defend! Target hit %d. HP:%d\n",
 		n_dmg, player->hp);
 	write(player->sd, msg, strlen(msg));
@@ -101,7 +104,7 @@ void	handle_flee(t_player *player, char *world)
 		n_dmg = 10 + (rand() % 11);
 		player->hp -= n_dmg;
 		if (player->hp <= 0)
-			return (handle_death(player));
+			return (handle_death(player, world));
 		sprintf(msg, "COMBAT:Flee failed! Target hit %d. HP:%d\n",
 			n_dmg, player->hp);
 		write(player->sd, msg, strlen(msg));

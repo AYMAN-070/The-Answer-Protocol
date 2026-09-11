@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 20:08:00 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/09 23:04:31 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/11 18:14:00 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,7 @@ void	handle_inventory(t_player *player)
 	write(player->sd, msg, strlen(msg));
 }
 
-int	process_combat_cmd(t_player *p, char *cmd, char *arg, char *wld)
+int	process_combat_cmd(t_player *p, t_player *c, char *cmd, char *arg, char *wld)
 {
 	int	w;
 
@@ -100,7 +100,7 @@ int	process_combat_cmd(t_player *p, char *cmd, char *arg, char *wld)
 	else if (strcmp(cmd, "FLEE") == 0)
 		handle_flee(p, wld);
 	else if (strcmp(cmd, "DROP") == 0)
-		handle_drop(p, w, arg);
+		handle_drop(p, w, arg, wld);
 	else if (strcmp(cmd, "TAKE") == 0)
 		handle_take(p, w, arg, wld);
 	else if (strcmp(cmd, "TALK") == 0)
@@ -109,6 +109,8 @@ int	process_combat_cmd(t_player *p, char *cmd, char *arg, char *wld)
 		handle_status(p);
 	else if (strcmp(cmd, "QUEST") == 0 || strcmp(cmd, "QUESTS") == 0)
 		handle_quest(p);
+	else if (w >= 1 && (strcmp(cmd, "RCHAT") == 0 || strcmp(cmd, "GCHAT") == 0))
+		handle_chat(p, c, cmd, arg);
 	else
 		return (0);
 	return (1);
@@ -117,14 +119,14 @@ int	process_combat_cmd(t_player *p, char *cmd, char *arg, char *wld)
 void	process_command(t_player *p, t_player *c, char *b, char *wld)
 {
 	char	cmd[32];
-	char	arg[32];
+	char	arg[512];
 	int		w;
 
 	if (check_abuse(p) == 1)
 		return ;
 	memset(cmd, 0, 32);
-	memset(arg, 0, 32);
-	w = sscanf(b, "%31s %31s", cmd, arg);
+	memset(arg, 0, 512);
+	w = sscanf(b, "%31s %[^\n]", cmd, arg);
 	if (w >= 1)
 		server_log("INFO", p->ip, p->name, cmd);
 	if (w >= 1 && strcmp(cmd, "CONNECT") == 0)
@@ -139,6 +141,6 @@ void	process_command(t_player *p, t_player *c, char *b, char *wld)
 		handle_inventory(p);
 	else if (w >= 1 && strcmp(cmd, "QUIT") == 0)
 		handle_quit(p);
-	else if (process_combat_cmd(p, cmd, arg, wld) == 0)
+	else if (process_combat_cmd(p, c, cmd, arg, wld) == 0)
 		write(p->sd, "ERR unknown command\n", 20);
 }
