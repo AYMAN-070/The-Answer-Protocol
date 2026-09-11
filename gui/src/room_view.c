@@ -21,25 +21,28 @@
 static void	draw_room_background(const t_game_assets *assets,
 		t_room_state *state, Rectangle view)
 {
-	Texture2D	bg;
-	Vector2		pos;
-	float		sc;
+	Texture2D	texture;
+	Vector2		position;
+	float		scale;
 
 	DrawRectangleRec(view, BLACK);
 	if (!state || state->name[0] == '\0')
 		return ;
-	bg = get_room_texture(assets, state->name);
-	if (bg.id == 0)
+	texture = get_room_texture(assets, state->name);
+	if (texture.id == 0)
 		return ;
-	sc = view.width / (float)bg.width;
-	if (view.height / (float)bg.height < sc)
-		sc = view.height / (float)bg.height;
-	pos.x = view.x + (view.width - ((float)bg.width * sc)) / 2.0f;
-	pos.y = view.y + (view.height - ((float)bg.height * sc)) / 2.0f;
-	DrawTextureEx(bg, pos, 0.0f, sc, WHITE);
+	scale = view.width / (float)texture.width;
+	if (view.height / (float)texture.height < scale)
+		scale = view.height / (float)texture.height;
+	position.x = view.x + (view.width - ((float)texture.width * scale))
+		/ 2.0f;
+	position.y = view.y + (view.height - ((float)texture.height * scale))
+		/ 2.0f;
+	DrawTextureEx(texture, position, 0.0f, scale, WHITE);
 }
 
-static void	draw_room_description_overlay(t_room_state *st, Rectangle rect)
+static void	draw_room_description_overlay(t_room_state *state,
+				Rectangle rect)
 {
 	Rectangle	bounds;
 	const char	*title;
@@ -51,15 +54,15 @@ static void	draw_room_description_overlay(t_room_state *st, Rectangle rect)
 	bounds.width = rect.width - 100;
 	bounds.x = rect.x + 50;
 	bounds.y = rect.y + rect.height - 150;
-	if (st && st->current_dialogue[0] != '\0')
+	if (state && state->current_dialogue[0] != '\0')
 	{
-		title = st->current_npc;
-		desc = st->current_dialogue;
+		title = state->current_npc;
+		desc = state->current_dialogue;
 	}
-	else if (st && st->name[0] != '\0')
+	else if (state && state->name[0] != '\0')
 	{
-		title = st->name;
-		desc = st->description;
+		title = state->name;
+		desc = state->description;
 	}
 	DrawRectangleRec(bounds, Fade(BLACK, 0.75f));
 	DrawRectangleLinesEx(bounds, 2.0f, Fade(LIGHTGRAY, 0.5f));
@@ -69,44 +72,45 @@ static void	draw_room_description_overlay(t_room_state *st, Rectangle rect)
 
 static void	draw_player_counters(Rectangle room_panel, t_room_state *state)
 {
-	int		bx;
-	int		by;
-	char	txt_rm[64];
-	char	txt_sv[64];
+	int		box_x;
+	int		box_y;
+	char	room_text[64];
+	char	server_text[64];
 
-	bx = (int)room_panel.x + 15;
-	by = (int)room_panel.y + 45;
-	snprintf(txt_rm, 64, "Room Players: %d", state->room_players);
-	snprintf(txt_sv, 64, "Server Total: %d", state->server_players);
-	DrawRectangle(bx - 5, by - 5, 180, 50, Fade(BLACK, 0.75f));
-	DrawRectangleLines(bx - 5, by - 5, 180, 50, Fade(LIGHTGRAY, 0.5f));
-	DrawText(txt_rm, bx, by, 16, SKYBLUE);
-	DrawText(txt_sv, bx, by + 22, 16, SKYBLUE);
+	box_x = (int)room_panel.x + 15;
+	box_y = (int)room_panel.y + 45;
+	snprintf(room_text, 64, "Room Players: %d", state->room_players);
+	snprintf(server_text, 64, "Server Total: %d", state->server_players);
+	DrawRectangle(box_x - 5, box_y - 5, 180, 50, Fade(BLACK, 0.75f));
+	DrawRectangleLines(box_x - 5, box_y - 5, 180, 50, Fade(LIGHTGRAY, 0.5f));
+	DrawText(room_text, box_x, box_y, 16, SKYBLUE);
+	DrawText(server_text, box_x, box_y + 22, 16, SKYBLUE);
 }
 
-static void	apply_room_lighting(Rectangle b, t_ui_context *ctx)
+static void	apply_room_lighting(Rectangle bounds, t_ui_context *ctx)
 {
-	int				i;
-	t_player_state	*p;
+	int				idx;
+	t_player_state	*player;
 
-	p = &ctx->player;
+	player = &ctx->player;
 	if (ctx->state.name[0] == '\0')
 	{
-		DrawText("No data. Use LOOK.", (int)b.x + ((int)b.width - 200) / 2,
-			(int)b.y + ((int)b.height - 20) / 2, 20, GRAY);
+		DrawText("No data. Use LOOK.",
+			(int)bounds.x + ((int)bounds.width - 200) / 2,
+			(int)bounds.y + ((int)bounds.height - 20) / 2, 20, GRAY);
 		return ;
 	}
-	if (p->known_rooms[31][0] == 'P' && p->known_count < 31)
-		strcpy(p->known_rooms[p->known_count++], ctx->state.name);
-	p->known_rooms[31][0] = '\0';
-	i = -1;
-	while (++i < p->known_count)
-		if (!strcmp(p->known_rooms[i], ctx->state.name))
+	if (player->known_rooms[31][0] == 'P' && player->known_count < 31)
+		strcpy(player->known_rooms[player->known_count++], ctx->state.name);
+	player->known_rooms[31][0] = '\0';
+	idx = -1;
+	while (++idx < player->known_count)
+		if (!strcmp(player->known_rooms[idx], ctx->state.name))
 			return ;
-	DrawRectangleRec(b, Fade(BLACK, 0.65f));
+	DrawRectangleRec(bounds, Fade(BLACK, 0.65f));
 	DrawText("Unexplored area. Use LOOK.",
-		(int)b.x + ((int)b.width - 280) / 2,
-		(int)b.y + ((int)b.height - 20) / 2, 20, LIGHTGRAY);
+		(int)bounds.x + ((int)bounds.width - 280) / 2,
+		(int)bounds.y + ((int)bounds.height - 20) / 2, 20, LIGHTGRAY);
 	ctx->state.description[0] = '\0';
 }
 

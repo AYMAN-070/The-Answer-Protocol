@@ -15,68 +15,74 @@
 #include "layout.h"
 #include <string.h>
 
-static void	draw_node(int x, int y, t_room_state *st, const char *id)
+static void	draw_node(int pos_x, int pos_y, t_room_state *room_state,
+				const char *id)
 {
-	int		is_cur;
-	Color	n_col;
-	Color	b_col;
+	int		is_current;
+	Color	node_color;
+	Color	border_color;
 
-	is_cur = (st && st->name[0] && !strcmp(st->name, id));
-	if (is_cur)
+	is_current = (room_state && room_state->name[0]
+			&& !strcmp(room_state->name, id));
+	if (is_current)
 	{
-		n_col = GREEN;
-		b_col = LIGHTGRAY;
+		node_color = GREEN;
+		border_color = LIGHTGRAY;
 	}
 	else
 	{
-		n_col = DARKGRAY;
-		b_col = GRAY;
+		node_color = DARKGRAY;
+		border_color = GRAY;
 	}
-	DrawRectangle(x - 10, y - 5, 20, 10, n_col);
-	DrawRectangleLines(x - 10, y - 5, 20, 10, b_col);
+	DrawRectangle(pos_x - 10, pos_y - 5, 20, 10, node_color);
+	DrawRectangleLines(pos_x - 10, pos_y - 5, 20, 10, border_color);
 }
 
-static void	draw_bg(int x, int y, int width, int height)
+static void	draw_bg(int pos_x, int pos_y, int width, int height)
 {
-	DrawRectangle(x, y, width, height, Fade(BLACK, 0.8f));
-	DrawRectangleLines(x, y, width, height, Fade(LIGHTGRAY, 0.5f));
-	DrawText("MINIMAP", x + 5, y + 5, 10, Fade(WHITE, 0.6f));
+	DrawRectangle(pos_x, pos_y, width, height, Fade(BLACK, 0.8f));
+	DrawRectangleLines(pos_x, pos_y, width, height, Fade(LIGHTGRAY, 0.5f));
+	DrawText("MINIMAP", pos_x + 5, pos_y + 5, 10, Fade(WHITE, 0.6f));
 }
 
-static void	draw_minimap_connections(int cx, int cy, int spc)
+static void	draw_minimap_connections(int center_x, int center_y, int spacing)
 {
-	DrawLine(cx, cy, cx, cy + spc, GRAY);
-	DrawLine(cx, cy, cx, cy - 55, GRAY);
-	DrawLine(cx, cy, cx - (spc * 2), cy, GRAY);
-	DrawLine(cx, cy, cx + spc, cy, GRAY);
-	DrawLine(cx + spc, cy, cx + spc, cy - 55, GRAY);
-	DrawLine(cx + spc, cy - 55, cx, cy - 55, GRAY);
+	DrawLine(center_x, center_y, center_x, center_y + spacing, GRAY);
+	DrawLine(center_x, center_y, center_x, center_y - 55, GRAY);
+	DrawLine(center_x, center_y, center_x - (spacing * 2), center_y, GRAY);
+	DrawLine(center_x, center_y, center_x + spacing, center_y, GRAY);
+	DrawLine(center_x + spacing, center_y, center_x + spacing,
+		center_y - 55, GRAY);
+	DrawLine(center_x + spacing, center_y - 55, center_x, center_y - 55,
+		GRAY);
 }
 
-static void	draw_minimap_nodes(int cx, int cy, int spc, t_room_state *st)
+static void	draw_minimap_nodes(int center_x, int center_y, int spacing,
+				t_room_state *room_state)
 {
-	draw_node(cx, cy, st, "Main Corridor");
-	draw_node(cx, cy + spc, st, "Airlock");
-	draw_node(cx, cy - spc, st, "Armory");
-	draw_node(cx, cy - 55, st, "Medbay");
-	draw_node(cx - spc, cy, st, "Maintenance Bay");
-	draw_node(cx - (spc * 2), cy, st, "AI Core");
-	draw_node(cx + spc, cy, st, "Crew Quarters");
-	draw_node(cx + spc, cy - 55, st, "Cafeteria");
+	draw_node(center_x, center_y, room_state, "Main Corridor");
+	draw_node(center_x, center_y + spacing, room_state, "Airlock");
+	draw_node(center_x, center_y - spacing, room_state, "Armory");
+	draw_node(center_x, center_y - 55, room_state, "Medbay");
+	draw_node(center_x - spacing, center_y, room_state, "Maintenance Bay");
+	draw_node(center_x - (spacing * 2), center_y, room_state, "AI Core");
+	draw_node(center_x + spacing, center_y, room_state, "Crew Quarters");
+	draw_node(center_x + spacing, center_y - 55, room_state, "Cafeteria");
 }
 
-void	render_minimap(int bl_x, int bl_y, t_room_state *st)
+void	render_minimap(int bottom_left_x, int bottom_left_y,
+			t_room_state *room_state)
 {
-	int	spc;
+	int	spacing;
 	int	start_y;
-	int	cx;
-	int	cy;
+	int	center_x;
+	int	center_y;
 
-	spc = 35;
-	start_y = bl_y - (spc * 3 + 20);
-	draw_bg(bl_x, start_y, spc * 5, spc * 3 + 20);
-	cx = bl_x + ((spc * 5) / 2) + 17;
-	cy = start_y + ((spc * 3 + 20) / 2) + 10;
-	draw_minimap_connections(cx, cy, spc);
-	draw_minimap_nodes(cx, cy, spc, st);
+	spacing = 35;
+	start_y = bottom_left_y - (spacing * 3 + 20);
+	draw_bg(bottom_left_x, start_y, spacing * 5, spacing * 3 + 20);
+	center_x = bottom_left_x + ((spacing * 5) / 2) + 17;
+	center_y = start_y + ((spacing * 3 + 20) / 2) + 10;
+	draw_minimap_connections(center_x, center_y, spacing);
+	draw_minimap_nodes(center_x, center_y, spacing, room_state);
 }

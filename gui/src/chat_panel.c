@@ -17,7 +17,7 @@
 void	render_message_panel(Rectangle bounds, t_message_buffer *buffer,
 			Color text_color)
 {
-	int	i;
+	int	row;
 	int	start;
 	int	max_lines;
 
@@ -25,19 +25,19 @@ void	render_message_panel(Rectangle bounds, t_message_buffer *buffer,
 	start = 0;
 	if (buffer->count > max_lines)
 		start = buffer->count - max_lines;
-	i = 0;
-	while (start < buffer->count && i < max_lines)
+	row = 0;
+	while (start < buffer->count && row < max_lines)
 	{
 		DrawText(buffer->messages[start], (int)bounds.x + 15,
-			(int)bounds.y + 35 + (i * 20), 16, text_color);
+			(int)bounds.y + 35 + (row * 20), 16, text_color);
 		start++;
-		i++;
+		row++;
 	}
 }
 
 void	add_message(t_message_buffer *buffer, const char *msg)
 {
-	int	i;
+	int	idx;
 
 	if (buffer->count < 15)
 	{
@@ -47,11 +47,11 @@ void	add_message(t_message_buffer *buffer, const char *msg)
 	}
 	else
 	{
-		i = 1;
-		while (i < 15)
+		idx = 1;
+		while (idx < 15)
 		{
-			strncpy(buffer->messages[i - 1], buffer->messages[i], 128);
-			i++;
+			strncpy(buffer->messages[idx - 1], buffer->messages[idx], 128);
+			idx++;
 		}
 		strncpy(buffer->messages[14], msg, 127);
 		buffer->messages[14][127] = '\0';

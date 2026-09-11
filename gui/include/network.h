@@ -17,7 +17,7 @@
 
 int		net_connect(const char *ip, int port);
 void	net_send_command(int sock_fd, const char *cmd);
-int     net_receive_state(int sock_fd, t_ui_context *ctx);
+int		net_receive_state(int sock_fd, t_ui_context *ctx);
 void	net_disconnect(int *sock_fd);
 
 #endif

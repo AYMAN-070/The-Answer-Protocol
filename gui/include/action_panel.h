@@ -15,8 +15,11 @@
 
 # include "raylib.h"
 
-struct s_ui_context;
+struct	s_ui_context;
 
-void	render_action_panel(Rectangle inv_panel, struct s_ui_context *ctx);
+int			is_btn_active(int id, struct s_ui_context *ctx);
+Rectangle	get_btn_rect(int btn_id, Rectangle panel);
+void		remember_room(struct s_ui_context *ctx);
+void		render_action_panel(Rectangle inv_panel, struct s_ui_context *ctx);
 
 #endif

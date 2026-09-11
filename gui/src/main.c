@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 09:21:28 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/09 11:40:32 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/11 13:26:49 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ static void	load_local_world(t_ui_context *ctx)
 
 static int	init_client(t_game_assets *assets, t_ui_context *ctx)
 {
-	int	fd;
+	int	sock_fd;
 
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(1280, 720, "Prometheus Station - GUI Client");
@@ -54,11 +54,13 @@ static int	init_client(t_game_assets *assets, t_ui_context *ctx)
 	init_graphics_assets(assets);
 	memset(&ctx->state, 0, sizeof(t_room_state));
 	memset(&ctx->player, 0, sizeof(t_player_state));
+	ctx->player.hp = 100;
+	ctx->player.max_hp = 100;
 	load_local_world(ctx);
-	fd = net_connect("127.0.0.1", 4242);
-	if (fd >= 0)
-		net_send_command(fd, "CONNECT gui_user\n");
-	return (fd);
+	sock_fd = net_connect("127.0.0.1", 4242);
+	if (sock_fd >= 0)
+		net_send_command(sock_fd, "CONNECT gui_user\n");
+	return (sock_fd);
 }
 
 static void	run_client(t_game_assets *assets, t_ui_context *ctx)

@@ -25,6 +25,14 @@ typedef struct s_room_asset
 	Texture2D	texture;
 }	t_room_asset;
 
+typedef struct s_npc_layout
+{
+	const char	*id;
+	float		scale;
+	float		pos_x_ratio;
+	float		pos_y_ratio;
+}	t_npc_layout;
+
 typedef struct s_room_assets
 {
 	t_room_asset	rooms[MAX_ROOMS];
@@ -76,5 +84,5 @@ void		init_npc_assets(t_npc_assets *npcs);
 void		unload_npc_assets(t_npc_assets *npcs);
 Texture2D	get_npc_texture(const t_game_assets *assets,
 				const char *id);
-				
+
 #endif

@@ -21,7 +21,9 @@ endif
 
 GUI_SRC = gui/src/main.c gui/src/layout.c gui/src/room_view.c gui/src/map.c \
           gui/src/graphics.c gui/src/graphics_items.c gui/src/action_panel.c \
-          gui/src/network.c gui/src/network_parser.c gui/src/graphics_npcs.c\
+          gui/src/action_panel_utils.c \
+          gui/src/network.c gui/src/network_parser.c gui/src/network_parser_utils.c \
+          gui/src/graphics_npcs.c\
           gui/src/status_panel.c gui/src/chat_panel.c gui/src/room_entities.c\
           $(LIB_DIR)/cJSON.c
 

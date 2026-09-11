@@ -38,23 +38,23 @@ void	init_npc_assets(t_npc_assets *npcs)
 
 void	unload_npc_assets(t_npc_assets *npcs)
 {
-	int	i;
+	int	idx;
 
-	i = -1;
-	while (++i < npcs->count)
-		UnloadTexture(npcs->npcs[i].texture);
+	idx = -1;
+	while (++idx < npcs->count)
+		UnloadTexture(npcs->npcs[idx].texture);
 	npcs->count = 0;
 }
 
 Texture2D	get_npc_texture(const t_game_assets *assets, const char *id)
 {
-	int			i;
+	int			idx;
 	Texture2D	empty;
 
-	i = -1;
-	while (++i < assets->npcs.count)
-		if (!strcmp(assets->npcs.npcs[i].id, id))
-			return (assets->npcs.npcs[i].texture);
+	idx = -1;
+	while (++idx < assets->npcs.count)
+		if (!strcmp(assets->npcs.npcs[idx].id, id))
+			return (assets->npcs.npcs[idx].texture);
 	memset(&empty, 0, sizeof(empty));
 	return (empty);
 }

@@ -15,6 +15,7 @@
 
 # include "layout.h"
 
-void render_minimap(int bottom_left_x, int bottom_left_y, t_room_state *st);
+void	render_minimap(int bottom_left_x, int bottom_left_y,
+			t_room_state *room_state);
 
 #endif

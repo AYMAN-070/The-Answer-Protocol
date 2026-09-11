@@ -17,5 +17,6 @@
 # include "layout.h"
 
 void	parse_server_text(char *buffer, t_ui_context *ctx);
+void	route_message(char *line, t_ui_context *ctx);
 
 #endif

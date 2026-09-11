@@ -17,7 +17,9 @@
 # include "graphics.h"
 # include "layout.h"
 
-void draw_room_view(const t_game_assets *assets, t_ui_context *ctx, Rectangle room_panel);
-void draw_room_npcs(const t_game_assets *assets, t_ui_context *ctx, Rectangle v);
+void	draw_room_view(const t_game_assets *assets, t_ui_context *ctx,
+			Rectangle room_panel);
+void	draw_room_npcs(const t_game_assets *assets, t_ui_context *ctx,
+			Rectangle v);
 
 #endif

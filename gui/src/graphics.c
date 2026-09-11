@@ -47,13 +47,13 @@ void	init_graphics_assets(t_game_assets *assets)
 
 void	unload_graphics_assets(t_game_assets *assets)
 {
-	int	i;
+	int	idx;
 
-	i = 0;
-	while (i < assets->rooms.count)
+	idx = 0;
+	while (idx < assets->rooms.count)
 	{
-		UnloadTexture(assets->rooms.rooms[i].texture);
-		i++;
+		UnloadTexture(assets->rooms.rooms[idx].texture);
+		idx++;
 	}
 	assets->rooms.count = 0;
 	unload_item_assets(&assets->items);
@@ -63,15 +63,15 @@ void	unload_graphics_assets(t_game_assets *assets)
 Texture2D	get_room_texture(const t_game_assets *assets,
 		const char *room_name)
 {
-	int			i;
+	int			idx;
 	Texture2D	empty;
 
-	i = 0;
-	while (i < assets->rooms.count)
+	idx = 0;
+	while (idx < assets->rooms.count)
 	{
-		if (strcmp(assets->rooms.rooms[i].name, room_name) == 0)
-			return (assets->rooms.rooms[i].texture);
-		i++;
+		if (strcmp(assets->rooms.rooms[idx].name, room_name) == 0)
+			return (assets->rooms.rooms[idx].texture);
+		idx++;
 	}
 	memset(&empty, 0, sizeof(empty));
 	return (empty);

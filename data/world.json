@@ -26,7 +26,7 @@
         "name": "Cafeteria",
         "description": "Overturned meal trays on the tables. An atmosphere of frozen panic.",
         "exits": { "south": "crew_quarters", "west": "medbay" },
-        "items": ["red_keycard"],
+        "items": [],
         "spawns": [ { "npc_type": "cleaning_bot", "count": 1 } ]
       },
       "medbay": {
@@ -40,24 +40,26 @@
         "name": "Armory",
         "description": "The weapon racks have been completely stripped.",
         "exits": { "north": "medbay", "south": "main_corridor" },
-        "items": ["laser_pistol"],
+        "items": [],
         "spawns": []
       },
       "maintenance_bay": {
         "name": "Maintenance Bay",
-        "description": "A room filled with live wires and heavy tools.",
+        "description": "A room filled with live wires and heavy tools. A security screen blinks on the wall.",
         "exits": { "east": "main_corridor", "west": "ai_core" },
         "items": ["central_generator"],
-        "spawns": []
-      },
-      "ai_core": {
-        "name": "AI Core",
-        "description": "A vast room dominated by a monolith of humming servers.",
-        "exits": { "east": "maintenance_bay" },
-        "items": [],
         "spawns": [ 
           { "npc_type": "ai_terminal", "count": 1 }, 
           { "npc_type": "alpha_drone", "count": 1 } 
+        ]
+      },
+      "ai_core": {
+        "name": "AI Core",
+        "description": "A vast room dominated by a monolith of humming servers. The heart of Prometheus Station.",
+        "exits": { "east": "maintenance_bay" },
+        "items": [],
+        "spawns": [ 
+          { "npc_type": "core_mainframe", "count": 1 }
         ]
       }
     },
@@ -118,6 +120,13 @@
         "dialogue": ["*Whirrr* Please clear the floor area.", "Biohazard detected in sector 4."],
         "role": "dialogue",
         "stats": { "hp": 10 }
+      },
+      "core_mainframe": {
+        "name": "Core Mainframe",
+        "description": "The pulsing central processor of Prometheus.",
+        "dialogue": ["Security protocols restored.", "Lockdown lifted. You are authorized to access the escape shuttles. Well done."],
+        "role": "dialogue",
+        "stats": { "hp": 9999 }
       }
     },
     "quests": {

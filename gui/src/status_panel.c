@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 09:40:09 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/09 09:52:25 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/11 13:27:10 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,14 +19,19 @@ static void	draw_hp_bar(Rectangle bounds, t_player_state *player)
 	float	hp_ratio;
 	int		bar_width;
 	char	hp_text[32];
+	Color	hp_col;
 
 	if (player->max_hp <= 0)
-		hp_ratio = 0.0f;
-	else
-		hp_ratio = (float)player->hp / (float)player->max_hp;
+		player->max_hp = 100;
+	hp_ratio = (float)player->hp / (float)player->max_hp;
 	bar_width = (int)(bounds.width * hp_ratio);
+	hp_col = GREEN;
+	if (hp_ratio < 0.3f)
+		hp_col = RED;
+	else if (hp_ratio < 0.6f)
+		hp_col = ORANGE;
 	DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, DARKGRAY);
-	DrawRectangle(bounds.x, bounds.y, bar_width, bounds.height, RED);
+	DrawRectangle(bounds.x, bounds.y, bar_width, bounds.height, hp_col);
 	DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height,
 		LIGHTGRAY);
 	snprintf(hp_text, sizeof(hp_text), "HP: %d / %d", player->hp,
@@ -63,7 +68,7 @@ static void	draw_inventory_item(Rectangle bounds, t_entity *item,
 static void	draw_inventory_list(Rectangle bounds, t_player_state *player,
 				const t_game_assets *assets)
 {
-	int	i;
+	int	idx;
 	int	y_offset;
 
 	DrawText("Inventory:", bounds.x, bounds.y, 20, LIGHTGRAY);
@@ -72,12 +77,13 @@ static void	draw_inventory_list(Rectangle bounds, t_player_state *player,
 		DrawText("Empty", bounds.x + 15, bounds.y + 30, 20, DARKGRAY);
 		return ;
 	}
-	i = 0;
-	while (i < player->inv_count)
+	idx = 0;
+	while (idx < player->inv_count)
 	{
-		y_offset = bounds.y + 30 + (i * 35);
-		draw_inventory_item(bounds, &player->inventory[i], assets, y_offset);
-		i++;
+		y_offset = bounds.y + 30 + (idx * 35);
+		draw_inventory_item(bounds, &player->inventory[idx], assets,
+			y_offset);
+		idx++;
 	}
 }
 

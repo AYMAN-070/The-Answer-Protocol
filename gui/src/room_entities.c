@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/11 09:03:53 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/11 10:18:40 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/11 14:54:46 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,56 +15,54 @@
 #include "graphics.h"
 #include <string.h>
 
-/*
-** Retrieves custom layout data for a given NPC ID.
-** Vector3 mapping: x = scale, y = pos_x (ratio), z = pos_y (ratio).
-*/
 static Vector3	get_layout(const char *id)
 {
-	const char	*ids[5] = {"sec_drone", "alpha_drone", "injured_engineer",
-		"ai_terminal", "cleaning_bot"};
-	const float	sc[5] = {0.6f, 0.7f, 1.0f, 1.0f, 0.3f};
-	const float	px[5] = {0.6f, 0.5f, 0.65f, 0.5f, 0.65f};
-	const float	py[5] = {0.65f, 0.55f, 0.70f, 0.4f, 0.65f};
-	Vector3		v;
-	int			i;
+	const t_npc_layout	table[5] = {
+	{"sec_drone", 0.6f, 0.6f, 0.65f},
+	{"alpha_drone", 0.7f, 0.5f, 0.55f},
+	{"injured_engineer", 1.0f, 0.65f, 0.70f},
+	{"ai_terminal", 1.0f, 0.5f, 0.4f},
+	{"cleaning_bot", 0.3f, 0.65f, 0.65f}};
+	Vector3				layout;
+	int					idx;
 
-	v.x = 0.45f;
-	v.y = 0.5f;
-	v.z = 0.5f;
-	i = -1;
-	while (++i < 5)
+	layout.x = 0.45f;
+	layout.y = 0.5f;
+	layout.z = 0.5f;
+	idx = -1;
+	while (++idx < 5)
 	{
-		if (!strcmp(id, ids[i]))
+		if (!strcmp(id, table[idx].id))
 		{
-			v.x = sc[i];
-			v.y = px[i];
-			v.z = py[i];
-			return (v);
+			layout.x = table[idx].scale;
+			layout.y = table[idx].pos_x_ratio;
+			layout.z = table[idx].pos_y_ratio;
+			return (layout);
 		}
 	}
-	return (v);
+	return (layout);
 }
 
-static Rectangle	get_npc_dest(Rectangle v, Texture2D t, const char *id)
+static Rectangle	get_npc_dest(Rectangle view_rect, Texture2D tex,
+				const char *id)
 {
-	Vector3		l;
-	Rectangle	d;
+	Vector3		layout;
+	Rectangle	dest;
 	float		scale;
 
-	l = get_layout(id);
-	scale = ((v.height * 0.5f) / (float)t.height) * l.x;
-	d.width = (float)t.width * scale;
-	d.height = (float)t.height * scale;
-	d.x = v.x + (v.width * l.y) - (d.width / 2);
-	d.y = v.y + (v.height * l.z) - (d.height / 2);
-	return (d);
+	layout = get_layout(id);
+	scale = ((view_rect.height * 0.5f) / (float)tex.height) * layout.x;
+	dest.width = (float)tex.width * scale;
+	dest.height = (float)tex.height * scale;
+	dest.x = view_rect.x + (view_rect.width * layout.y) - (dest.width / 2);
+	dest.y = view_rect.y + (view_rect.height * layout.z) - (dest.height / 2);
+	return (dest);
 }
 
 void	draw_room_npcs(const t_game_assets *assets, t_ui_context *ctx,
-			Rectangle v)
+			Rectangle view_rect)
 {
-	int			i;
+	int			idx;
 	Texture2D	tex;
 	Rectangle	src;
 	Rectangle	dest;
@@ -72,17 +70,17 @@ void	draw_room_npcs(const t_game_assets *assets, t_ui_context *ctx,
 
 	origin.x = 0.0f;
 	origin.y = 0.0f;
-	i = -1;
-	while (++i < ctx->state.npc_count)
+	idx = -1;
+	while (++idx < ctx->state.npc_count)
 	{
-		tex = get_npc_texture(assets, ctx->state.npcs[i].id);
+		tex = get_npc_texture(assets, ctx->state.npcs[idx].id);
 		if (tex.id != 0)
 		{
 			src.x = 0.0f;
 			src.y = 0.0f;
 			src.width = (float)tex.width;
 			src.height = (float)tex.height;
-			dest = get_npc_dest(v, tex, ctx->state.npcs[i].id);
+			dest = get_npc_dest(view_rect, tex, ctx->state.npcs[idx].id);
 			DrawTexturePro(tex, src, dest, origin, 0.0f, WHITE);
 		}
 	}

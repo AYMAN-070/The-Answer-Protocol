@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/02 11:18:36 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/11 10:28:50 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/11 14:16:27 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,127 +17,101 @@
 #include <string.h>
 #include <stdio.h>
 
-static int	is_btn_active(int id, t_room_state *st)
-{
-	const char	*dirs[5] = {"", "north", "west", "east", "south"};
-	int			j;
-
-	if (id == 5 && st->item_count == 0)
-		return (0);
-	if ((id == 8 || id == 14 || id == 15) && st->npc_count == 0)
-		return (0);
-	if (id >= 1 && id <= 4)
-	{
-		j = -1;
-		while (++j < st->exit_count)
-			if (!strcmp(st->exits[j], dirs[id]))
-				return (1);
-		return (0);
-	}
-	return (1);
-}
-
-static Rectangle	get_btn_rect(int i, Rectangle p)
-{
-	const int	nx[5] = {0, 0, -55, 55, 0};
-	const int	ny[5] = {0, -1, 0, 0, 1};
-	Rectangle	r;
-	float		rh;
-
-	rh = (p.height - 40) / 8.0f;
-	r.height = rh - 4;
-	r.width = (p.width - 50) / 3;
-	r.x = p.x + 15 + ((i - 5) % 3) * (r.width + 10);
-	r.y = p.y + 35 + rh * (4 + (i - 5) / 3);
-	if (i == 0)
-	{
-		r.x = p.x + 15;
-		r.width = p.width - 30;
-		r.y = p.y + 35;
-	}
-	else if (i >= 1 && i <= 4)
-	{
-		r.width = 50;
-		r.x = p.x + p.width / 2 - 25 + nx[i];
-		r.y = p.y + 35 + rh * (2 + ny[i]);
-	}
-	return (r);
-}
-
 static void	handle_click(int id, t_ui_context *ctx)
 {
-	const char	*c[17] = {"LOOK", "MOVE north", "MOVE west", "MOVE east",
-		"MOVE south", "TAKE", "DROP", "INVENTORY", "TALK", "STATUS",
-		"QUESTS", "WHO", "GROUP", "QUIT", "ATTACK", "DEFEND", "FLEE"};
-	char		f[64];
-	int			i;
+	const char	*commands[17] = {"LOOK", "MOVE north", "MOVE west",
+		"MOVE east", "MOVE south", "TAKE", "DROP", "TALK", "ATTACK",
+		"DEFEND", "FLEE", "INVENTORY", "STATUS", "QUESTS", "WHO", "GROUP",
+		"QUIT"};
+	char		cmd_buf[64];
 
-	snprintf(f, 64, "%s\n", c[id]);
-	if ((id == 8 || id == 14 || id == 15) && ctx->state.npc_count > 0)
-		snprintf(f, 64, "%s %s\n", c[id], ctx->state.npcs[0].id);
+	snprintf(cmd_buf, 64, "%s\n", commands[id]);
+	if ((id >= 7 && id <= 9) && ctx->state.npc_count > 0)
+		snprintf(cmd_buf, 64, "%s %s\n", commands[id],
+			ctx->state.npcs[0].id);
 	else if (id == 5 && ctx->state.item_count > 0)
-		snprintf(f, 64, "%s %s\n", c[id], ctx->state.items[0].id);
-	net_send_command(ctx->sock_fd, f);
-	if (id == 0 && ctx->state.name[0] == '\0')
-		strcpy(ctx->player.known_rooms[31], "PENDING_LOOK");
-	else if (id == 0)
-	{
-		i = -1;
-		while (++i < ctx->player.known_count)
-			if (!strcmp(ctx->player.known_rooms[i], ctx->state.name))
-				return ;
-		if (ctx->player.known_count < 31)
-			strcpy(ctx->player.known_rooms[ctx->player.known_count++],
-				ctx->state.name);
-	}
+		snprintf(cmd_buf, 64, "%s %s\n", commands[id],
+			ctx->state.items[0].id);
+	net_send_command(ctx->sock_fd, cmd_buf);
+	if (id == 5 || id == 6)
+		net_send_command(ctx->sock_fd, "INVENTORY\n");
+	if (id == 0)
+		remember_room(ctx);
 }
 
-static void	draw_sys_btn(int id, Rectangle p, t_ui_context *ctx, int f)
+static void	update_btn_colors(int id, Rectangle btn_rect, t_ui_context *ctx,
+				Color colors[2])
 {
-	const char	*l[17] = {"LOOK", "NORTH", "WEST", "EAST", "SOUTH", "TAKE",
-		"DROP", "INVENTORY", "TALK", "STATUS", "QUESTS", "WHO", "GROUP",
-		"QUIT", "ATTACK", "DEFEND", "FLEE"};
-	Rectangle	b;
-	Color		c[2];
+	colors[0] = Fade(DARKGRAY, 0.4f);
+	colors[1] = Fade(GRAY, 0.5f);
+	if (!is_btn_active(id, ctx))
+		return ;
+	colors[0] = Fade(BLACK, 0.6f);
+	colors[1] = WHITE;
+	if (!CheckCollisionPointRec(GetMousePosition(), btn_rect))
+		return ;
+	colors[0] = Fade(LIGHTGRAY, 0.4f);
+	colors[1] = YELLOW;
+	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+		handle_click(id, ctx);
+}
 
-	b = get_btn_rect(id, p);
-	c[0] = Fade(DARKGRAY, 0.4f);
-	c[1] = Fade(GRAY, 0.5f);
-	if (is_btn_active(id, &ctx->state))
-	{
-		c[0] = Fade(BLACK, 0.6f);
-		c[1] = WHITE;
-		if (CheckCollisionPointRec(GetMousePosition(), b))
-		{
-			c[0] = Fade(LIGHTGRAY, 0.4f);
-			c[1] = YELLOW;
-			if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-				handle_click(id, ctx);
-		}
-	}
-	DrawRectangleRec(b, c[0]);
-	DrawRectangleLinesEx(b, 1.0f, LIGHTGRAY);
-	DrawText(l[id], b.x + (b.width - MeasureText(l[id], f)) / 2,
-		b.y + (b.height - f) / 2, f, c[1]);
+static void	draw_sys_btn(int id, Rectangle panel, t_ui_context *ctx,
+				int font_size)
+{
+	const char	*labels[17] = {"LOOK", "NORTH", "WEST", "EAST", "SOUTH",
+		"TAKE", "DROP", "TALK", "ATTACK", "DEFEND", "FLEE", "INVENTORY",
+		"STATUS", "QUESTS", "WHO", "GROUP", "QUIT"};
+	Rectangle	btn_rect;
+	Color		colors[2];
+	int			text_width;
+
+	btn_rect = get_btn_rect(id, panel);
+	text_width = MeasureText(labels[id], font_size);
+	update_btn_colors(id, btn_rect, ctx, colors);
+	DrawRectangleRec(btn_rect, colors[0]);
+	DrawRectangleLinesEx(btn_rect, 1.0f, LIGHTGRAY);
+	DrawText(labels[id], btn_rect.x + (btn_rect.width - text_width) / 2,
+		btn_rect.y + (btn_rect.height - font_size) / 2, font_size,
+		colors[1]);
+}
+
+static void	draw_dividers(Rectangle panel, float row_height)
+{
+	float	top_y;
+	float	bottom_y;
+
+	top_y = panel.y + 35 + row_height * 4.2f;
+	bottom_y = panel.y + 35 + row_height * 6.9f;
+	DrawLineEx((Vector2){panel.x + 20, top_y},
+		(Vector2){panel.x + panel.width - 20, top_y}, 2.0f,
+		Fade(LIGHTGRAY, 1.0f));
+	DrawLineEx((Vector2){panel.x + 20, bottom_y},
+		(Vector2){panel.x + panel.width - 20, bottom_y}, 2.0f,
+		Fade(LIGHTGRAY, 1.0f));
 }
 
 void	render_action_panel(Rectangle inv_panel, t_ui_context *ctx)
 {
-	Rectangle	p;
-	int			i;
-	int			f;
+	Rectangle	panel;
+	float		row_height;
+	float		font_size;
+	int			btn_id;
 
-	p.x = inv_panel.x;
-	p.y = inv_panel.y + (inv_panel.height / 2);
-	p.width = inv_panel.width;
-	p.height = inv_panel.height / 2;
-	DrawRectangleRec(p, Fade(DARKGRAY, 0.8f));
-	DrawRectangleLinesEx(p, 2.0f, LIGHTGRAY);
-	DrawText("Command Matrix", (int)p.x + 15, (int)p.y + 15, 20, WHITE);
-	f = ((p.height - 40) / 8.0f - 4) * 0.55f;
-	if (f > 14)
-		f = 14;
-	i = -1;
-	while (++i < 17)
-		draw_sys_btn(i, p, ctx, f);
+	panel.width = inv_panel.width;
+	panel.height = inv_panel.height * 0.68f;
+	panel.x = inv_panel.x;
+	panel.y = inv_panel.y + (inv_panel.height - panel.height);
+	DrawRectangleRec(panel, Fade(DARKGRAY, 0.8f));
+	DrawRectangleLinesEx(panel, 2.0f, LIGHTGRAY);
+	DrawText("Command Matrix", (int)panel.x + 15, (int)panel.y + 10, 20,
+		WHITE);
+	row_height = (panel.height - 45) / 9.5f;
+	draw_dividers(panel, row_height);
+	font_size = (row_height - 4) * 0.55f;
+	if (font_size > 14)
+		font_size = 14;
+	btn_id = -1;
+	while (++btn_id < 17)
+		draw_sys_btn(btn_id, panel, ctx, font_size);
 }

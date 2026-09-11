@@ -39,28 +39,28 @@ void	init_item_assets(t_item_assets *items)
 
 void	unload_item_assets(t_item_assets *items)
 {
-	int	i;
+	int	idx;
 
-	i = 0;
-	while (i < items->count)
+	idx = 0;
+	while (idx < items->count)
 	{
-		UnloadTexture(items->items[i].texture);
-		i++;
+		UnloadTexture(items->items[idx].texture);
+		idx++;
 	}
 	items->count = 0;
 }
 
 Texture2D	get_item_texture(const t_game_assets *assets, const char *id)
 {
-	int			i;
+	int			idx;
 	Texture2D	empty;
 
-	i = 0;
-	while (i < assets->items.count)
+	idx = 0;
+	while (idx < assets->items.count)
 	{
-		if (strcmp(assets->items.items[i].id, id) == 0)
-			return (assets->items.items[i].texture);
-		i++;
+		if (strcmp(assets->items.items[idx].id, id) == 0)
+			return (assets->items.items[idx].texture);
+		idx++;
 	}
 	memset(&empty, 0, sizeof(empty));
 	return (empty);

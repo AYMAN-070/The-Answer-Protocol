@@ -20,37 +20,39 @@
 
 static void	draw_ui_panel(Rectangle bounds, const char *title)
 {
-	int	x;
-	int	y;
+	int	pos_x;
+	int	pos_y;
 
-	x = (int)bounds.x;
-	y = (int)bounds.y;
-	DrawRectangle(x, y, (int)bounds.width, (int)bounds.height, DARKGRAY);
-	DrawRectangleLines(x, y, (int)bounds.width, (int)bounds.height, LIGHTGRAY);
-	DrawText(title, x + 10, y + 10, 20, WHITE);
+	pos_x = (int)bounds.x;
+	pos_y = (int)bounds.y;
+	DrawRectangle(pos_x, pos_y, (int)bounds.width, (int)bounds.height,
+		DARKGRAY);
+	DrawRectangleLines(pos_x, pos_y, (int)bounds.width, (int)bounds.height,
+		LIGHTGRAY);
+	DrawText(title, pos_x + 10, pos_y + 10, 20, WHITE);
 }
 
-static t_hud_layout	compute_hud_layout(int sw, int sh)
+static t_hud_layout	compute_hud_layout(int screen_w, int screen_h)
 {
-	t_hud_layout	l;
+	t_hud_layout	layout;
 
-	l.room.x = 10;
-	l.room.y = 10;
-	l.room.width = (sw * 65) / 100;
-	l.room.height = (sh * 70) / 100;
-	l.inventory.x = l.room.width + 20;
-	l.inventory.y = 10;
-	l.inventory.width = sw - l.room.width - 30;
-	l.inventory.height = l.room.height;
-	l.chat.x = 10;
-	l.chat.y = l.room.height + 20;
-	l.chat.width = l.room.width;
-	l.chat.height = sh - l.room.height - 30;
-	l.logs.x = l.inventory.x;
-	l.logs.y = l.chat.y;
-	l.logs.width = l.inventory.width;
-	l.logs.height = l.chat.height;
-	return (l);
+	layout.room.x = 10;
+	layout.room.y = 10;
+	layout.room.width = (screen_w * 65) / 100;
+	layout.room.height = (screen_h * 70) / 100;
+	layout.inventory.x = layout.room.width + 20;
+	layout.inventory.y = 10;
+	layout.inventory.width = screen_w - layout.room.width - 30;
+	layout.inventory.height = layout.room.height;
+	layout.chat.x = 10;
+	layout.chat.y = layout.room.height + 20;
+	layout.chat.width = layout.room.width;
+	layout.chat.height = screen_h - layout.room.height - 30;
+	layout.logs.x = layout.inventory.x;
+	layout.logs.y = layout.chat.y;
+	layout.logs.width = layout.inventory.width;
+	layout.logs.height = layout.chat.height;
+	return (layout);
 }
 
 void	render_main_layout(const t_game_assets *assets, t_ui_context *ctx)
