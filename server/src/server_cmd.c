@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 20:08:00 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/13 18:22:33 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/13 18:24:35 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,7 @@ int	process_combat_cmd(t_player *p, char *cmd, char *arg, char *wld)
 	else if (strcmp(cmd, "FLEE") == 0)
 		handle_flee(p, wld);
 	else if (strcmp(cmd, "DROP") == 0)
-		handle_drop(p, w, arg);
+		handle_drop(p, w, arg, wld);
 	else if (strcmp(cmd, "TAKE") == 0)
 		handle_take(p, w, arg, wld);
 	else if (strcmp(cmd, "TALK") == 0)
