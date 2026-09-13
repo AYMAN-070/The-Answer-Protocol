@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 20:08:00 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/13 18:24:35 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/13 18:36:30 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,7 +122,7 @@ void	process_command(t_player *p, t_player *c, char *b, char *wld)
 	cmd[0] = '\0';
 	arg[0] = '\0';
 	if (check_abuse(p) == 1 || sscanf(b, "%31s %[^\n]", cmd, arg) < 1)
-		return ;
+		return ((void)write(p->sd, "ERR ignored\n", 12));
 	server_log("INFO", p->ip, p->name, cmd);
 	if (strcmp(cmd, "CONNECT") == 0)
 		handle_connect(p, 1 + (arg[0] != '\0'), arg);
