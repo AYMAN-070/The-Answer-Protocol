@@ -6,11 +6,17 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 19:07:59 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/11 18:13:38 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/13 18:05:11 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server.h"
+
+void	handle_quit(t_player *player)
+{
+	server_log("INFO", player->ip, player->name, "Player quit");
+	write(player->sd, "OK goodbye\n", 11);
+}
 
 void	handle_status(t_player *player)
 {
