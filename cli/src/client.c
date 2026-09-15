@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 17:11:51 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/02 08:05:50 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/15 19:10:26 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,11 +24,29 @@ void	exit_error(char *msg)
 	exit(EXIT_FAILURE);
 }
 
+static void	client_loop(int sock)
+{
+	char	buffer[1024];
+
+	printf("Connected. Tape 'QUIT' to quit.\n");
+	while (1)
+	{
+		printf("> ");
+		memset(buffer, 0, 1024);
+		if (fgets(buffer, 1024, stdin) == NULL
+			|| strncmp(buffer, "QUIT\n", 5) == 0)
+			break ;
+		write(sock, buffer, strlen(buffer));
+		memset(buffer, 0, 1024);
+		if (read(sock, buffer, 1023) > 0)
+			printf("Serveur : %s", buffer);
+	}
+}
+
 int	main(void)
 {
 	int					sock;
 	struct sockaddr_in	serv_addr;
-	char				buffer[1024];
 
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock < 0)
@@ -40,20 +58,7 @@ int	main(void)
 		exit_error("Adresse invalide");
 	if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
 		exit_error("Erreur connect to server");
-	printf("Connected. Tape 'QUIT' to quit.\n");
-	while (1)
-	{
-		printf("> ");
-		memset(buffer, 0, 1024);
-		if (fgets(buffer, 1024, stdin) == NULL)
-			break ;
-		if (strncmp(buffer, "QUIT\n", 5) == 0)
-			break ;
-		write(sock, buffer, strlen(buffer));
-		memset(buffer, 0, 1024);
-		if (read(sock, buffer, 1023) > 0)
-			printf("Serveur : %s", buffer);
-	}
+	client_loop(sock);
 	close(sock);
 	return (0);
 }
