@@ -76,4 +76,4 @@ This section explains how to test the core features.
 
 ## Resources
 * **References:** Beej's Guide to Network Programming (TCP/IP sockets).
-* **AI Usage:** Generative AI (LLMs) was used strictly to assist with C syntax optimization (reducing function lengths to under 25 lines and limiting parameters to 4) and debugging complex network behavior (understanding TCP Streams and blocking sockets). AI was also used to help structure this README document to ensure compliance with the project specifications. All AI-generated logic was peer-reviewed and manually integrated.
+* **AI Usage:** Generative AI (LLMs) was used strictly to assist with C syntax optimization and debugging complex network behavior (understanding TCP Streams and blocking sockets). AI was also used to help structure this README document to ensure compliance with the project specifications. All AI-generated logic was peer-reviewed and manually integrated.
