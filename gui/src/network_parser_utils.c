@@ -112,8 +112,6 @@ void	route_message(char *line, t_ui_context *ctx)
 		add_message(&ctx->chat, line + 6);
 	else if (!strncmp(line, "GCHAT:", 6))
 		add_message(&ctx->global_chat, line + 6);
-	else if (!strncmp(line, "PCHAT:", 6))
-		add_message(&ctx->group_chat, line + 6);
 	else if (!strncmp(line, "COMBAT:", 7))
 		add_message(&ctx->logs, line + 7);
 	else if (!strncmp(line, "EVENT:", 6))

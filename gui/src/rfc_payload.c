@@ -73,7 +73,7 @@ void	rfc_apply_quest(cJSON *root, t_ui_context *ctx)
 	add_message(&ctx->logs, msg);
 }
 
-void	rfc_apply_inventory(cJSON *arr, t_ui_context *ctx)
+static void	rfc_apply_inventory(cJSON *arr, t_ui_context *ctx)
 {
 	cJSON		*node;
 	cJSON		*defs;

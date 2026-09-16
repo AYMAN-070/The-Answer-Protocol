@@ -60,24 +60,26 @@ void	add_message(t_message_buffer *buffer, const char *msg)
 	}
 }
 
-static void	draw_chat_input(Rectangle bounds, const char *input, int channel)
+static void	draw_chat_input(Rectangle bounds, t_ui_context *ctx)
 {
-	char		display[192];
-	const char	*label;
+	char	display[192];
+	char	label[64];
 
-	if (channel == 0)
-		label = "ROOM";
-	else if (channel == 1)
-		label = "GLOBAL";
-	else
-		label = "GROUP";
+	strcpy(label, "ROOM");
+	if (ctx->chat_channel == 1)
+		strcpy(label, "GLOBAL");
+	else if (ctx->chat_channel == 2 && ctx->group_id[0] != '\0')
+		snprintf(label, sizeof(label), "GROUP %s", ctx->group_id);
+	else if (ctx->chat_channel == 2)
+		strcpy(label, "GROUP");
 	DrawRectangleRec(bounds, Fade(BLACK, 0.85f));
 	DrawRectangleLinesEx(bounds, 1.0f, LIGHTGRAY);
-	if (channel == 2 && input[0] == '\0')
+	if (ctx->chat_channel == 2 && ctx->chat_input[0] == '\0')
 		snprintf(display, sizeof(display),
-			"[GROUP] /create  /invite <p>  /join <id>  /leave");
+			"[%s] /create  /invite <p>  /join <id>  /leave", label);
 	else
-		snprintf(display, sizeof(display), "[%s] > %s_", label, input);
+		snprintf(display, sizeof(display), "[%s] > %s_", label,
+			ctx->chat_input);
 	DrawText(display, (int)bounds.x + 8, (int)bounds.y + 7, 16, WHITE);
 }
 
@@ -101,5 +103,5 @@ void	render_chat_panel(Rectangle bounds, t_ui_context *ctx)
 		active = &ctx->group_chat;
 	render_message_panel(msg_area, active, WHITE);
 	update_chat_input(ctx);
-	draw_chat_input(input_area, ctx->chat_input, ctx->chat_channel);
+	draw_chat_input(input_area, ctx);
 }

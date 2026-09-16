@@ -35,7 +35,7 @@ static void	apply_id_list(cJSON *arr, t_entity *dest, int *count, cJSON *defs)
 	}
 }
 
-void	rfc_apply_room(cJSON *root, t_ui_context *ctx)
+static void	rfc_apply_room(cJSON *root, t_ui_context *ctx)
 {
 	cJSON	*room;
 	cJSON	*field;
