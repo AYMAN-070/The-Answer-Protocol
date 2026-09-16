@@ -1,7 +1,3 @@
-client_gui
-server
-client_cli
-
 *.o
 
 gui/lib/cJSON.c
