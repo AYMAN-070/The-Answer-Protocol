@@ -6,20 +6,11 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 19:07:59 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/16 16:48:03 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/16 20:36:01 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server.h"
-
-void	handle_quest(t_player *player)
-{
-	char	*quests;
-
-	quests = "QUESTS:[1] Bring energy_cell to injured_engineer "
-		"[2] Defeat alpha_drone\n";
-	write(player->sd, quests, strlen(quests));
-}
 
 void	handle_drop(t_player *player, int words, char *item, char *world_data)
 {

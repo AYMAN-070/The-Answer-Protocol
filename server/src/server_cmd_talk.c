@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/08 17:23:52 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/09 22:01:49 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/16 21:00:52 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ void	handle_talk(t_player *player, int words, char *npc, char *world)
 	{
 		if (has_item(player, "energy_cell") == 1)
 		{
+			player->quest_status = 2;
 			i = -1;
 			while (++i < 5)
 				if (strcmp(player->inventory[i], "energy_cell") == 0)

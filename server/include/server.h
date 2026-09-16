@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 10:28:08 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/16 17:52:13 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/16 21:08:15 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ typedef struct s_player
 	long	last_cmd_time;
 	int		cmd_count;
 	int		group_id;
+	int		quest_status;
 }	t_player;
 
 void	exit_error(char *msg);
@@ -63,7 +64,8 @@ void	handle_flee(t_player *player, char *world);
 void	handle_drop(t_player *player, int words, char *item, char *world_data);
 void	handle_talk(t_player *player, int words, char *npc, char *world);
 void	handle_status(t_player *player);
-void	handle_quest(t_player *player);
+void	handle_quest(t_player *p, char *npc_name, char *wld);
+void	handle_quests(t_player *p);
 void	server_log(char *level, char *ip, char *player, char *msg);
 int		check_abuse(t_player *player);
 void	handle_chat(t_player *player, t_player *clients, char *cmd, char *msg);

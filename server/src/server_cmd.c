@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 20:08:00 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/16 17:52:31 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/16 21:09:24 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ void	handle_connect(t_player *player, int words, char *arg)
 		player->max_hp = 100;
 		player->in_combat = 0;
 		player->group_id = 0;
+		player->quest_status = 0;
 		i = 0;
 		while (i < 5)
 		{
@@ -85,10 +86,10 @@ int	process_combat_cmd(t_player *p, char *cmd, char *arg, char *wld)
 		handle_take(p, w, arg, wld);
 	else if (strcmp(cmd, "TALK") == 0)
 		handle_talk(p, w, arg, wld);
-	else if (strcmp(cmd, "STATUS") == 0)
-		handle_status(p);
-	else if (strcmp(cmd, "QUEST") == 0 || strcmp(cmd, "QUESTS") == 0)
-		handle_quest(p);
+	else if (strcmp(cmd, "QUEST") == 0)
+		handle_quest(p, arg, wld);
+	else if (strcmp(cmd, "QUESTS") == 0)
+		handle_quests(p);
 	else
 		return (0);
 	return (1);
@@ -100,6 +101,8 @@ static int	exec_other_cmds(t_player *p, t_player *c, char *cmd, char *arg)
 		handle_who(p, c);
 	else if (strcmp(cmd, "INVENTORY") == 0)
 		handle_inventory(p);
+	else if (strcmp(cmd, "STATUS") == 0)
+		handle_status(p);
 	else if (strcmp(cmd, "GROUP") == 0)
 		handle_group(p, c, arg);
 	else if (strcmp(cmd, "RCHAT") == 0 || strcmp(cmd, "GCHAT") == 0)

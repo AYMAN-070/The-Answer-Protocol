@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/16 17:11:42 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/16 18:03:36 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/16 21:45:02 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,11 @@ static void	handle_group_target(t_player *p, t_player *c, char *act, char *tgt)
 			}
 			else if (strcmp(act, "JOIN") == 0)
 			{
+				if (p->group_id != 0)
+				{
+					write(p->sd, "ERR 402 ALREADY_IN_GROUP\n", 25);
+					return ;
+				}
 				p->group_id = c[i].group_id;
 				sprintf(out, "OK group=%d\n", p->group_id);
 				return ((void)write(p->sd, out, strlen(out)));
@@ -72,12 +77,16 @@ void	handle_group(t_player *p, t_player *c, char *arg)
 	sscanf(arg, "%31s %31s", act, tgt);
 	if (strcmp(act, "CREATE") == 0)
 	{
+		if (p->group_id != 0)
+			return ((void)write(p->sd, "ERR 402 ALREADY_IN_GROUP\n", 25));
 		p->group_id = g_id++;
 		sprintf(out, "OK group=%d\n", p->group_id);
 		write(p->sd, out, strlen(out));
 	}
 	else if (strcmp(act, "LEAVE") == 0)
 	{
+		if (p->group_id == 0)
+			return ((void)write(p->sd, "ERR 401 NOT_IN_GROUP\n", 21));
 		p->group_id = 0;
 		write(p->sd, "OK\n", 3);
 	}
