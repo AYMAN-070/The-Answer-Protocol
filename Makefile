@@ -35,9 +35,9 @@ GUI_OBJ = $(GUI_SRC:.c=.o)
 all: $(SERVER) $(CLIENT) $(GUI_EXEC)
 
 $(SERVER):
-	$(CC) $(CFLAGS) -I server/include -I common/include server/src/server.c server/src/server_cmd_chat.c \
+	$(CC) $(CFLAGS) -I server/include -I common/include server/src/server.c server/src/server_cmd_chat.c server/src/server_group_who.c \
 	server/src/server_utils.c server/src/server_cmd.c server/src/server_cmd_2.c server/src/server_manage_dropped.c \
-	server/src/server_world.c server/src/server_json.c server/src/server_cmd_combat.c \
+	server/src/server_world.c server/src/server_json.c server/src/server_cmd_combat.c server/src/Process_buffer.c \
 	server/src/server_cmd_talk.c server/src/server_logs.c server/src/server_cmd_3.c -o $(SERVER)
 
 $(CLIENT):

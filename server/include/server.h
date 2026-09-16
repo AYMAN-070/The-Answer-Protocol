@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 10:28:08 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/11 18:14:56 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/16 17:52:13 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 # include <netinet/in.h>
 # include <sys/select.h>
 # include <arpa/inet.h>
+# include <time.h>
 
 typedef struct s_player
 {
@@ -36,6 +37,7 @@ typedef struct s_player
 	char	ip[16];
 	long	last_cmd_time;
 	int		cmd_count;
+	int		group_id;
 }	t_player;
 
 void	exit_error(char *msg);
@@ -46,6 +48,7 @@ char	*load_world(char *filename);
 void	extract_json_value(char *json, char *key, char *result);
 void	get_room_exit(char *json, char *room, char *dir, char *dest);
 void	handle_quit(t_player *player);
+void	handle_who(t_player *p, t_player *c);
 void	handle_look(t_player *player, char *world_data);
 void	handle_move(t_player *player, int words, char *arg, char *world);
 void	handle_inventory(t_player *player);
@@ -64,6 +67,8 @@ void	handle_quest(t_player *player);
 void	server_log(char *level, char *ip, char *player, char *msg);
 int		check_abuse(t_player *player);
 void	handle_chat(t_player *player, t_player *clients, char *cmd, char *msg);
+void	process_buffer(t_player *p, t_player *c, char *buf, char *wld);
+void	handle_group(t_player *p, t_player *c, char *arg);
 
 typedef struct s_drop
 {

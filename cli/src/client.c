@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 17:11:51 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/15 19:10:26 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/16 18:15:06 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,22 +24,43 @@ void	exit_error(char *msg)
 	exit(EXIT_FAILURE);
 }
 
+static int	handle_server_msg(int sock, char *buffer)
+{
+	memset(buffer, 0, 1024);
+	if (read(sock, buffer, 1023) <= 0)
+		return (0);
+	printf("\rServeur : %s> ", buffer);
+	fflush(stdout);
+	return (1);
+}
+
+static int	handle_user_input(int sock, char *buffer)
+{
+	memset(buffer, 0, 1024);
+	if (!fgets(buffer, 1024, stdin) || !strncmp(buffer, "QUIT\n", 5))
+		return (0);
+	write(sock, buffer, strlen(buffer));
+	return (1);
+}
+
 static void	client_loop(int sock)
 {
+	fd_set	read_fds;
 	char	buffer[1024];
 
-	printf("Connected. Tape 'QUIT' to quit.\n");
+	printf("Connected. Tape 'QUIT' to quit.\n> ");
+	fflush(stdout);
 	while (1)
 	{
-		printf("> ");
-		memset(buffer, 0, 1024);
-		if (fgets(buffer, 1024, stdin) == NULL
-			|| strncmp(buffer, "QUIT\n", 5) == 0)
+		FD_ZERO(&read_fds);
+		FD_SET(0, &read_fds);
+		FD_SET(sock, &read_fds);
+		if (select(sock + 1, &read_fds, NULL, NULL, NULL) < 0)
 			break ;
-		write(sock, buffer, strlen(buffer));
-		memset(buffer, 0, 1024);
-		if (read(sock, buffer, 1023) > 0)
-			printf("Serveur : %s", buffer);
+		if (FD_ISSET(sock, &read_fds) && !handle_server_msg(sock, buffer))
+			break ;
+		if (FD_ISSET(0, &read_fds) && !handle_user_input(sock, buffer))
+			break ;
 	}
 }
 

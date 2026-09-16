@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 20:08:00 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/13 18:36:30 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/16 17:52:31 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ void	handle_connect(t_player *player, int words, char *arg)
 		player->hp = 100;
 		player->max_hp = 100;
 		player->in_combat = 0;
+		player->group_id = 0;
 		i = 0;
 		while (i < 5)
 		{
@@ -37,27 +38,6 @@ void	handle_connect(t_player *player, int words, char *arg)
 	}
 	else
 		write(player->sd, "ERR missing name\n", 17);
-}
-
-void	handle_who(t_player *player, t_player *clients)
-{
-	int		i;
-	char	msg[512];
-	char	line[128];
-
-	strcpy(msg, "Joueurs en ligne :\n");
-	i = 0;
-	while (i < 10)
-	{
-		if (clients[i].is_active == 1)
-		{
-			sprintf(line, "- %s (Salle: %s)\n",
-				clients[i].name, clients[i].location);
-			strcat(msg, line);
-		}
-		i++;
-	}
-	write(player->sd, msg, strlen(msg));
 }
 
 void	handle_inventory(t_player *player)
@@ -114,6 +94,24 @@ int	process_combat_cmd(t_player *p, char *cmd, char *arg, char *wld)
 	return (1);
 }
 
+static int	exec_other_cmds(t_player *p, t_player *c, char *cmd, char *arg)
+{
+	if (strcmp(cmd, "WHO") == 0)
+		handle_who(p, c);
+	else if (strcmp(cmd, "INVENTORY") == 0)
+		handle_inventory(p);
+	else if (strcmp(cmd, "GROUP") == 0)
+		handle_group(p, c, arg);
+	else if (strcmp(cmd, "RCHAT") == 0 || strcmp(cmd, "GCHAT") == 0)
+		handle_chat(p, c, cmd, arg);
+	else if (strcmp(cmd, "QUIT") == 0)
+		handle_quit(p);
+	else
+		return (0);
+	return (1);
+}
+
+
 void	process_command(t_player *p, t_player *c, char *b, char *wld)
 {
 	char	cmd[32];
@@ -130,14 +128,9 @@ void	process_command(t_player *p, t_player *c, char *b, char *wld)
 		handle_look(p, wld);
 	else if (strcmp(cmd, "MOVE") == 0)
 		handle_move(p, 1 + (arg[0] != '\0'), arg, wld);
-	else if (strcmp(cmd, "WHO") == 0)
-		handle_who(p, c);
-	else if (strcmp(cmd, "INVENTORY") == 0)
-		handle_inventory(p);
-	else if (strcmp(cmd, "RCHAT") == 0 || strcmp(cmd, "GCHAT") == 0)
-		handle_chat(p, c, cmd, arg);
-	else if (strcmp(cmd, "QUIT") == 0)
-		handle_quit(p);
-	else if (process_combat_cmd(p, cmd, arg, wld) == 0)
+	else if (exec_other_cmds(p, c, cmd, arg) == 0 
+		&& process_combat_cmd(p, cmd, arg, wld) == 0)
+	{
 		write(p->sd, "ERR unknown command\n", 20);
+	}
 }

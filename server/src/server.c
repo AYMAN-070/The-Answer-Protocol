@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/28 14:27:59 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/09 22:31:02 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/16 16:09:50 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,7 +97,7 @@ void	handle_client_messages(t_player *clients,
 				clients[i].is_active = 0;
 			}
 			else
-				process_command(&clients[i], clients, buffer, world_data);
+				process_buffer(&clients[i], clients, buffer, world_data);
 		}
 		i++;
 	}
@@ -111,6 +111,7 @@ int	main(void)
 	int			max_sd;
 	char		*world_data;
 
+	srand(time(NULL));
 	server_fd = init_server();
 	init_clients(clients);
 	world_data = load_world("data/world.json");

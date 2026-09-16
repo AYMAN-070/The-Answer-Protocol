@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/08 14:53:02 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/11 16:52:58 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/16 17:04:02 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ void	handle_death(t_player *player, char *world)
 	}
 	strncpy(player->location, "medbay", 31);
 	player->location[31] = '\0';
-	player->hp = 100;
+	player->hp = 50;
 	write(player->sd, "DEAD:You died! Respawned in medbay.\n", 36);
 	handle_look(player, world);
 	handle_inventory(player);
@@ -68,6 +68,7 @@ void	handle_attack(t_player *p, int w, char *tgt, char *wld)
 	{
 		write(p->sd, "EVENT:Drone dead! Got keycard\n", 30);
 		give_item(p, "red_keycard");
+		d_hp = 100;
 		return ;
 	}
 	dmg[1] = 10 + (rand() % 11);
