@@ -44,27 +44,30 @@ static void	load_local_world(t_ui_context *ctx)
 		exit(EXIT_FAILURE);
 }
 
-static int	init_client(t_game_assets *assets, t_ui_context *ctx)
+static int	init_client(t_game_assets *assets, t_ui_context *ctx,
+				const char *name)
 {
-	int	sock_fd;
+	int		sock_fd;
+	char	title[64];
+	char	cmd[64];
 
+	snprintf(title, sizeof(title), "Prometheus Station - %s", name);
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-	InitWindow(1280, 720, "Prometheus Station - GUI Client");
+	InitWindow(1280, 720, title);
 	SetTargetFPS(60);
 	init_graphics_assets(assets);
-	memset(&ctx->state, 0, sizeof(t_room_state));
-	memset(&ctx->player, 0, sizeof(t_player_state));
-	memset(&ctx->chat, 0, sizeof(t_message_buffer));
-	memset(&ctx->global_chat, 0, sizeof(t_message_buffer));
-	memset(&ctx->logs, 0, sizeof(t_message_buffer));
-	ctx->chat_input[0] = '\0';
-	ctx->chat_channel = 0;
+	memset(ctx, 0, sizeof(t_ui_context));
 	ctx->player.hp = 100;
 	ctx->player.max_hp = 100;
 	load_local_world(ctx);
 	sock_fd = net_connect("127.0.0.1", 4242);
 	if (sock_fd >= 0)
-		net_send_command(sock_fd, "CONNECT gui_user\n");
+	{
+		ctx->connected = 1;
+		snprintf(cmd, sizeof(cmd), "CONNECT %s\n", name);
+		net_send_command(sock_fd, cmd);
+		net_send_command(sock_fd, "WHO\n");
+	}
 	return (sock_fd);
 }
 
@@ -72,7 +75,11 @@ static void	run_client(t_game_assets *assets, t_ui_context *ctx)
 {
 	while (!WindowShouldClose())
 	{
-		net_receive_state(ctx->sock_fd, ctx);
+		if (net_receive_state(ctx->sock_fd, ctx) < 0)
+		{
+			ctx->connected = 0;
+			net_disconnect(&ctx->sock_fd);
+		}
 		BeginDrawing();
 		ClearBackground(BLACK);
 		render_main_layout(assets, ctx);
@@ -80,12 +87,16 @@ static void	run_client(t_game_assets *assets, t_ui_context *ctx)
 	}
 }
 
-int	main(void)
+int	main(int argc, char **argv)
 {
 	t_game_assets	assets;
 	t_ui_context	ctx;
+	const char		*name;
 
-	ctx.sock_fd = init_client(&assets, &ctx);
+	name = "gui_user";
+	if (argc > 1)
+		name = argv[1];
+	ctx.sock_fd = init_client(&assets, &ctx, name);
 	run_client(&assets, &ctx);
 	net_disconnect(&ctx.sock_fd);
 	unload_graphics_assets(&assets);

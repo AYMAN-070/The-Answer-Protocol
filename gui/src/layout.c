@@ -55,6 +55,14 @@ static t_hud_layout	compute_hud_layout(int screen_w, int screen_h)
 	return (layout);
 }
 
+static void	draw_link_status(t_ui_context *ctx)
+{
+	if (ctx->connected)
+		return ;
+	DrawRectangle(0, 0, GetScreenWidth(), 26, Fade(MAROON, 0.9f));
+	DrawText("DISCONNECTED - no link to the server", 15, 5, 18, WHITE);
+}
+
 void	render_main_layout(const t_game_assets *assets, t_ui_context *ctx)
 {
 	t_hud_layout	layout;
@@ -62,11 +70,12 @@ void	render_main_layout(const t_game_assets *assets, t_ui_context *ctx)
 	layout = compute_hud_layout(GetScreenWidth(), GetScreenHeight());
 	draw_ui_panel(layout.room, "Room View");
 	draw_ui_panel(layout.inventory, "Inventory & Status");
-	draw_ui_panel(layout.chat, "Chat (TAB: Room/Global)");
+	draw_ui_panel(layout.chat, "Chat (TAB: Room/Global/Group)");
 	draw_ui_panel(layout.logs, "Action Logs");
 	draw_room_view(assets, ctx, layout.room);
-	render_status_panel(layout.inventory, &ctx->player, assets);
+	render_status_panel(layout.inventory, ctx, assets);
 	render_action_panel(layout.inventory, ctx);
 	render_chat_panel(layout.chat, ctx);
 	render_message_panel(layout.logs, &ctx->logs, LIGHTGRAY);
+	draw_link_status(ctx);
 }

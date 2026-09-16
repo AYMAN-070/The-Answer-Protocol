@@ -39,68 +39,69 @@ static void	draw_hp_bar(Rectangle bounds, t_player_state *player)
 	DrawText(hp_text, bounds.x + 10, bounds.y + 3, 20, WHITE);
 }
 
-static void	draw_inventory_item(Rectangle bounds, t_entity *item,
-				const t_game_assets *assets, int y_offset)
+static void	draw_inventory_item(Rectangle row, t_entity *item,
+				const t_game_assets *assets, int selected)
 {
 	Texture2D	tex;
-	Rectangle	src;
-	Rectangle	dest;
-	Vector2		origin;
+	Color		text_color;
 
+	text_color = WHITE;
+	if (selected)
+	{
+		text_color = YELLOW;
+		DrawRectangleRec(row, Fade(LIGHTGRAY, 0.25f));
+	}
 	tex = get_item_texture(assets, item->id);
 	if (tex.id != 0)
-	{
-		src.x = 0.0f;
-		src.y = 0.0f;
-		src.width = (float)tex.width;
-		src.height = (float)tex.height;
-		dest.x = bounds.x + 15;
-		dest.y = (float)y_offset;
-		dest.width = 30.0f;
-		dest.height = 30.0f;
-		origin.x = 0.0f;
-		origin.y = 0.0f;
-		DrawTexturePro(tex, src, dest, origin, 0.0f, WHITE);
-	}
-	DrawText(item->name, (int)bounds.x + 55, y_offset + 5, 20, WHITE);
+		DrawTexturePro(tex, (Rectangle){0.0f, 0.0f, (float)tex.width,
+			(float)tex.height}, (Rectangle){row.x + 15, row.y, 30.0f, 30.0f},
+			(Vector2){0.0f, 0.0f}, 0.0f, WHITE);
+	DrawText(item->name, (int)row.x + 55, (int)row.y + 5, 20, text_color);
 }
 
-static void	draw_inventory_list(Rectangle bounds, t_player_state *player,
+static void	draw_inventory_list(Rectangle bounds, t_ui_context *ctx,
 				const t_game_assets *assets)
 {
-	int	idx;
-	int	y_offset;
+	Rectangle	row;
+	int			idx;
 
 	DrawText("Inventory:", bounds.x, bounds.y, 20, LIGHTGRAY);
-	if (player->inv_count == 0)
+	if (ctx->player.inv_count == 0)
 	{
 		DrawText("Empty", bounds.x + 15, bounds.y + 30, 20, DARKGRAY);
 		return ;
 	}
-	idx = 0;
-	while (idx < player->inv_count)
+	row.x = bounds.x;
+	row.width = bounds.width;
+	row.height = 32.0f;
+	idx = -1;
+	while (++idx < ctx->player.inv_count)
 	{
-		y_offset = bounds.y + 30 + (idx * 35);
-		draw_inventory_item(bounds, &player->inventory[idx], assets,
-			y_offset);
-		idx++;
+		row.y = bounds.y + 30.0f + (float)(idx * 35);
+		if (CheckCollisionPointRec(GetMousePosition(), row)
+			&& IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+			ctx->sel_item = idx;
+		draw_inventory_item(row, &ctx->player.inventory[idx], assets,
+			idx == ctx->sel_item);
 	}
 }
 
-void	render_status_panel(Rectangle bounds, t_player_state *player,
+void	render_status_panel(Rectangle bounds, t_ui_context *ctx,
 			const t_game_assets *assets)
 {
 	Rectangle	hp_bounds;
 	Rectangle	inv_bounds;
 
+	if (ctx->sel_item >= ctx->player.inv_count)
+		ctx->sel_item = 0;
 	hp_bounds.x = bounds.x + 15;
 	hp_bounds.y = bounds.y + 40;
 	hp_bounds.width = bounds.width - 30;
 	hp_bounds.height = 25;
-	draw_hp_bar(hp_bounds, player);
+	draw_hp_bar(hp_bounds, &ctx->player);
 	inv_bounds.x = bounds.x + 15;
 	inv_bounds.y = hp_bounds.y + 40;
 	inv_bounds.width = bounds.width - 30;
 	inv_bounds.height = (bounds.height / 2.0f) - 95.0f;
-	draw_inventory_list(inv_bounds, player, assets);
+	draw_inventory_list(inv_bounds, ctx, assets);
 }

@@ -36,8 +36,7 @@ typedef struct s_room_state
 	int			npc_count;
 	char		current_npc[32];
 	char		current_dialogue[256];
-	int			room_players;
-	int			server_players;
+	char		key[32];
 }	t_room_state;
 
 typedef struct s_player_state
@@ -63,9 +62,20 @@ typedef struct s_ui_context
 	int					sock_fd;
 	t_message_buffer	chat;
 	t_message_buffer	global_chat;
+	t_message_buffer	group_chat;
 	t_message_buffer	logs;
 	char				chat_input[128];
 	int					chat_channel;
+	char				talk_npc[32];
+	char				last_cmd[16];
+	char				group_id[32];
+	int					sel_item;
+	int					sel_room_item;
+	int					sel_npc;
+	int					connected;
+	char				rx_buf[4096];
+	int					room_players;
+	int					server_players;
 	cJSON				*world_db;
 	t_room_state		state;
 	t_player_state		player;

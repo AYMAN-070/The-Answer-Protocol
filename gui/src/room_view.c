@@ -70,21 +70,29 @@ static void	draw_room_description_overlay(t_room_state *state,
 	DrawText(desc, (int)bounds.x + 15, (int)bounds.y + 50, 18, LIGHTGRAY);
 }
 
-static void	draw_player_counters(Rectangle room_panel, t_room_state *state)
+static void	draw_player_counters(Rectangle room_panel, t_ui_context *ctx)
 {
 	int		box_x;
 	int		box_y;
-	char	room_text[64];
-	char	server_text[64];
+	int		idx;
+	char	text[96];
 
 	box_x = (int)room_panel.x + 15;
 	box_y = (int)room_panel.y + 45;
-	snprintf(room_text, 64, "Room Players: %d", state->room_players);
-	snprintf(server_text, 64, "Server Total: %d", state->server_players);
-	DrawRectangle(box_x - 5, box_y - 5, 180, 50, Fade(BLACK, 0.75f));
-	DrawRectangleLines(box_x - 5, box_y - 5, 180, 50, Fade(LIGHTGRAY, 0.5f));
-	DrawText(room_text, box_x, box_y, 16, SKYBLUE);
-	DrawText(server_text, box_x, box_y + 22, 16, SKYBLUE);
+	DrawRectangle(box_x - 5, box_y - 5, 200, 72, Fade(BLACK, 0.75f));
+	DrawRectangleLines(box_x - 5, box_y - 5, 200, 72, Fade(LIGHTGRAY, 0.5f));
+	snprintf(text, 96, "Room Players: %d", ctx->room_players);
+	DrawText(text, box_x, box_y, 16, SKYBLUE);
+	snprintf(text, 96, "Server Total: %d", ctx->server_players);
+	DrawText(text, box_x, box_y + 22, 16, SKYBLUE);
+	strcpy(text, "Exits:");
+	idx = -1;
+	while (++idx < ctx->state.exit_count)
+	{
+		strcat(text, " ");
+		strcat(text, ctx->state.exits[idx]);
+	}
+	DrawText(text, box_x, box_y + 44, 16, SKYBLUE);
 }
 
 static void	apply_room_lighting(Rectangle bounds, t_ui_context *ctx)
@@ -127,10 +135,11 @@ void	draw_room_view(const t_game_assets *assets, t_ui_context *ctx,
 	view.height = room_panel.height - 32;
 	draw_room_background(assets, &ctx->state, view);
 	draw_room_npcs(assets, ctx, view);
+	draw_room_items(assets, ctx, view);
 	apply_room_lighting(view, ctx);
 	draw_room_description_overlay(&ctx->state, view);
 	map_x = (int)(room_panel.x + room_panel.width) - 190;
 	map_y = (int)room_panel.y + 170;
 	render_minimap(map_x, map_y, &ctx->state);
-	draw_player_counters(room_panel, &ctx->state);
+	draw_player_counters(room_panel, ctx);
 }

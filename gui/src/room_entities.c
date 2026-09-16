@@ -59,29 +59,69 @@ static Rectangle	get_npc_dest(Rectangle view_rect, Texture2D tex,
 	return (dest);
 }
 
+static void	draw_item_slot(Rectangle slot, Texture2D tex, const char *label,
+				int selected)
+{
+	Color	border;
+
+	border = LIGHTGRAY;
+	if (selected)
+		border = YELLOW;
+	DrawRectangleRec(slot, Fade(BLACK, 0.55f));
+	if (tex.id != 0)
+		DrawTexturePro(tex, (Rectangle){0.0f, 0.0f, (float)tex.width,
+			(float)tex.height}, slot, (Vector2){0.0f, 0.0f}, 0.0f, WHITE);
+	DrawRectangleLinesEx(slot, 2.0f, border);
+	DrawText(label, (int)slot.x, (int)(slot.y + slot.height + 4), 10, border);
+}
+
+void	draw_room_items(const t_game_assets *assets, t_ui_context *ctx,
+			Rectangle view_rect)
+{
+	Rectangle	slot;
+	int			idx;
+
+	if (ctx->sel_room_item >= ctx->state.item_count)
+		ctx->sel_room_item = 0;
+	slot.width = 56.0f;
+	slot.height = 56.0f;
+	slot.y = view_rect.y + view_rect.height - 96.0f;
+	idx = -1;
+	while (++idx < ctx->state.item_count)
+	{
+		slot.x = view_rect.x + 20.0f + (float)idx * 70.0f;
+		if (CheckCollisionPointRec(GetMousePosition(), slot)
+			&& IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+			ctx->sel_room_item = idx;
+		draw_item_slot(slot, get_item_texture(assets,
+				ctx->state.items[idx].id), ctx->state.items[idx].name,
+			idx == ctx->sel_room_item);
+	}
+}
+
 void	draw_room_npcs(const t_game_assets *assets, t_ui_context *ctx,
 			Rectangle view_rect)
 {
 	int			idx;
 	Texture2D	tex;
-	Rectangle	src;
 	Rectangle	dest;
-	Vector2		origin;
 
-	origin.x = 0.0f;
-	origin.y = 0.0f;
+	if (ctx->sel_npc >= ctx->state.npc_count)
+		ctx->sel_npc = 0;
 	idx = -1;
 	while (++idx < ctx->state.npc_count)
 	{
 		tex = get_npc_texture(assets, ctx->state.npcs[idx].id);
 		if (tex.id != 0)
 		{
-			src.x = 0.0f;
-			src.y = 0.0f;
-			src.width = (float)tex.width;
-			src.height = (float)tex.height;
 			dest = get_npc_dest(view_rect, tex, ctx->state.npcs[idx].id);
-			DrawTexturePro(tex, src, dest, origin, 0.0f, WHITE);
+			DrawTexturePro(tex, (Rectangle){0.0f, 0.0f, (float)tex.width,
+				(float)tex.height}, dest, (Vector2){0.0f, 0.0f}, 0.0f, WHITE);
+			if (idx == ctx->sel_npc)
+				DrawRectangleLinesEx(dest, 2.0f, YELLOW);
+			if (CheckCollisionPointRec(GetMousePosition(), dest)
+				&& IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+				ctx->sel_npc = idx;
 		}
 	}
 }

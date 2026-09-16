@@ -17,7 +17,7 @@
 # include "layout.h"
 # include "graphics.h"
 
-void	render_status_panel(Rectangle bounds, t_player_state *player,
+void	render_status_panel(Rectangle bounds, t_ui_context *ctx,
 			const t_game_assets *assets);
 
 #endif

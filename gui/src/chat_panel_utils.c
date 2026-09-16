@@ -35,21 +35,51 @@ static void	capture_chat_chars(t_ui_context *ctx)
 		ctx->chat_input[len - 1] = '\0';
 }
 
+static int	send_group_cmd(t_ui_context *ctx)
+{
+	char	cmd[192];
+
+	if (ctx->chat_input[0] != '/')
+		return (0);
+	if (!strncmp(ctx->chat_input + 1, "create", 6))
+		snprintf(cmd, sizeof(cmd), "GROUP CREATE\n");
+	else if (!strncmp(ctx->chat_input + 1, "leave", 5))
+		snprintf(cmd, sizeof(cmd), "GROUP LEAVE\n");
+	else if (!strncmp(ctx->chat_input + 1, "invite ", 7))
+		snprintf(cmd, sizeof(cmd), "GROUP INVITE %s\n", ctx->chat_input + 8);
+	else if (!strncmp(ctx->chat_input + 1, "join ", 5))
+		snprintf(cmd, sizeof(cmd), "GROUP JOIN %s\n", ctx->chat_input + 6);
+	else
+		return (0);
+	strncpy(ctx->last_cmd, "GROUP", 15);
+	net_send_command(ctx->sock_fd, cmd);
+	add_message(&ctx->group_chat, ctx->chat_input);
+	ctx->chat_input[0] = '\0';
+	return (1);
+}
+
 static void	send_chat_message(t_ui_context *ctx)
 {
 	char				cmd[192];
 	char				echo[192];
 	t_message_buffer	*target;
 
+	if (ctx->chat_channel == 2 && send_group_cmd(ctx))
+		return ;
 	if (ctx->chat_channel == 0)
 	{
 		target = &ctx->chat;
-		snprintf(cmd, sizeof(cmd), "RCHAT %s\n", ctx->chat_input);
+		snprintf(cmd, sizeof(cmd), "CHAT ROOM %s\n", ctx->chat_input);
+	}
+	else if (ctx->chat_channel == 1)
+	{
+		target = &ctx->global_chat;
+		snprintf(cmd, sizeof(cmd), "CHAT GLOBAL %s\n", ctx->chat_input);
 	}
 	else
 	{
-		target = &ctx->global_chat;
-		snprintf(cmd, sizeof(cmd), "GCHAT %s\n", ctx->chat_input);
+		target = &ctx->group_chat;
+		snprintf(cmd, sizeof(cmd), "CHAT GROUP %s\n", ctx->chat_input);
 	}
 	net_send_command(ctx->sock_fd, cmd);
 	snprintf(echo, sizeof(echo), "You: %s", ctx->chat_input);
@@ -60,7 +90,7 @@ static void	send_chat_message(t_ui_context *ctx)
 void	update_chat_input(t_ui_context *ctx)
 {
 	if (IsKeyPressed(KEY_TAB))
-		ctx->chat_channel = !ctx->chat_channel;
+		ctx->chat_channel = (ctx->chat_channel + 1) % 3;
 	capture_chat_chars(ctx);
 	if (IsKeyPressed(KEY_ENTER) && ctx->chat_input[0] != '\0')
 		send_chat_message(ctx);

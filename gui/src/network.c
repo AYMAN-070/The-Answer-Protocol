@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
+#include <errno.h>
 
 int	net_connect(const char *ip, int port)
 {
@@ -61,18 +62,41 @@ void	net_disconnect(int *sock_fd)
 	}
 }
 
+static void	push_rx_data(t_ui_context *ctx, const char *chunk)
+{
+	char	*last;
+	size_t	rest;
+
+	if (strlen(ctx->rx_buf) + strlen(chunk) >= sizeof(ctx->rx_buf))
+		ctx->rx_buf[0] = '\0';
+	strncat(ctx->rx_buf, chunk,
+		sizeof(ctx->rx_buf) - strlen(ctx->rx_buf) - 1);
+	last = strrchr(ctx->rx_buf, '\n');
+	if (!last)
+		return ;
+	*last = '\0';
+	parse_server_text(ctx->rx_buf, ctx);
+	rest = strlen(last + 1);
+	memmove(ctx->rx_buf, last + 1, rest + 1);
+}
+
 int	net_receive_state(int sock_fd, t_ui_context *ctx)
 {
 	char	buffer[2048];
 	int		bytes_read;
 
-	memset(buffer, 0, sizeof(buffer));
+	if (sock_fd < 0)
+		return (-1);
 	bytes_read = recv(sock_fd, buffer, sizeof(buffer) - 1, MSG_DONTWAIT);
 	if (bytes_read > 0)
 	{
 		buffer[bytes_read] = '\0';
-		parse_server_text(buffer, ctx);
+		push_rx_data(ctx, buffer);
 		return (1);
 	}
+	if (bytes_read == 0)
+		return (-1);
+	if (errno != EAGAIN && errno != EWOULDBLOCK)
+		return (-1);
 	return (0);
 }

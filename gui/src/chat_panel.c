@@ -67,11 +67,17 @@ static void	draw_chat_input(Rectangle bounds, const char *input, int channel)
 
 	if (channel == 0)
 		label = "ROOM";
-	else
+	else if (channel == 1)
 		label = "GLOBAL";
+	else
+		label = "GROUP";
 	DrawRectangleRec(bounds, Fade(BLACK, 0.85f));
 	DrawRectangleLinesEx(bounds, 1.0f, LIGHTGRAY);
-	snprintf(display, sizeof(display), "[%s] > %s_", label, input);
+	if (channel == 2 && input[0] == '\0')
+		snprintf(display, sizeof(display),
+			"[GROUP] /create  /invite <p>  /join <id>  /leave");
+	else
+		snprintf(display, sizeof(display), "[%s] > %s_", label, input);
 	DrawText(display, (int)bounds.x + 8, (int)bounds.y + 7, 16, WHITE);
 }
 
@@ -89,8 +95,10 @@ void	render_chat_panel(Rectangle bounds, t_ui_context *ctx)
 	input_area.height = 26;
 	if (ctx->chat_channel == 0)
 		active = &ctx->chat;
-	else
+	else if (ctx->chat_channel == 1)
 		active = &ctx->global_chat;
+	else
+		active = &ctx->group_chat;
 	render_message_panel(msg_area, active, WHITE);
 	update_chat_input(ctx);
 	draw_chat_input(input_area, ctx->chat_input, ctx->chat_channel);

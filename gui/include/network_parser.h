@@ -18,5 +18,8 @@
 
 void	parse_server_text(char *buffer, t_ui_context *ctx);
 void	route_message(char *line, t_ui_context *ctx);
+int		route_state_line(char *line, t_ui_context *ctx);
+void	resolve_display_name(cJSON *defs, const char *id, char *out);
+void	parse_exits(cJSON *exits_obj, t_room_state *state);
 
 #endif

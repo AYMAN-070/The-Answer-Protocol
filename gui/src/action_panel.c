@@ -21,20 +21,26 @@ static void	handle_click(int id, t_ui_context *ctx)
 {
 	const char	*commands[17] = {"LOOK", "MOVE north", "MOVE west",
 		"MOVE east", "MOVE south", "TAKE", "DROP", "TALK", "ATTACK",
-		"DEFEND", "FLEE", "INVENTORY", "STATUS", "QUESTS", "WHO", "GROUP",
-		"QUIT"};
+		"DEFEND", "FLEE", "INVENTORY", "STATUS", "QUESTS", "WHO",
+		"GROUP CREATE", "QUIT"};
 	char		cmd_buf[64];
 
 	snprintf(cmd_buf, 64, "%s\n", commands[id]);
 	if ((id >= 7 && id <= 9) && ctx->state.npc_count > 0)
 		snprintf(cmd_buf, 64, "%s %s\n", commands[id],
-			ctx->state.npcs[0].id);
+			ctx->state.npcs[ctx->sel_npc].id);
 	else if (id == 5 && ctx->state.item_count > 0)
 		snprintf(cmd_buf, 64, "%s %s\n", commands[id],
-			ctx->state.items[0].id);
+			ctx->state.items[ctx->sel_room_item].id);
+	else if (id == 6 && ctx->player.inv_count > 0)
+		snprintf(cmd_buf, 64, "%s %s\n", commands[id],
+			ctx->player.inventory[ctx->sel_item].id);
+	if (id == 7 && ctx->state.npc_count > 0)
+		strncpy(ctx->talk_npc, ctx->state.npcs[ctx->sel_npc].name, 31);
+	sscanf(cmd_buf, "%15s", ctx->last_cmd);
 	net_send_command(ctx->sock_fd, cmd_buf);
 	if (id == 5 || id == 6)
-		net_send_command(ctx->sock_fd, "INVENTORY\n");
+		net_send_command(ctx->sock_fd, "LOOK\n");
 	if (id == 0)
 		remember_room(ctx);
 }

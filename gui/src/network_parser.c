@@ -12,14 +12,15 @@
 
 #include "network_parser.h"
 #include "chat_panel.h"
+#include "rfc.h"
 #include <string.h>
 #include <stdio.h>
 
-static void	parse_entities(cJSON *arr, t_entity *dest, int *count)
+static void	parse_entities(cJSON *arr, t_entity *dest, int *count, cJSON *defs)
 {
 	cJSON	*node;
 	cJSON	*npc_type;
-	char	*name;
+	char	*id;
 
 	*count = 0;
 	if (!arr || !cJSON_IsArray(arr))
@@ -27,23 +28,23 @@ static void	parse_entities(cJSON *arr, t_entity *dest, int *count)
 	node = arr->child;
 	while (node && *count < 10)
 	{
-		name = NULL;
+		id = NULL;
 		npc_type = cJSON_GetObjectItem(node, "npc_type");
 		if (cJSON_IsString(node))
-			name = node->valuestring;
+			id = node->valuestring;
 		else if (cJSON_IsObject(node) && npc_type && cJSON_IsString(npc_type))
-			name = npc_type->valuestring;
-		if (name)
+			id = npc_type->valuestring;
+		if (id)
 		{
-			strncpy(dest[*count].id, name, 31);
-			strncpy(dest[*count].name, name, 31);
+			strncpy(dest[*count].id, id, 31);
+			resolve_display_name(defs, id, dest[*count].name);
 			(*count)++;
 		}
 		node = node->next;
 	}
 }
 
-static void	parse_exits(cJSON *exits_obj, t_room_state *state)
+void	parse_exits(cJSON *exits_obj, t_room_state *state)
 {
 	cJSON	*exit_node;
 
@@ -66,25 +67,23 @@ static void	fetch_room_data(t_ui_context *ctx, char *room_name)
 
 	world = cJSON_GetObjectItem(ctx->world_db, "world");
 	room = cJSON_GetObjectItem(world, "locations")->child;
-	while (room)
-	{
-		field = cJSON_GetObjectItem(room, "name");
-		if (field && strcmp(field->valuestring, room_name) == 0)
-		{
-			memset(&ctx->state, 0, sizeof(t_room_state));
-			strncpy(ctx->state.name, field->valuestring, 63);
-			field = cJSON_GetObjectItem(room, "description");
-			if (field)
-				strncpy(ctx->state.description, field->valuestring, 255);
-			parse_exits(cJSON_GetObjectItem(room, "exits"), &ctx->state);
-			parse_entities(cJSON_GetObjectItem(room, "items"),
-				ctx->state.items, &ctx->state.item_count);
-			field = cJSON_GetObjectItem(room, "spawns");
-			parse_entities(field, ctx->state.npcs, &ctx->state.npc_count);
-			break ;
-		}
+	while (room && (!cJSON_GetObjectItem(room, "name")
+			|| strcmp(cJSON_GetObjectItem(room, "name")->valuestring,
+				room_name)))
 		room = room->next;
-	}
+	if (!room)
+		return ;
+	memset(&ctx->state, 0, sizeof(t_room_state));
+	strncpy(ctx->state.key, room->string, 31);
+	strncpy(ctx->state.name, room_name, 63);
+	field = cJSON_GetObjectItem(room, "description");
+	if (field)
+		strncpy(ctx->state.description, field->valuestring, 255);
+	parse_exits(cJSON_GetObjectItem(room, "exits"), &ctx->state);
+	parse_entities(cJSON_GetObjectItem(room, "items"), ctx->state.items,
+		&ctx->state.item_count, cJSON_GetObjectItem(world, "items"));
+	parse_entities(cJSON_GetObjectItem(room, "spawns"), ctx->state.npcs,
+		&ctx->state.npc_count, cJSON_GetObjectItem(world, "npcs"));
 }
 
 static void	parse_player_state(char *buffer, t_player_state *player)
@@ -125,10 +124,14 @@ void	parse_server_text(char *buffer, t_ui_context *ctx)
 		newline = strchr(line, '\n');
 		if (newline)
 			*(newline++) = '\0';
-		parse_player_state(line, &ctx->player);
-		if (strstr(line, "Current Room : "))
-			fetch_room_data(ctx, strstr(line, "Current Room : ") + 15);
-		route_message(line, ctx);
+		if (!rfc_route_line(line, ctx))
+		{
+			parse_player_state(line, &ctx->player);
+			if (strstr(line, "Current Room : "))
+				fetch_room_data(ctx, strstr(line, "Current Room : ") + 15);
+			else if (!route_state_line(line, ctx))
+				route_message(line, ctx);
+		}
 		line = newline;
 	}
 }

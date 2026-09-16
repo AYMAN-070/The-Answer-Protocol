@@ -15,6 +15,17 @@
 #include "layout.h"
 #include <string.h>
 
+static int	has_exit(t_ui_context *ctx, const char *dir)
+{
+	int	idx;
+
+	idx = -1;
+	while (++idx < ctx->state.exit_count)
+		if (!strcmp(ctx->state.exits[idx], dir))
+			return (1);
+	return (0);
+}
+
 int	is_btn_active(int id, t_ui_context *ctx)
 {
 	const char	*exit_dirs[5] = {"", "north", "west", "east", "south"};
@@ -30,16 +41,12 @@ int	is_btn_active(int id, t_ui_context *ctx)
 		return (0);
 	if (id == 5 && ctx->state.item_count == 0)
 		return (0);
+	if (id == 6 && ctx->player.inv_count == 0)
+		return (0);
 	if ((id >= 7 && id <= 10) && ctx->state.npc_count == 0)
 		return (0);
 	if (id >= 1 && id <= 4)
-	{
-		idx = -1;
-		while (++idx < ctx->state.exit_count)
-			if (!strcmp(ctx->state.exits[idx], exit_dirs[id]))
-				return (1);
-		return (0);
-	}
+		return (has_exit(ctx, exit_dirs[id]));
 	return (1);
 }
 
