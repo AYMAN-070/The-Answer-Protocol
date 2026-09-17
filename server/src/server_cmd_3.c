@@ -6,18 +6,43 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 19:07:59 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/16 20:36:01 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/17 14:26:18 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server.h"
 
-void	handle_drop(t_player *player, int words, char *item, char *world_data)
+void	handle_inventory(t_player *p)
+{
+	char	msg[256];
+	int		i;
+	int		first;
+
+	strcpy(msg, "OK [");
+	first = 1;
+	i = -1;
+	while (++i < 5)
+	{
+		if (p->inventory[i][0] != '\0')
+		{
+			if (!first)
+				strcat(msg, ", ");
+			strcat(msg, "\"");
+			strcat(msg, p->inventory[i]);
+			strcat(msg, "\"");
+			first = 0;
+		}
+	}
+	strcat(msg, "]\n");
+	write(p->sd, msg, strlen(msg));
+}
+
+void handle_drop(t_player *player, t_player *c, char *item, char *world_data)
 {
 	int		i;
 	char	msg[128];
 
-	if (words != 2)
+	if (item == NULL || item[0] == '\0')
 	{
 		server_log("WARN", player->ip, player->name, "Drop missing item");
 		return ((void)write(player->sd, "ERR missing item\n", 17));
@@ -33,7 +58,7 @@ void	handle_drop(t_player *player, int words, char *item, char *world_data)
 			sprintf(msg, "OK dropped %s\n", item);
 			write(player->sd, msg, strlen(msg));
 			handle_inventory(player);
-			handle_look(player, world_data);
+			handle_look(player, c, world_data);
 			return ;
 		}
 	}
@@ -89,7 +114,8 @@ static int	check_take_err(t_player *p, int w, char *item, char *world)
 
 void	handle_take(t_player *player, int words, char *item, char *world)
 {
-	int	i;
+	int		i;
+	char	out[64];
 
 	if (check_take_err(player, words, item, world) == 1)
 		return ;
@@ -100,7 +126,8 @@ void	handle_take(t_player *player, int words, char *item, char *world)
 		{
 			strncpy(player->inventory[i], item, 31);
 			server_log("INFO", player->ip, player->name, "Item taken");
-			write(player->sd, "OK item taken\n", 14);
+			sprintf(out, "OK taken=%s\n", item);
+			write(player->sd, out, strlen(out));
 			manage_taken(2, item);
 			handle_inventory(player);
 			return ;

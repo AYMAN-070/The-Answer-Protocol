@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 10:28:08 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/16 21:08:15 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/17 15:42:34 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,10 +39,13 @@ typedef struct s_player
 	int		cmd_count;
 	int		group_id;
 	int		quest_status;
+	char	cmd_buffer[1024];
+	int		cmd_len;
 }	t_player;
 
 void	exit_error(char *msg);
 int		init_server(void);
+void	init_clients(t_player *clients);
 void	process_command(t_player *player, t_player *clients,
 			char *buffer, char *world_data);
 char	*load_world(char *filename);
@@ -50,27 +53,29 @@ void	extract_json_value(char *json, char *key, char *result);
 void	get_room_exit(char *json, char *room, char *dir, char *dest);
 void	handle_quit(t_player *player);
 void	handle_who(t_player *p, t_player *c);
-void	handle_look(t_player *player, char *world_data);
-void	handle_move(t_player *player, int words, char *arg, char *world);
+void	handle_look(t_player *p, t_player *c, char *wld);
+void	handle_move(t_player *p, t_player *c, char *buf, char *wld);
 void	handle_inventory(t_player *player);
 void	handle_take(t_player *player, int words, char *item, char *world);
 int		check_item_in_room(char *json, char *room, char *item);
 int		has_item(t_player *player, char *item);
 int		check_npc_in_room(char *json, char *room, char *npc);
-void	handle_attack(t_player *player, int words, char *target, char *world);
+void	handle_attack(t_player *player, t_player *c, char *target, char *world);
 void	give_item(t_player *player, char *item);
-void	handle_defend(t_player *player, int words, char *tgt, char *world);
-void	handle_flee(t_player *player, char *world);
-void	handle_drop(t_player *player, int words, char *item, char *world_data);
+void	handle_defend(t_player *player, t_player *c, char *tgt, char *world);
+void	handle_flee(t_player *player, t_player *c, char *world);
+void	handle_drop(t_player *player, t_player *c,
+			char *item, char *world_data);
 void	handle_talk(t_player *player, int words, char *npc, char *world);
 void	handle_status(t_player *player);
 void	handle_quest(t_player *p, char *npc_name, char *wld);
 void	handle_quests(t_player *p);
 void	server_log(char *level, char *ip, char *player, char *msg);
 int		check_abuse(t_player *player);
-void	handle_chat(t_player *player, t_player *clients, char *cmd, char *msg);
-void	process_buffer(t_player *p, t_player *c, char *buf, char *wld);
+void	handle_chat(t_player *p, t_player *c, char *arg);
 void	handle_group(t_player *p, t_player *c, char *arg);
+void	handle_inventory(t_player *player);
+void	broadcast_player_stats(t_player *c);
 
 typedef struct s_drop
 {

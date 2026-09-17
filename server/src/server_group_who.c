@@ -6,31 +6,27 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/16 17:11:42 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/16 21:45:02 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/17 13:32:47 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server.h"
 
-void	handle_who(t_player *player, t_player *clients)
+void	handle_who(t_player *p, t_player *clients)
 {
 	int		i;
-	char	msg[512];
-	char	line[128];
+	int		count;
+	char	msg[32];
 
-	strcpy(msg, "Joueurs en ligne :\n");
-	i = 0;
-	while (i < 10)
+	count = 0;
+	i = -1;
+	while (++i < 10)
 	{
 		if (clients[i].is_active == 1)
-		{
-			sprintf(line, "- %s (Salle: %s)\n",
-				clients[i].name, clients[i].location);
-			strcat(msg, line);
-		}
-		i++;
+			count++;
 	}
-	write(player->sd, msg, strlen(msg));
+	sprintf(msg, "OK players=%d\n", count);
+	write(p->sd, msg, strlen(msg));
 }
 
 static void	handle_group_target(t_player *p, t_player *c, char *act, char *tgt)
@@ -47,7 +43,7 @@ static void	handle_group_target(t_player *p, t_player *c, char *act, char *tgt)
 			{
 				sprintf(out, "EVT GROUP INVITE %s\n", p->name);
 				write(c[i].sd, out, strlen(out));
-				return ((void)write(p->sd, "OK Invited\n", 3));
+				return ((void)write(p->sd, "OK Invited\n", 11));
 			}
 			else if (strcmp(act, "JOIN") == 0)
 			{

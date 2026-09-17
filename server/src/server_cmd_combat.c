@@ -6,14 +6,14 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/08 14:53:02 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/16 17:04:02 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/17 15:43:34 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server.h"
 #include <stdlib.h>
 
-void	handle_death(t_player *player, char *world)
+void	handle_death(t_player *player, t_player *c, char *world)
 {
 	int	i;
 
@@ -27,7 +27,7 @@ void	handle_death(t_player *player, char *world)
 	player->location[31] = '\0';
 	player->hp = 50;
 	write(player->sd, "DEAD:You died! Respawned in medbay.\n", 36);
-	handle_look(player, world);
+	handle_look(player, c, world);
 	handle_inventory(player);
 	handle_status(player);
 }
@@ -51,51 +51,55 @@ void	give_item(t_player *player, char *item)
 	player->inventory[4][31] = '\0';
 }
 
-void	handle_attack(t_player *p, int w, char *tgt, char *wld)
+void	handle_attack(t_player *p, t_player *c, char *tgt, char *wld)
 {
 	static int	d_hp = 50;
-	int			dmg[2];
+	int			d[2];
 	char		msg[128];
 
-	if (w != 2 || check_npc_in_room(wld, p->location, tgt) == 0)
+	if (tgt[0] == '\0' || !check_npc_in_room(wld, p->location, tgt))
 		return ((void)write(p->sd, "ERR missing target\n", 19));
-	dmg[0] = 15 + (rand() % 11);
-	if (has_item(p, "laser_pistol") == 1)
-		dmg[0] = 30 + (rand() % 11);
-	if (strcmp(tgt, "alpha_drone") == 0 && d_hp > 0)
-		d_hp -= dmg[0];
-	if (strcmp(tgt, "alpha_drone") == 0 && d_hp <= 0)
+	d[0] = 15 + (rand() % 11);
+	if (has_item(p, "laser_pistol"))
+		d[0] = 30 + (rand() % 11);
+	if (strcmp(tgt, "alpha_drone") == 0 && (d_hp -= d[0]) <= 0)
 	{
 		write(p->sd, "EVENT:Drone dead! Got keycard\n", 30);
 		give_item(p, "red_keycard");
 		d_hp = 100;
 		return ;
 	}
-	dmg[1] = 10 + (rand() % 11);
-	p->hp -= dmg[1];
+	d[1] = 10 + (rand() % 11);
+	p->hp -= d[1];
 	if (p->hp <= 0)
-		return (handle_death(p, wld));
-	sprintf(msg, "COMBAT:Hit %d. Npc hit %d. HP:%d\n", dmg[0], dmg[1], p->hp);
+	{
+		handle_death(p, c, wld);
+		return ;
+	}
+	sprintf(msg, "COMBAT:Hit %d. Npc hit %d. HP:%d\n", d[0], d[1], p->hp);
 	write(p->sd, msg, strlen(msg));
 }
 
-void	handle_defend(t_player *player, int words, char *tgt, char *world)
+void	handle_defend(t_player *player, t_player *c, char *tgt, char *world)
 {
 	int		n_dmg;
 	char	msg[128];
 
-	if (words != 2 || check_npc_in_room(world, player->location, tgt) == 0)
+	if (tgt[0] == '\0' || check_npc_in_room(world, player->location, tgt) == 0)
 		return ((void)write(player->sd, "ERR missing target\n", 19));
 	n_dmg = (10 + (rand() % 11)) / 2;
 	player->hp -= n_dmg;
 	if (player->hp <= 0)
-		return (handle_death(player, world));
+	{
+		handle_death(player, c, world); // <--- Point-virgule ajouté ici !
+		return ;
+	}
 	sprintf(msg, "COMBAT:You defend! Target hit %d. HP:%d\n",
 		n_dmg, player->hp);
 	write(player->sd, msg, strlen(msg));
 }
 
-void	handle_flee(t_player *player, char *world)
+void	handle_flee(t_player *player, t_player *c, char *world)
 {
 	int		n_dmg;
 	char	msg[128];
@@ -105,7 +109,10 @@ void	handle_flee(t_player *player, char *world)
 		n_dmg = 10 + (rand() % 11);
 		player->hp -= n_dmg;
 		if (player->hp <= 0)
-			return (handle_death(player, world));
+		{
+			handle_death(player, c, world);
+			return ;
+		}
 		sprintf(msg, "COMBAT:Flee failed! Target hit %d. HP:%d\n",
 			n_dmg, player->hp);
 		write(player->sd, msg, strlen(msg));
@@ -114,6 +121,6 @@ void	handle_flee(t_player *player, char *world)
 	{
 		strncpy(player->location, player->last_location, 31);
 		write(player->sd, "EVENT:Flee successful!\n", 23);
-		handle_look(player, world);
+		handle_look(player, c, world);
 	}
 }

@@ -1,32 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Process_buffer.c                                   :+:      :+:    :+:   */
+/*   broadcast_player_stats.c                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/09/16 16:09:15 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/16 16:09:30 by ayhammou         ###   ########.fr       */
+/*   Created: 2026/09/17 15:04:43 by ayhammou          #+#    #+#             */
+/*   Updated: 2026/09/17 15:09:32 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server.h"
 
-void	process_buffer(t_player *p, t_player *c, char *buf, char *wld)
+void	broadcast_player_stats(t_player *c)
 {
-	char	*start;
 	int		i;
+	int		total;
+	char	out[64];
 
-	start = buf;
+	total = 0;
 	i = -1;
-	while (buf[++i] != '\0')
+	while (++i < 10)
 	{
-		if (buf[i] == '\n')
-		{
-			buf[i] = '\0';
-			if (start[0] != '\0')
-				process_command(p, c, start, wld);
-			start = buf + i + 1;
-		}
+		if (c[i].is_active == 1)
+			total++;
+	}
+	sprintf(out, "EVT STATS players=%d\n", total);
+	i = -1;
+	while (++i < 10)
+	{
+		if (c[i].is_active == 1)
+			write(c[i].sd, out, strlen(out));
 	}
 }

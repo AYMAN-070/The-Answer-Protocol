@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 09:44:01 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/01 10:29:00 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/17 12:25:07 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,20 @@ void	exit_error(char *msg)
 {
 	perror(msg);
 	exit(EXIT_FAILURE);
+}
+
+void	init_clients(t_player *clients)
+{
+	int	i;
+
+	i = 0;
+	while (i < 10)
+	{
+		clients[i].sd = 0;
+		clients[i].is_active = 0;
+		memset(clients[i].name, 0, 32);
+		i++;
+	}
 }
 
 int	init_server(void)

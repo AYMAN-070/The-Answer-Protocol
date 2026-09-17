@@ -6,57 +6,46 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/02 11:40:23 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/16 17:05:39 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/17 15:00:59 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server.h"
 
-void	handle_quit(t_player *player)
+static void	build_players_list(t_player *p, t_player *c, char *p_list)
 {
-	server_log("INFO", player->ip, player->name, "Player quit");
-	write(player->sd, "OK goodbye\n", 11);
-	close(player->sd);
-	player->is_active = 0;
-	player->sd = -1;
-	memset(player->name, 0, 32);
-	memset(player->inventory, 0, sizeof(player->inventory));
-	server_log("INFO", player->ip,
-		"UNKNOWN", "Player disconnected and slot freed");
+	int	i;
+
+	p_list[0] = '\0';
+	i = -1;
+	while (++i < 10)
+	{
+		if (c[i].is_active && strcmp(c[i].location, p->location) == 0)
+		{
+			if (p_list[0] != '\0')
+				strcat(p_list, ", ");
+			sprintf(p_list + strlen(p_list), "\"%s\"", c[i].name);
+		}
+	}
 }
 
-void	handle_status(t_player *player)
+void	handle_look(t_player *p, t_player *c, char *wld)
 {
-	char	msg[128];
+	char	key[64];
+	char	name[64];
+	char	p_list[256];
+	char	out[1024];
 
-	sprintf(msg, "STATUS:HP:%d/100 ROOM:%s\n", player->hp, player->location);
-	write(player->sd, msg, strlen(msg));
-}
-
-void	handle_look(t_player *player, char *world_data)
-{
-	char	search_key[64];
-	char	room_name[64];
-	char	response[256];
-	char	dropped_msg[256];
-
-	sprintf(search_key, "\"%s\": {\n        \"name\":", player->location);
-	extract_json_value(world_data, search_key, room_name);
-	if (strlen(room_name) > 0)
-	{
-		sprintf(response, "Current Room : %s\n", room_name);
-		server_log("INFO", player->ip, player->name, "Look successful");
-		write(player->sd, response, strlen(response));
-		strcpy(dropped_msg, "DROPPED:");
-		manage_dropped(3, player->location, NULL, dropped_msg);
-		strcat(dropped_msg, "\n");
-		write(player->sd, dropped_msg, strlen(dropped_msg));
-	}
-	else
-	{
-		server_log("ERROR", player->ip, player->name, "Look room not found");
-		write(player->sd, "ERR room not found\n", 19);
-	}
+	name[0] = '\0';
+	sprintf(key, "\"%s\": {\n        \"name\":", p->location);
+	extract_json_value(wld, key, name);
+	if (name[0] == '\0')
+		return ((void)write(p->sd, "ERR 404 ROOM_NOT_FOUND\n", 23));
+	build_players_list(p, c, p_list);
+	sprintf(out, "OK {\"room\": {\"id\": \"%s\", \"name\": \"%s\"}, "
+		"\"players\": [%s], \"items\": [], \"npcs\": []}\n",
+		p->location, name, p_list);
+	write(p->sd, out, strlen(out));
 }
 
 int	has_item(t_player *player, char *item)
@@ -73,32 +62,42 @@ int	has_item(t_player *player, char *item)
 	return (0);
 }
 
-void	handle_move(t_player *player, int words, char *arg, char *world)
+static void	broadcast_room(t_player *c, char *room, char *msg, int exclude_sd)
 {
-	char	dest[32];
+	int	i;
 
-	if (words != 2)
+	i = -1;
+	while (++i < 10)
 	{
-		write(player->sd, "ERR missing direction\n", 22);
-		return ;
+		if (c[i].is_active && c[i].sd != exclude_sd 
+			&& strcmp(c[i].location, room) == 0)
+			write(c[i].sd, msg, strlen(msg));
 	}
-	get_room_exit(world, player->location, arg, dest);
-	if (strlen(dest) == 0)
-	{
-		server_log("WARN", player->ip, player->name, "Invalid direction");
-		write(player->sd, "ERR invalid direction\n", 22);
-		return ;
-	}
-	if (strcmp(dest, "ai_core") == 0 && has_item(player, "red_keycard") == 0)
-	{
-		server_log("WARN", player->ip, player->name,
-			"Access denied: missing keycard");
-		write(player->sd, "ERR access denied : red_keycard required\n", 41);
-		return ;
-	}
-	strncpy(player->last_location, player->location, 31);
-	strncpy(player->location, dest, 31);
-	player->location[31] = '\0';
-	handle_look(player, world);
 }
 
+void	handle_move(t_player *p, t_player *c, char *buf, char *wld)
+{
+	char	arg[32];
+	char	dest[32];
+	char	out[128];
+
+	arg[0] = '\0';
+	dest[0] = '\0';
+	if (sscanf(buf, "%*s %31s", arg) != 1 || arg[0] == '\0')
+		return ((void)write(p->sd, "ERR missing direction\n", 22));
+	get_room_exit(wld, p->location, arg, dest);
+	if (dest[0] == '\0')
+		return ((void)write(p->sd, "ERR invalid direction\n", 22));
+	if (strcmp(dest, "ai_core") == 0 && has_item(p, "red_keycard") == 0)
+		return ((void)write(p->sd,
+				"ERR access denied : red_keycard required\n", 41));
+	sprintf(out, "EVT ROOM PRESENCE LEAVE %s\n", p->name);
+	broadcast_room(c, p->location, out, p->sd);
+	strncpy(p->last_location, p->location, 31);
+	strncpy(p->location, dest, 31);
+	p->location[31] = '\0';
+	sprintf(out, "EVT ROOM PRESENCE ENTER %s\n", p->name);
+	broadcast_room(c, p->location, out, p->sd);
+
+	handle_look(p, c, wld);
+}
