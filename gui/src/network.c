@@ -62,22 +62,26 @@ void	net_disconnect(int *sock_fd)
 	}
 }
 
-static void	push_rx_data(t_ui_context *ctx, const char *chunk)
+static void	push_rx_data(t_ui_context *ctx, const char *chunk, int len)
 {
 	char	*last;
-	size_t	rest;
+	size_t	used;
+	int		idx;
 
-	if (strlen(ctx->rx_buf) + strlen(chunk) >= sizeof(ctx->rx_buf))
-		ctx->rx_buf[0] = '\0';
-	strncat(ctx->rx_buf, chunk,
-		sizeof(ctx->rx_buf) - strlen(ctx->rx_buf) - 1);
+	used = strlen(ctx->rx_buf);
+	idx = -1;
+	while (++idx < len && used < sizeof(ctx->rx_buf) - 1)
+		if (chunk[idx] == '\n' || (unsigned char)chunk[idx] >= 32)
+			ctx->rx_buf[used++] = chunk[idx];
+	ctx->rx_buf[used] = '\0';
 	last = strrchr(ctx->rx_buf, '\n');
+	if (!last && used >= sizeof(ctx->rx_buf) - 1)
+		ctx->rx_buf[0] = '\0';
 	if (!last)
 		return ;
 	*last = '\0';
 	parse_server_text(ctx->rx_buf, ctx);
-	rest = strlen(last + 1);
-	memmove(ctx->rx_buf, last + 1, rest + 1);
+	memmove(ctx->rx_buf, last + 1, strlen(last + 1) + 1);
 }
 
 int	net_receive_state(int sock_fd, t_ui_context *ctx)
@@ -90,8 +94,7 @@ int	net_receive_state(int sock_fd, t_ui_context *ctx)
 	bytes_read = recv(sock_fd, buffer, sizeof(buffer) - 1, MSG_DONTWAIT);
 	if (bytes_read > 0)
 	{
-		buffer[bytes_read] = '\0';
-		push_rx_data(ctx, buffer);
+		push_rx_data(ctx, buffer, bytes_read);
 		return (1);
 	}
 	if (bytes_read == 0)

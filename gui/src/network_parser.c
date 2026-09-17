@@ -86,31 +86,30 @@ static void	fetch_room_data(t_ui_context *ctx, char *room_name)
 		&ctx->state.npc_count, cJSON_GetObjectItem(world, "npcs"));
 }
 
-static void	parse_player_state(char *buffer, t_player_state *player)
+static void	parse_player_state(char *buffer, t_ui_context *ctx)
 {
 	char	*token;
-	int		idx;
 
 	if (strncmp(buffer, "DEAD:", 5) == 0)
-		player->hp = 50;
+		ctx->player.hp = 50;
 	if (strstr(buffer, "HP:"))
-		sscanf(strstr(buffer, "HP:"), "HP:%d", &player->hp);
+		sscanf(strstr(buffer, "HP:"), "HP:%d", &ctx->player.hp);
+	if (!strncmp(buffer, "STATUS:", 7))
+		return (confirm_status(ctx));
 	if (strncmp(buffer, "INVENTORY:", 10) != 0)
 		return ;
-	idx = -1;
-	while (++idx < 5)
-		player->inventory[idx].id[0] = '\0';
-	player->inv_count = 0;
+	ctx->player.inv_count = 0;
 	if (strstr(buffer, "empty"))
-		return ;
+		return (confirm_inventory(ctx));
 	token = strtok(buffer + 10, ",\n");
-	while (token && player->inv_count < 5)
+	while (token && ctx->player.inv_count < 5)
 	{
-		strncpy(player->inventory[player->inv_count].id, token, 31);
-		strncpy(player->inventory[player->inv_count].name, token, 31);
-		player->inv_count++;
+		strncpy(ctx->player.inventory[ctx->player.inv_count].id, token, 31);
+		strncpy(ctx->player.inventory[ctx->player.inv_count].name, token, 31);
+		ctx->player.inv_count++;
 		token = strtok(NULL, ",\n");
 	}
+	confirm_inventory(ctx);
 }
 
 void	parse_server_text(char *buffer, t_ui_context *ctx)
@@ -126,7 +125,7 @@ void	parse_server_text(char *buffer, t_ui_context *ctx)
 			*(newline++) = '\0';
 		if (!rfc_route_line(line, ctx))
 		{
-			parse_player_state(line, &ctx->player);
+			parse_player_state(line, ctx);
 			if (strstr(line, "Current Room : "))
 				fetch_room_data(ctx, strstr(line, "Current Room : ") + 15);
 			else if (!route_state_line(line, ctx))

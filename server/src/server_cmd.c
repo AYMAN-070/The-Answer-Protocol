@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 20:08:00 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/17 15:39:52 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/17 16:29:59 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,6 @@ static void	init_player_data(t_player *p, char *arg)
 	p->in_combat = 0;
 	p->group_id = 0;
 	p->quest_status = 0;
-	p->cmd_len = 0;
-	memset(p->cmd_buffer, 0, sizeof(p->cmd_buffer));
 	i = -1;
 	while (++i < 5)
 		p->inventory[i][0] = '\0';
@@ -100,12 +98,14 @@ void	process_command(t_player *p, t_player *c, char *b, char *wld)
 {
 	char	cmd[32];
 	char	arg[512];
+	printf("DEBUG - Commande reçue du client : [%s]\n", b);
 
 	cmd[0] = '\0';
 	arg[0] = '\0';
 	if (check_abuse(p) == 1 || sscanf(b, "%31s %[^\n]", cmd, arg) < 1)
 		return ((void)write(p->sd, "ERR ignored\n", 12));
 	server_log("INFO", p->ip, p->name, cmd);
+	printf("DEBUG - Commande reçue du client : [%s]\n", b);
 	if (strcmp(cmd, "CONNECT") == 0)
 		handle_connect(p, c, 1 + (arg[0] != '\0'), arg);
 	else if (strcmp(cmd, "LOOK") == 0)

@@ -13,6 +13,7 @@
 #include "rfc.h"
 #include "chat_panel.h"
 #include "network.h"
+#include "network_parser.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -60,9 +61,12 @@ static void	route_ok(char *data, t_ui_context *ctx)
 	if (data[0] == '{' || data[0] == '[')
 		rfc_apply_json(data, ctx);
 	else if (!strncmp(data, "players=", 8))
-		ctx->server_players = atoi(data + 8);
+		confirm_who(ctx, atoi(data + 8), data);
 	else if (!strncmp(data, "group=", 6))
-		strncpy(ctx->group_id, data + 6, 31);
+	{
+		snprintf(ctx->group_id, sizeof(ctx->group_id), "%s", data + 6);
+		add_message(&ctx->logs, data);
+	}
 	else if (!strncmp(data, "room=", 5))
 		net_send_command(ctx->sock_fd, "LOOK\n");
 	else if (!strncmp(data, "taken=", 6) || !strncmp(data, "dropped=", 8))
@@ -82,9 +86,22 @@ static void	route_ok(char *data, t_ui_context *ctx)
 
 static void	route_err(char *data, t_ui_context *ctx)
 {
-	char	msg[160];
+	char	msg[192];
 
-	snprintf(msg, sizeof(msg), "[error] %s", data);
+	if (!strncmp(data, "201 ", 4))
+		snprintf(msg, sizeof(msg), "Name already in use");
+	else if (!strncmp(data, "301 ", 4))
+		snprintf(msg, sizeof(msg), "No exit that way");
+	else if (!strncmp(data, "401 ", 4) || !strncmp(data, "402 ", 4))
+		snprintf(msg, sizeof(msg), "Group: %s", data + 4);
+	else if (!strncmp(data, "404 ", 4))
+		snprintf(msg, sizeof(msg), "Not found: %s", data + 4);
+	else if (!strncmp(data, "405 ", 4))
+		snprintf(msg, sizeof(msg), "This target cannot be attacked");
+	else if (!strncmp(data, "406 ", 4))
+		snprintf(msg, sizeof(msg), "No quest available");
+	else
+		snprintf(msg, sizeof(msg), "Error: %s", data);
 	add_message(&ctx->logs, msg);
 }
 

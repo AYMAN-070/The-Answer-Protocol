@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/28 14:27:59 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/17 12:44:44 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/17 16:08:13 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,8 @@ static void	read_client_data(t_player *p, t_player *c, char *wld)
 		server_log("INFO", p->ip, p->name, "Disconnected");
 		close(p->sd);
 		p->is_active = 0;
+		p->cmd_len = 0;
+		memset(p->cmd_buffer, 0, sizeof(p->cmd_buffer));
 		return ;
 	}
 	p->cmd_len += b;

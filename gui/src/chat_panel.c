@@ -62,7 +62,7 @@ void	add_message(t_message_buffer *buffer, const char *msg)
 
 static void	draw_chat_input(Rectangle bounds, t_ui_context *ctx)
 {
-	char	display[192];
+	char	display[256];
 	char	label[64];
 
 	strcpy(label, "ROOM");
@@ -76,7 +76,8 @@ static void	draw_chat_input(Rectangle bounds, t_ui_context *ctx)
 	DrawRectangleLinesEx(bounds, 1.0f, LIGHTGRAY);
 	if (ctx->chat_channel == 2 && ctx->chat_input[0] == '\0')
 		snprintf(display, sizeof(display),
-			"[%s] /create  /invite <p>  /join <id>  /leave", label);
+			"[%s] /create  /invite <player>  /join <target>  /leave",
+			label);
 	else
 		snprintf(display, sizeof(display), "[%s] > %s_", label,
 			ctx->chat_input);

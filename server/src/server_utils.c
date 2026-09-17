@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 09:44:01 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/17 12:25:07 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/17 16:07:27 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,8 @@ void	init_clients(t_player *clients)
 		clients[i].sd = 0;
 		clients[i].is_active = 0;
 		memset(clients[i].name, 0, 32);
+		clients[i].cmd_len = 0;
+		memset(clients[i].cmd_buffer, 0, 1024);
 		i++;
 	}
 }
