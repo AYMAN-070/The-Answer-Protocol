@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/11 14:55:03 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/11 18:09:59 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/17 21:50:02 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,4 +39,33 @@ char	*manage_dropped(int mode, char *room, char *item, char *buf)
 		}
 	}
 	return (NULL);
+}
+
+void	handle_drop(t_player *player, t_player *c, char *item, char *world_data)
+{
+	int		i;
+	char	msg[128];
+
+	if (item == NULL || item[0] == '\0')
+	{
+		server_log("WARN", player->ip, player->name, "Drop missing item");
+		return ((void)write(player->sd, "ERR missing item\n", 17));
+	}
+	i = -1;
+	while (++i < 5)
+	{
+		if (strcmp(player->inventory[i], item) == 0)
+		{
+			player->inventory[i][0] = '\0';
+			manage_dropped(1, player->location, item, NULL);
+			server_log("INFO", player->ip, player->name, "Item dropped");
+			sprintf(msg, "OK dropped=%s\n", item);
+			write(player->sd, msg, strlen(msg));
+			handle_inventory(player);
+			handle_look(player, c, world_data);
+			return ;
+		}
+	}
+	server_log("WARN", player->ip, player->name, "Drop item not found");
+	write(player->sd, "ERR item not found\n", 19);
 }

@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/08 17:23:52 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/17 15:01:23 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/17 22:12:46 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,30 +34,28 @@ void	handle_quit(t_player *player)
 		"UNKNOWN", "Player disconnected and slot freed");
 }
 
-void	handle_talk(t_player *player, int words, char *npc, char *world)
+void	handle_talk(t_player *p, int words, char *npc, char *wld)
 {
-	int	i;
+	char	d[256];
+	char	o[256];
+	int		i;
 
-	if (words != 2 || check_npc_in_room(world, player->location, npc) == 0)
+	if (words != 2 || !check_npc_in_room(wld, p->location, npc))
+		return ((void)write(p->sd, "ERR 404 NPC_NOT_FOUND\n", 22));
+	if (strcmp(npc, "injured_engineer") == 0 && p->quest_status == 2)
+		return ((void)write(p->sd, "OK System restored. Thanks!\n", 28));
+	if (strcmp(npc, "injured_engineer") == 0 && has_item(p, "energy_cell"))
 	{
-		write(player->sd, "ERR 404 NPC_NOT_FOUND\n", 22);
-		return ;
+		p->quest_status = 2;
+		i = -1;
+		while (++i < 5)
+			if (strcmp(p->inventory[i], "energy_cell") == 0)
+				p->inventory[i][0] = '\0';
+		give_item(p, "laser_pistol");
+		return ((void)write(p->sd, "OK Quest completed!\n", 20));
 	}
-	if (strcmp(npc, "injured_engineer") == 0)
-	{
-		if (has_item(player, "energy_cell") == 1)
-		{
-			player->quest_status = 2;
-			i = -1;
-			while (++i < 5)
-				if (strcmp(player->inventory[i], "energy_cell") == 0)
-					player->inventory[i][0] = '\0';
-			write(player->sd, "OK Quest completed! Got laser_pistol\n", 37);
-			give_item(player, "laser_pistol");
-		}
-		else
-			write(player->sd, "OK Please, find an energy_cell...\n", 35);
-	}
-	else
-		write(player->sd, "OK I have nothing to say to you.\n", 34);
+	get_npc_dialogue(wld, npc, d);
+	snprintf(o, sizeof(o), "OK %.245s\n", d);
+	write(p->sd, o, strlen(o));
 }
+

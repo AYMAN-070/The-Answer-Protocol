@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 10:28:08 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/17 15:42:34 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/17 22:11:39 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,13 @@ void	handle_chat(t_player *p, t_player *c, char *arg);
 void	handle_group(t_player *p, t_player *c, char *arg);
 void	handle_inventory(t_player *player);
 void	broadcast_player_stats(t_player *c);
+int		is_item_obtainable(char *wld, char *item);
+int		get_npc_hp(char *wld, char *npc);
+int		is_npc_enemy(char *wld, char *npc);
+int		apply_damage_to_npc(char *npc, int dmg, char *wld);
+void	get_npc_dialogue(char *wld, char *npc, char *out);
+void	handle_death(t_player *p, t_player *c, char *wld);
+
 
 typedef struct s_drop
 {

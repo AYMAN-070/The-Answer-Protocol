@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   server_cmd_3.c                                     :+:      :+:    :+:   */
+/*   server_cmd_take_inventory.c                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 19:07:59 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/17 17:19:56 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/17 21:52:36 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,34 +37,6 @@ void	handle_inventory(t_player *p)
 	write(p->sd, msg, strlen(msg));
 }
 
-void handle_drop(t_player *player, t_player *c, char *item, char *world_data)
-{
-	int		i;
-	char	msg[128];
-
-	if (item == NULL || item[0] == '\0')
-	{
-		server_log("WARN", player->ip, player->name, "Drop missing item");
-		return ((void)write(player->sd, "ERR missing item\n", 17));
-	}
-	i = -1;
-	while (++i < 5)
-	{
-		if (strcmp(player->inventory[i], item) == 0)
-		{
-			player->inventory[i][0] = '\0';
-			manage_dropped(1, player->location, item, NULL);
-			server_log("INFO", player->ip, player->name, "Item dropped");
-			sprintf(msg, "OK dropped=%s\n", item);
-			write(player->sd, msg, strlen(msg));
-			handle_inventory(player);
-			handle_look(player, c, world_data);
-			return ;
-		}
-	}
-	server_log("WARN", player->ip, player->name, "Drop item not found");
-	write(player->sd, "ERR item not found\n", 19);
-}
 
 char	*manage_taken(int mode, char *item)
 {
@@ -119,6 +91,8 @@ void	handle_take(t_player *player, int words, char *item, char *world)
 
 	if (check_take_err(player, words, item, world) == 1)
 		return ;
+	if (!is_item_obtainable(world, item))
+		return ((void)write(player->sd, "ERR item cannot be taken\n", 25));
 	i = -1;
 	while (++i < 5)
 	{
