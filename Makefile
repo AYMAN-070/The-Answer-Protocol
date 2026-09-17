@@ -26,27 +26,46 @@ GUI_SRC = gui/src/main.c gui/src/layout.c gui/src/room_view.c gui/src/map.c \
           gui/src/rfc_parser.c gui/src/rfc_room.c gui/src/rfc_payload.c \
           gui/src/graphics_npcs.c\
           gui/src/status_panel.c gui/src/chat_panel.c \
-          gui/src/chat_panel_utils.c gui/src/room_entities.c\
-          $(LIB_DIR)/cJSON.c
+          gui/src/chat_panel_utils.c gui/src/room_entities.c \
+          gui/src/room_entities_utils.c gui/src/player_confirm.c
 
-GUI_OBJ = $(GUI_SRC:.c=.o)
+GUI_OBJ = $(GUI_SRC:.c=.o) $(LIB_DIR)/cJSON.o
 
+
+SERVER_SRC = server/src/server.c server/src/server_cmd_chat.c \
+             server/src/server_group_who.c server/src/server_utils.c \
+             server/src/server_cmd.c server/src/server_cmd_2.c \
+             server/src/server_manage_dropped.c server/src/server_world.c \
+             server/src/server_json.c server/src/server_cmd_combat.c \
+             server/src/Process_buffer.c server/src/server_quests.c \
+             server/src/server_cmd_talk.c server/src/server_logs.c \
+             server/src/server_cmd_3.c
+
+CLIENT_SRC = cli/src/client.c
+
+GUI_HEADERS = $(INC_DIR)/action_panel.h $(INC_DIR)/chat_panel.h \
+              $(INC_DIR)/graphics.h $(INC_DIR)/layout.h $(INC_DIR)/map.h \
+              $(INC_DIR)/network.h $(INC_DIR)/network_parser.h \
+              $(INC_DIR)/rfc.h $(INC_DIR)/room_view.h \
+              $(INC_DIR)/status_panel.h
+
+SERVER_HEADERS = server/include/server.h
+
+LINT_SRC = $(GUI_SRC) $(SERVER_SRC) $(CLIENT_SRC)
+LINT_HDR = $(GUI_HEADERS) $(SERVER_HEADERS)
 
 all: $(SERVER) $(CLIENT) $(GUI_EXEC)
 
-$(SERVER):
-	$(CC) $(CFLAGS) -I server/include -I common/include server/src/server.c server/src/server_cmd_chat.c server/src/server_group_who.c \
-	server/src/server_utils.c server/src/server_cmd.c server/src/server_cmd_2.c server/src/server_manage_dropped.c \
-	server/src/server_world.c server/src/server_json.c server/src/server_cmd_combat.c server/src/Process_buffer.c server/src/server_quests.c \
-	server/src/server_cmd_talk.c server/src/server_logs.c server/src/server_cmd_3.c -o $(SERVER)
+$(SERVER): $(SERVER_SRC)
+	$(CC) $(CFLAGS) -I server/include -I common/include $(SERVER_SRC) -o $(SERVER)
 
-$(CLIENT):
-	$(CC) $(CFLAGS) -I cli/include -I common/include cli/src/client.c -o $(CLIENT)
+$(CLIENT): $(CLIENT_SRC)
+	$(CC) $(CFLAGS) -I cli/include -I common/include $(CLIENT_SRC) -o $(CLIENT)
 
 $(GUI_EXEC): $(GUI_OBJ)
 	$(CC) $(GUI_OBJ) -o $@ $(GUI_LDFLAGS)
 
-gui/%.o: gui/%.c
+gui/%.o: gui/%.c $(GUI_HEADERS)
 	$(CC) $(GUI_CFLAGS) -c $< -o $@
 
 install-deps:
@@ -77,7 +96,7 @@ run-client-gui: $(GUI_EXEC)
 	./$(GUI_EXEC)
 
 lint:
-	norminette
+	norminette $(LINT_SRC) $(LINT_HDR)
 
 clean:
 	rm -f $(GUI_OBJ)

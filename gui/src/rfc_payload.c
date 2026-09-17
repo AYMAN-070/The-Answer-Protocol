@@ -68,6 +68,8 @@ void	rfc_apply_quest(cJSON *root, t_ui_context *ctx)
 	if (quest_id && label && cJSON_IsString(quest_id) && cJSON_IsString(label))
 		snprintf(msg, sizeof(msg), "[%s] %s", quest_id->valuestring,
 			label->valuestring);
+	else if (quest_id && cJSON_IsString(quest_id))
+		snprintf(msg, sizeof(msg), "Quest: %s", quest_id->valuestring);
 	else
 		snprintf(msg, sizeof(msg), "Quest update");
 	add_message(&ctx->logs, msg);
@@ -95,6 +97,7 @@ static void	rfc_apply_inventory(cJSON *arr, t_ui_context *ctx)
 		}
 		node = node->next;
 	}
+	confirm_inventory(ctx);
 }
 
 void	rfc_apply_list(cJSON *root, t_ui_context *ctx)
@@ -102,8 +105,10 @@ void	rfc_apply_list(cJSON *root, t_ui_context *ctx)
 	cJSON	*node;
 
 	node = root->child;
-	if (node && !cJSON_IsString(node))
+	if (!strcmp(ctx->last_cmd, "QUESTS") || (node && !cJSON_IsString(node)))
 	{
+		if (!node)
+			add_message(&ctx->logs, "No active quest");
 		while (node)
 		{
 			rfc_apply_quest(node, ctx);

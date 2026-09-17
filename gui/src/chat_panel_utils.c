@@ -60,27 +60,27 @@ static int	send_group_cmd(t_ui_context *ctx)
 
 static void	send_chat_message(t_ui_context *ctx)
 {
+	const char			*scope;
 	char				cmd[192];
 	char				echo[192];
 	t_message_buffer	*target;
 
 	if (ctx->chat_channel == 2 && send_group_cmd(ctx))
 		return ;
-	if (ctx->chat_channel == 0)
+	scope = "ROOM";
+	target = &ctx->chat;
+	if (ctx->chat_channel == 1)
 	{
-		target = &ctx->chat;
-		snprintf(cmd, sizeof(cmd), "CHAT ROOM %s\n", ctx->chat_input);
-	}
-	else if (ctx->chat_channel == 1)
-	{
+		scope = "GLOBAL";
 		target = &ctx->global_chat;
-		snprintf(cmd, sizeof(cmd), "CHAT GLOBAL %s\n", ctx->chat_input);
 	}
-	else
+	else if (ctx->chat_channel == 2)
 	{
+		scope = "GROUP";
 		target = &ctx->group_chat;
-		snprintf(cmd, sizeof(cmd), "CHAT GROUP %s\n", ctx->chat_input);
 	}
+	snprintf(cmd, sizeof(cmd), "CHAT %s %s\n", scope, ctx->chat_input);
+	strncpy(ctx->last_cmd, "CHAT", 15);
 	net_send_command(ctx->sock_fd, cmd);
 	snprintf(echo, sizeof(echo), "You: %s", ctx->chat_input);
 	add_message(target, echo);

@@ -17,11 +17,12 @@
 # include "graphics.h"
 # include "layout.h"
 
-void	draw_room_view(const t_game_assets *assets, t_ui_context *ctx,
-			Rectangle room_panel);
-void	draw_room_npcs(const t_game_assets *assets, t_ui_context *ctx,
-			Rectangle v);
-void	draw_room_items(const t_game_assets *assets, t_ui_context *ctx,
-			Rectangle view_rect);
+void		draw_room_view(const t_game_assets *assets, t_ui_context *ctx,
+				Rectangle room_panel);
+void		draw_room_npcs(const t_game_assets *assets, t_ui_context *ctx,
+				Rectangle v);
+void		draw_room_items(const t_game_assets *assets, t_ui_context *ctx,
+				Rectangle view_rect);
+Rectangle	get_npc_dest(Rectangle view_rect, Texture2D tex, const char *id);
 
 #endif
