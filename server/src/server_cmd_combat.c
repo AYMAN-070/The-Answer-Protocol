@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/08 14:53:02 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/17 17:18:59 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/17 21:18:26 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,8 @@ void	handle_attack(t_player *p, t_player *c, char *tgt, char *wld)
 
 	if (tgt[0] == '\0' || !check_npc_in_room(wld, p->location, tgt))
 		return ((void)write(p->sd, "ERR 404 NPC_NOT_FOUND\n", 22));
+	if (strcmp(tgt, "injured_engineer") == 0)
+		return ((void)write(p->sd, "ERR 405 NPC_NOT_HOSTILE\n", 24));
 	d = 15 + (rand() % 11);
 	if (has_item(p, "laser_pistol"))
 		d = 30 + (rand() % 11);

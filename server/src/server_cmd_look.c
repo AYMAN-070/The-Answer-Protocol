@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/17 16:15:20 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/17 17:42:51 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/17 21:08:53 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,30 +81,29 @@ static void	build_items_list(char *wld, char *room, char *out)
 
 static void	build_npcs_list(char *wld, char *room, char *out)
 {
-	char	key[64];
-	char	*pos;
-	char	*end;
-	int		first;
+	char	k[64];
+	char	*p;
+	char	*l;
+	int		f;
 
-	first = 1;
+	f = 1;
 	out[0] = '\0';
-	sprintf(key, "\"%s\": {", room);
-	pos = strstr(wld, key);
-	if (pos)
-		pos = strstr(pos, "\"spawns\": [");
-	if (pos)
-		pos = strstr(pos, "\"npc_type\": \"");
-	while (pos)
+	sprintf(k, "\"%s\": {", room);
+	p = strstr(wld, k);
+	if (p)
+		p = strstr(p, "\"spawns\": [");
+	if (!p)
+		return ;
+	l = strchr(p, ']');
+	p = strstr(p, "\"npc_type\": \"");
+	while (l && p && p < l)
 	{
-		pos += 13;
-		end = strchr(pos, '"');
-		if (!first)
+		p += 13;
+		if (!f)
 			strcat(out, ", ");
-		strcat(out, "\"");
-		strncat(out, pos, end - pos);
-		strcat(out, "\"");
-		first = 0;
-		pos = strstr(pos, "\"npc_type\": \"");
+		sprintf(out + strlen(out), "\"%.*s\"", (int)(strchr(p, '"') - p), p);
+		f = 0;
+		p = strstr(p, "\"npc_type\": \"");
 	}
 }
 
@@ -124,9 +123,10 @@ void	handle_look(t_player *p, t_player *c, char *wld)
 	build_items_list(wld, p->location, b[3]);
 	build_npcs_list(wld, p->location, b[4]);
 
-	snprintf(out, sizeof(out), "OK {\"room\": {\"id\": \"%s\", \"name\": \"%s\", "
-		"\"description\": \"Salle\", \"exits\": {%s}}, "
-		"\"players\": [%s], \"items\": [%s], \"npcs\": [%s]}\n",
+	snprintf(out, sizeof(out), "OK {\"room\": {\"id\": \"%s\", "
+		"\"name\": \"%s\", \"description\": \"Salle\", "
+		"\"exits\": {%s}}, \"players\": [%s], "
+		"\"items\": [%s], \"npcs\": [%s]}\n",
 		p->location, b[0], b[2], b[1], b[3], b[4]);
 	write(p->sd, out, strlen(out));
 }
