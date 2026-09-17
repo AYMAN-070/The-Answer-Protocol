@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 17:11:51 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/16 18:15:06 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/17 17:03:14 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,8 @@ static int	handle_user_input(int sock, char *buffer)
 	if (!fgets(buffer, 1024, stdin) || !strncmp(buffer, "QUIT\n", 5))
 		return (0);
 	write(sock, buffer, strlen(buffer));
+	printf("> ");
+	fflush(stdout);
 	return (1);
 }
 

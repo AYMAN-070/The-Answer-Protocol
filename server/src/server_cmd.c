@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 20:08:00 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/17 16:29:59 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/17 17:00:48 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,7 +98,6 @@ void	process_command(t_player *p, t_player *c, char *b, char *wld)
 {
 	char	cmd[32];
 	char	arg[512];
-	printf("DEBUG - Commande reçue du client : [%s]\n", b);
 
 	cmd[0] = '\0';
 	arg[0] = '\0';

@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/08 14:53:02 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/17 15:43:34 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/17 17:18:59 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,29 +54,27 @@ void	give_item(t_player *player, char *item)
 void	handle_attack(t_player *p, t_player *c, char *tgt, char *wld)
 {
 	static int	d_hp = 50;
-	int			d[2];
-	char		msg[128];
+	int			d;
+	char		msg[256];
 
 	if (tgt[0] == '\0' || !check_npc_in_room(wld, p->location, tgt))
-		return ((void)write(p->sd, "ERR missing target\n", 19));
-	d[0] = 15 + (rand() % 11);
+		return ((void)write(p->sd, "ERR 404 NPC_NOT_FOUND\n", 22));
+	d = 15 + (rand() % 11);
 	if (has_item(p, "laser_pistol"))
-		d[0] = 30 + (rand() % 11);
-	if (strcmp(tgt, "alpha_drone") == 0 && (d_hp -= d[0]) <= 0)
+		d = 30 + (rand() % 11);
+	if (strcmp(tgt, "alpha_drone") == 0 && (d_hp -= d) <= 0)
 	{
-		write(p->sd, "EVENT:Drone dead! Got keycard\n", 30);
 		give_item(p, "red_keycard");
 		d_hp = 100;
-		return ;
+		sprintf(msg, "OK {\"attacker_hp\": %d, \"target_hp\": 0, "
+			"\"damage\": %d, \"status\": \"victory\"}\n", p->hp, d);
+		return ((void)write(p->sd, msg, strlen(msg)));
 	}
-	d[1] = 10 + (rand() % 11);
-	p->hp -= d[1];
+	p->hp -= (10 + (rand() % 11));
 	if (p->hp <= 0)
-	{
-		handle_death(p, c, wld);
-		return ;
-	}
-	sprintf(msg, "COMBAT:Hit %d. Npc hit %d. HP:%d\n", d[0], d[1], p->hp);
+		return (handle_death(p, c, wld));
+	sprintf(msg, "OK {\"attacker_hp\": %d, \"target_hp\": %d, "
+		"\"damage\": %d, \"status\": \"combat\"}\n", p->hp, d_hp, d);
 	write(p->sd, msg, strlen(msg));
 }
 
