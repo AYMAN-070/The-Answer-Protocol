@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/17 21:44:42 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/17 22:03:57 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/17 22:56:26 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,24 +85,24 @@ int	apply_damage_to_npc(char *npc, int dmg, char *wld)
 
 void	get_npc_dialogue(char *wld, char *npc, char *out)
 {
-	char	key[64];
+	char	k[64];
 	char	*p;
-	char	*end;
+	char	*e;
 
 	out[0] = '\0';
-	sprintf(key, "\"%s\": {", npc);
-	p = strstr(wld, key);
+	sprintf(k, "\"%s\": {", npc);
+	p = strstr(wld, k);
 	if (p)
 		p = strstr(p, "\"dialogue\": [");
 	if (p)
-		p = strchr(p, '"');
+		p = strchr(p + 13, '"');
 	if (p)
 	{
-		end = strchr(p + 1, '"');
-		if (end && (end - (p + 1)) < 255)
+		e = strchr(p + 1, '"');
+		if (e && (e - (p + 1)) < 255)
 		{
-			strncpy(out, p + 1, end - (p + 1));
-			out[end - (p + 1)] = '\0';
+			strncpy(out, p + 1, e - (p + 1));
+			out[e - (p + 1)] = '\0';
 		}
 	}
 	if (out[0] == '\0')
