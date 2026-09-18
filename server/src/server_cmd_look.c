@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/17 16:15:20 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/18 20:26:24 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/18 20:39:56 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,25 +65,21 @@ static void	build_items_list(char *wld, char *room, char *out)
 	out[0] = '\0';
 	manage_dropped(3, room, NULL, out);
 	sprintf(n, "\"%s\": {", room);
-	p = strstr(wld, n);
-	if (p)
-		p = strstr(p, "\"items\": [");
-	l = NULL;
-	if (p)
-		l = strchr(p, ']');
-	while (p && l && p < l)
+	if ((p = strstr(wld, n)) && (p = strstr(p, "\"items\": [")))
 	{
-		p = strchr(p + 1, '"');
-		if (!p || p > l)
-			break ;
-		sprintf(n, "%.*s", (int)(strchr(p + 1, '"') - (p + 1)), p + 1);
-		if (!manage_taken(1, n))
+		l = strchr(p, ']');
+		p = strchr(p, '[');
+		while (p && l && (p = strchr(p + 1, '"')) && p < l)
 		{
-			if (out[0] != '\0')
-				strcat(out, ", ");
-			sprintf(out + strlen(out), "\"%s\"", n);
+			sprintf(n, "%.*s", (int)(strchr(p + 1, '"') - (p + 1)), p + 1);
+			if (!manage_taken(1, n))
+			{
+				if (out[0] != '\0')
+					strcat(out, ", ");
+				sprintf(out + strlen(out), "\"%s\"", n);
+			}
+			p = strchr(p + 1, '"');
 		}
-		p = strchr(p + 1, '"');
 	}
 }
 
@@ -137,6 +133,7 @@ void	handle_look(t_player *p, t_player *c, char *wld)
 		"\"exits\": {%s}}, \"players\": [%s], "
 		"\"items\": [%s], \"npcs\": [%s]}\n",
 		p->location, b[0], b[5], b[2], b[1], b[3], b[4]);
+	printf("DEBUG LOOK JSON: %s", out);
 	write(p->sd, out, strlen(out));
 }
 
