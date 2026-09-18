@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 20:08:00 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/17 17:00:48 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/18 19:57:32 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ static void	init_player_data(t_player *p, char *arg)
 	p->in_combat = 0;
 	p->group_id = 0;
 	p->quest_status = 0;
+	p->quest_override = 0;
 	i = -1;
 	while (++i < 5)
 		p->inventory[i][0] = '\0';
@@ -86,7 +87,7 @@ static int	exec_other_cmds(t_player *p, t_player *c, char *cmd, char *arg)
 	else if (strcmp(cmd, "CHAT") == 0)
 		handle_chat(p, c, arg);
 	else if (strcmp(cmd, "QUIT") == 0)
-		handle_quit(p);
+		handle_quit(p, c);
 	else if (strcmp(cmd, "QUESTS") == 0)
 		handle_quests(p);
 	else

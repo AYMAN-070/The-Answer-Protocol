@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   server_cmd_combat.c                                :+:      :+:    :+:   */
+/*   server_cmd_attack.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/08 14:53:02 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/17 22:07:04 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/18 19:59:12 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,9 +76,12 @@ void	handle_attack(t_player *p, t_player *c, char *tgt, char *wld)
 	d = 15 + (rand() % 11);
 	if (has_item(p, "laser_pistol"))
 		d = 30 + (rand() % 11);
-	t_hp = apply_damage_to_npc(tgt, d, wld);
+	t_hp = apply_damage_to_npc(p->location, tgt, d, wld);
 	if (t_hp <= 0 && strcmp(tgt, "alpha_drone") == 0)
+	{
 		give_item(p, "red_keycard");
+		p->quest_override = 2;
+	}
 	if (t_hp > 0)
 		p->hp -= (10 + (rand() % 11));
 	if (p->hp <= 0)

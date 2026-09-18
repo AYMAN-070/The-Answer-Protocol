@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/11 17:39:36 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/17 15:44:25 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/18 15:29:04 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,9 @@ void	handle_chat(t_player *p, t_player *c, char *arg)
 				&& strcmp(c[i].location, p->location) == 0)
 				write(c[i].sd, out, strlen(out));
 			else if (strcmp(scope, "GLOBAL") == 0)
+				write(c[i].sd, out, strlen(out));
+			else if (strcmp(scope, "GROUP") == 0
+				&& c[i].group_id == p->group_id)
 				write(c[i].sd, out, strlen(out));
 		}
 	}

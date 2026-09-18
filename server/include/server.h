@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 10:28:08 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/17 22:11:39 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/18 19:55:34 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ typedef struct s_player
 	int		cmd_count;
 	int		group_id;
 	int		quest_status;
+	int		quest_override;
 	char	cmd_buffer[1024];
 	int		cmd_len;
 }	t_player;
@@ -51,7 +52,7 @@ void	process_command(t_player *player, t_player *clients,
 char	*load_world(char *filename);
 void	extract_json_value(char *json, char *key, char *result);
 void	get_room_exit(char *json, char *room, char *dir, char *dest);
-void	handle_quit(t_player *player);
+void	handle_quit(t_player *player, t_player *c);
 void	handle_who(t_player *p, t_player *c);
 void	handle_look(t_player *p, t_player *c, char *wld);
 void	handle_move(t_player *p, t_player *c, char *buf, char *wld);
@@ -82,6 +83,7 @@ int		is_npc_enemy(char *wld, char *npc);
 int		apply_damage_to_npc(char *npc, int dmg, char *wld);
 void	get_npc_dialogue(char *wld, char *npc, char *out);
 void	handle_death(t_player *p, t_player *c, char *wld);
+void	get_room_desc(char *wld, char *room, char *out);
 
 
 typedef struct s_drop

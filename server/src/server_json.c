@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 11:07:12 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/09 22:32:00 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/18 15:29:35 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,4 +99,27 @@ int	check_npc_in_room(char *json, char *room, char *npc)
 	if (pos && limit && pos < limit)
 		return (1);
 	return (0);
+}
+
+void	get_room_desc(char *wld, char *room, char *out)
+{
+	char	k[64];
+	char	*p;
+	char	*e;
+
+	sprintf(k, "\"%s\": {", room);
+	p = strstr(wld, k);
+	if (p)
+		p = strstr(p, "\"description\": \"");
+	if (p)
+	{
+		e = strchr(p + 16, '"');
+		if (e && (e - (p + 16)) < 255)
+		{
+			strncpy(out, p + 16, e - (p + 16));
+			out[e - (p + 16)] = '\0';
+			return ;
+		}
+	}
+	strcpy(out, "Description indisponible.");
 }

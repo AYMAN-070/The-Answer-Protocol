@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/17 16:15:20 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/17 21:08:53 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/18 20:26:24 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,38 +58,44 @@ static void	build_exits_list(char *wld, char *room, char *out)
 
 static void	build_items_list(char *wld, char *room, char *out)
 {
-	char	key[64];
-	char	*pos;
-	char	*end;
+	char	n[64];
+	char	*p;
+	char	*l;
 
 	out[0] = '\0';
-	sprintf(key, "\"%s\": {", room);
-	pos = strstr(wld, key);
-	if (!pos)
-		return ;
-	pos = strstr(pos, "\"items\": [");
-	if (!pos)
-		return ;
-	pos += 10;
-	end = strchr(pos, ']');
-	if (end && (end - pos) < 255)
+	manage_dropped(3, room, NULL, out);
+	sprintf(n, "\"%s\": {", room);
+	p = strstr(wld, n);
+	if (p)
+		p = strstr(p, "\"items\": [");
+	l = NULL;
+	if (p)
+		l = strchr(p, ']');
+	while (p && l && p < l)
 	{
-		strncpy(out, pos, end - pos);
-		out[end - pos] = '\0';
+		p = strchr(p + 1, '"');
+		if (!p || p > l)
+			break ;
+		sprintf(n, "%.*s", (int)(strchr(p + 1, '"') - (p + 1)), p + 1);
+		if (!manage_taken(1, n))
+		{
+			if (out[0] != '\0')
+				strcat(out, ", ");
+			sprintf(out + strlen(out), "\"%s\"", n);
+		}
+		p = strchr(p + 1, '"');
 	}
 }
 
 static void	build_npcs_list(char *wld, char *room, char *out)
 {
-	char	k[64];
+	char	n[64];
 	char	*p;
 	char	*l;
-	int		f;
 
-	f = 1;
 	out[0] = '\0';
-	sprintf(k, "\"%s\": {", room);
-	p = strstr(wld, k);
+	sprintf(n, "\"%s\": {", room);
+	p = strstr(wld, n);
 	if (p)
 		p = strstr(p, "\"spawns\": [");
 	if (!p)
@@ -99,17 +105,20 @@ static void	build_npcs_list(char *wld, char *room, char *out)
 	while (l && p && p < l)
 	{
 		p += 13;
-		if (!f)
-			strcat(out, ", ");
-		sprintf(out + strlen(out), "\"%.*s\"", (int)(strchr(p, '"') - p), p);
-		f = 0;
+		sprintf(n, "%.*s", (int)(strchr(p, '"') - p), p);
+		if (apply_damage_to_npc(room, n, 0, wld) > 0)
+		{
+			if (out[0] != '\0')
+				strcat(out, ", ");
+			sprintf(out + strlen(out), "\"%s\"", n);
+		}
 		p = strstr(p, "\"npc_type\": \"");
 	}
 }
 
 void	handle_look(t_player *p, t_player *c, char *wld)
 {
-	char	b[5][256];
+	char	b[6][256];
 	char	out[2048];
 
 	sprintf(out, "\"%s\": {\n        \"name\":", p->location);
@@ -122,11 +131,12 @@ void	handle_look(t_player *p, t_player *c, char *wld)
 	build_exits_list(wld, p->location, b[2]);
 	build_items_list(wld, p->location, b[3]);
 	build_npcs_list(wld, p->location, b[4]);
-
+	get_room_desc(wld, p->location, b[5]);
 	snprintf(out, sizeof(out), "OK {\"room\": {\"id\": \"%s\", "
-		"\"name\": \"%s\", \"description\": \"Salle\", "
+		"\"name\": \"%s\", \"description\": \"%s\", "
 		"\"exits\": {%s}}, \"players\": [%s], "
 		"\"items\": [%s], \"npcs\": [%s]}\n",
-		p->location, b[0], b[2], b[1], b[3], b[4]);
+		p->location, b[0], b[5], b[2], b[1], b[3], b[4]);
 	write(p->sd, out, strlen(out));
 }
+

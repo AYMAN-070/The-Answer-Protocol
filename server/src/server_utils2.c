@@ -6,13 +6,13 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/17 21:44:42 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/17 22:56:26 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/18 19:43:38 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server.h"
 
-int is_item_obtainable(char *wld, char *item)
+int	is_item_obtainable(char *wld, char *item)
 {
 	char	key[64];
 	char	*p;
@@ -60,21 +60,23 @@ int	is_npc_enemy(char *wld, char *npc)
 	return (0);
 }
 
-int	apply_damage_to_npc(char *npc, int dmg, char *wld)
+int	apply_damage_to_npc(char *room, char *npc, int dmg, char *wld)
 {
-	static char	n[10][32];
-	static int	h[10];
+	static char	n[20][32];
+	static char	r[20][32];
+	static int	h[20];
 	int			i;
 
 	i = -1;
-	while (++i < 10)
+	while (++i < 20)
 	{
 		if (n[i][0] == '\0')
 		{
 			strncpy(n[i], npc, 31);
+			strncpy(r[i], room, 31);
 			h[i] = get_npc_hp(wld, npc);
 		}
-		if (strcmp(n[i], npc) == 0)
+		if (strcmp(n[i], npc) == 0 && strcmp(r[i], room) == 0)
 		{
 			h[i] -= dmg;
 			return (h[i]);

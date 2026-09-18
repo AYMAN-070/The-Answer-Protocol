@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   server_manage_dropped.c                            :+:      :+:    :+:   */
+/*   server_cmd_drop.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/11 14:55:03 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/17 21:50:02 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/18 20:26:02 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,8 +34,9 @@ char	*manage_dropped(int mode, char *room, char *item, char *buf)
 		}
 		else if (mode == 3 && buf && !strcmp(d[i].room, room))
 		{
-			strcat(buf, d[i].item);
-			strcat(buf, ",");
+			if (buf[0] != '\0')
+				strcat(buf, ", ");
+			sprintf(buf + strlen(buf), "\"%s\"", d[i].item);
 		}
 	}
 	return (NULL);
