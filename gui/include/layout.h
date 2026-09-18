@@ -69,6 +69,7 @@ typedef struct s_ui_context
 	char				talk_npc[32];
 	char				attack_target[32];
 	char				last_cmd[16];
+	char				last_inv_sig[320];
 	char				group_id[32];
 	int					sel_item;
 	int					sel_room_item;
