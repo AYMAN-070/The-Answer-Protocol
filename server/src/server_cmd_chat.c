@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/11 17:39:36 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/18 15:29:04 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/18 23:44:11 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,35 +14,27 @@
 
 void	handle_chat(t_player *p, t_player *c, char *arg)
 {
-	char	scope[16];
-	char	msg[1024];
-	char	out[2048];
+	char	s[16];
+	char	m[1024];
+	char	o[2048];
 	int		i;
 
-	scope[0] = '\0';
-	msg[0] = '\0';
-	sscanf(arg, "%15s %[^\n]", scope, msg);
-	if (scope[0] == '\0' || msg[0] == '\0')
+	if (sscanf(arg, "%15s %[^\n]", s, m) < 2)
 		return ((void)write(p->sd, "ERR missing argument\n", 21));
-	if (strcmp(scope, "ROOM") == 0)
-		snprintf(out, sizeof(out), "EVT ROOM CHAT %s %s\n", p->name, msg);
-	else if (strcmp(scope, "GLOBAL") == 0)
-		snprintf(out, sizeof(out), "EVT GLOBAL CHAT %s %s\n", p->name, msg);
-	else
+	if (strcmp(s, "ROOM") && strcmp(s, "GLOBAL") && strcmp(s, "GROUP"))
 		return ;
+	snprintf(o, sizeof(o), "EVT %s CHAT %s %s\n", s, p->name, m);
 	i = -1;
 	while (++i < 10)
 	{
 		if (c[i].is_active && c[i].sd != p->sd)
 		{
-			if (strcmp(scope, "ROOM") == 0
-				&& strcmp(c[i].location, p->location) == 0)
-				write(c[i].sd, out, strlen(out));
-			else if (strcmp(scope, "GLOBAL") == 0)
-				write(c[i].sd, out, strlen(out));
-			else if (strcmp(scope, "GROUP") == 0
-				&& c[i].group_id == p->group_id)
-				write(c[i].sd, out, strlen(out));
+			if (!strcmp(s, "ROOM") && !strcmp(c[i].location, p->location))
+				write(c[i].sd, o, strlen(o));
+			else if (!strcmp(s, "GLOBAL"))
+				write(c[i].sd, o, strlen(o));
+			else if (!strcmp(s, "GROUP") && c[i].group_id == p->group_id)
+				write(c[i].sd, o, strlen(o));
 		}
 	}
 	write(p->sd, "OK\n", 3);

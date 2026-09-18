@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 10:28:08 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/18 20:33:07 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/18 23:12:30 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,6 @@ int		apply_damage_to_npc(char *room, char *npc, int dmg, char *wld);
 void	get_npc_dialogue(char *wld, char *npc, char *out);
 void	handle_death(t_player *p, t_player *c, char *wld);
 void	get_room_desc(char *wld, char *room, char *out);
-
 
 typedef struct s_drop
 {

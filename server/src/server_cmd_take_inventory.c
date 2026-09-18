@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 19:07:59 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/17 21:52:36 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/18 23:53:02 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,49 +37,52 @@ void	handle_inventory(t_player *p)
 	write(p->sd, msg, strlen(msg));
 }
 
-
 char	*manage_taken(int mode, char *item)
 {
-	static char	taken[128][32] = {0};
+	static char	t[128][32];
 	int			i;
 
 	i = -1;
 	if (mode == 1)
 	{
 		while (++i < 128)
-			if (strcmp(taken[i], item) == 0)
-				return (taken[i]);
+			if (!strcmp(t[i], item))
+				return (t[i]);
 	}
-	else if (mode == 2)
+	if (mode == 2)
 	{
 		while (++i < 128)
-			if (taken[i][0] == '\0')
+		{
+			if (t[i][0] == '\0')
 			{
-				strncpy(taken[i], item, 31);
-				return (taken[i]);
+				strncpy(t[i], item, 31);
+				return (t[i]);
 			}
+		}
 	}
 	return (NULL);
 }
 
-static int	check_take_err(t_player *p, int w, char *item, char *world)
+static int	check_take_err(t_player *p, int w, char *item, char *wld)
 {
 	if (w != 2)
 	{
 		server_log("WARN", p->ip, p->name, "Take missing item");
-		return (write(p->sd, "ERR missing item\n", 17), 1);
+		write(p->sd, "ERR missing item\n", 17);
+		return (1);
 	}
 	if (has_item(p, item) == 1)
 	{
 		server_log("WARN", p->ip, p->name, "Take duplicate item");
-		return (write(p->sd, "ERR you already have this\n", 26), 1);
+		write(p->sd, "ERR you already have this\n", 26);
+		return (1);
 	}
-	if ((check_item_in_room(world, p->location, item) == 0
-			|| manage_taken(1, item) != NULL)
-		&& manage_dropped(2, p->location, item, NULL) == NULL)
+	if ((!check_item_in_room(wld, p->location, item) || manage_taken(1, item))
+		&& !manage_dropped(2, p->location, item, NULL))
 	{
 		server_log("WARN", p->ip, p->name, "Take item not available");
-		return (write(p->sd, "ERR 404 ITEM_NOT_FOUND\n", 23), 1);
+		write(p->sd, "ERR 404 ITEM_NOT_FOUND\n", 23);
+		return (1);
 	}
 	return (0);
 }

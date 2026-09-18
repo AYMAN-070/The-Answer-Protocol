@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 20:08:00 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/18 19:57:32 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/18 23:45:34 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,7 +116,7 @@ void	process_command(t_player *p, t_player *c, char *b, char *wld)
 		handle_flee(p, c, wld);
 	else if (strcmp(cmd, "DROP") == 0)
 		handle_drop(p, c, arg, wld);
-	else if (exec_other_cmds(p, c, cmd, arg) == 0 
+	else if (exec_other_cmds(p, c, cmd, arg) == 0
 		&& process_combat_cmd(p, c, b, wld) == 0)
 	{
 		write(p->sd, "ERR unknown command\n", 20);
