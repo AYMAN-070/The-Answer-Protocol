@@ -12,6 +12,7 @@
 
 #include "rfc.h"
 #include "network_parser.h"
+#include "network.h"
 #include "chat_panel.h"
 #include <string.h>
 #include <stdio.h>
@@ -40,13 +41,21 @@ void	rfc_apply_combat(cJSON *root, t_ui_context *ctx)
 	cJSON	*own_hp;
 	cJSON	*target_hp;
 	cJSON	*damage;
+	cJSON	*status;
 	char	msg[160];
 
 	own_hp = cJSON_GetObjectItem(root, "attacker_hp");
 	target_hp = cJSON_GetObjectItem(root, "target_hp");
 	damage = cJSON_GetObjectItem(root, "damage");
+	status = cJSON_GetObjectItem(root, "status");
 	if (own_hp && cJSON_IsNumber(own_hp))
 		ctx->player.hp = own_hp->valueint;
+	if (status && cJSON_IsString(status)
+		&& !strcmp(status->valuestring, "victory"))
+	{
+		remove_room_npc(ctx, ctx->attack_target);
+		net_send_command(ctx->sock_fd, "INVENTORY\n");
+	}
 	if (own_hp && target_hp && damage)
 		snprintf(msg, sizeof(msg), "Damage %d - target %d HP - you %d HP",
 			damage->valueint, target_hp->valueint, own_hp->valueint);

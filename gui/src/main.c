@@ -67,6 +67,7 @@ static int	init_client(t_game_assets *assets, t_ui_context *ctx,
 		snprintf(cmd, sizeof(cmd), "CONNECT %s\n", name);
 		net_send_command(sock_fd, cmd);
 		net_send_command(sock_fd, "WHO\n");
+		net_send_command(sock_fd, "LOOK\n");
 	}
 	return (sock_fd);
 }

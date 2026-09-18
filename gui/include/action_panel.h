@@ -18,8 +18,10 @@
 struct	s_ui_context;
 
 int			is_btn_active(int id, struct s_ui_context *ctx);
+int			is_quest_giver(struct s_ui_context *ctx, const char *npc_id);
 Rectangle	get_btn_rect(int btn_id, Rectangle panel);
 void		remember_room(struct s_ui_context *ctx);
+void		apply_npc_side_effects(struct s_ui_context *ctx, int id);
 void		render_action_panel(Rectangle inv_panel, struct s_ui_context *ctx);
 
 #endif

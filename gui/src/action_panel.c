@@ -35,12 +35,9 @@ static void	handle_click(int id, t_ui_context *ctx)
 	else if (id == 6 && ctx->player.inv_count > 0)
 		snprintf(cmd_buf, 64, "%s %s\n", commands[id],
 			ctx->player.inventory[ctx->sel_item].id);
-	if (id == 7 && ctx->state.npc_count > 0)
-		strncpy(ctx->talk_npc, ctx->state.npcs[ctx->sel_npc].name, 31);
 	sscanf(cmd_buf, "%15s", ctx->last_cmd);
 	net_send_command(ctx->sock_fd, cmd_buf);
-	if (id == 5 || id == 6)
-		net_send_command(ctx->sock_fd, "LOOK\n");
+	apply_npc_side_effects(ctx, id);
 	if (id == 0)
 		remember_room(ctx);
 }
@@ -67,7 +64,7 @@ static void	draw_sys_btn(int id, Rectangle panel, t_ui_context *ctx,
 {
 	const char	*labels[17] = {"LOOK", "NORTH", "WEST", "EAST", "SOUTH",
 		"TAKE", "DROP", "TALK", "ATTACK", "DEFEND", "FLEE", "INVENTORY",
-		"STATUS", "QUESTS", "WHO", "GROUP", "QUIT"};
+		"STATUS", "QUEST LOG", "WHO", "GROUP", "QUIT"};
 	Rectangle	btn_rect;
 	Color		colors[2];
 	int			text_width;

@@ -12,6 +12,7 @@
 
 #include "rfc.h"
 #include "network_parser.h"
+#include "network.h"
 #include <string.h>
 
 static void	apply_id_list(cJSON *arr, t_entity *dest, int *count, cJSON *defs)
@@ -63,6 +64,49 @@ static void	rfc_apply_room(cJSON *root, t_ui_context *ctx)
 		ctx->room_players = cJSON_GetArraySize(field);
 }
 
+void	update_room_items(t_ui_context *ctx, const char *id, int taken)
+{
+	cJSON		*defs;
+	t_entity	*slot;
+	int			idx;
+
+	if (taken)
+	{
+		idx = -1;
+		while (++idx < ctx->state.item_count)
+			if (!strcmp(ctx->state.items[idx].id, id))
+				break ;
+		while (idx >= 0 && ++idx < ctx->state.item_count)
+			ctx->state.items[idx - 1] = ctx->state.items[idx];
+		if (idx > 0)
+			ctx->state.item_count--;
+	}
+	else if (ctx->state.item_count < 10)
+	{
+		defs = cJSON_GetObjectItem(ctx->world_db, "world");
+		defs = cJSON_GetObjectItem(defs, "items");
+		slot = &ctx->state.items[ctx->state.item_count];
+		strncpy(slot->id, id, 31);
+		slot->id[31] = '\0';
+		resolve_display_name(defs, id, slot->name);
+		ctx->state.item_count++;
+	}
+}
+
+void	remove_room_npc(t_ui_context *ctx, const char *id)
+{
+	int	idx;
+
+	idx = -1;
+	while (++idx < ctx->state.npc_count)
+		if (!strcmp(ctx->state.npcs[idx].id, id))
+			break ;
+	while (idx >= 0 && ++idx < ctx->state.npc_count)
+		ctx->state.npcs[idx - 1] = ctx->state.npcs[idx];
+	if (idx > 0)
+		ctx->state.npc_count--;
+}
+
 void	rfc_apply_json(char *json, t_ui_context *ctx)
 {
 	cJSON	*root;
@@ -75,7 +119,10 @@ void	rfc_apply_json(char *json, t_ui_context *ctx)
 	else if (cJSON_GetObjectItem(root, "attacker_hp"))
 		rfc_apply_combat(root, ctx);
 	else if (cJSON_GetObjectItem(root, "quest_id"))
+	{
 		rfc_apply_quest(root, ctx);
+		net_send_command(ctx->sock_fd, "QUESTS\n");
+	}
 	else if (cJSON_GetObjectItem(root, "hp"))
 		rfc_apply_status(root, ctx);
 	else if (cJSON_IsArray(root))

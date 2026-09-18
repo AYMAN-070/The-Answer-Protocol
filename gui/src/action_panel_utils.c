@@ -26,6 +26,20 @@ static int	has_exit(t_ui_context *ctx, const char *dir)
 	return (0);
 }
 
+int	is_quest_giver(t_ui_context *ctx, const char *npc_id)
+{
+	cJSON	*npcs;
+	cJSON	*entry;
+	cJSON	*role;
+
+	npcs = cJSON_GetObjectItem(ctx->world_db, "world");
+	npcs = cJSON_GetObjectItem(npcs, "npcs");
+	entry = cJSON_GetObjectItem(npcs, npc_id);
+	role = cJSON_GetObjectItem(entry, "role");
+	return (role && cJSON_IsString(role)
+		&& !strcmp(role->valuestring, "quest_giver"));
+}
+
 int	is_btn_active(int id, t_ui_context *ctx)
 {
 	const char	*exit_dirs[5] = {"", "north", "west", "east", "south"};
