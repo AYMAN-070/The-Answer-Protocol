@@ -67,6 +67,7 @@ typedef struct s_ui_context
 	char				chat_input[128];
 	int					chat_channel;
 	char				talk_npc[32];
+	char				talk_npc_id[32];
 	char				attack_target[32];
 	char				last_cmd[16];
 	char				last_inv_sig[320];

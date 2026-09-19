@@ -72,13 +72,7 @@ static void	route_ok(char *data, t_ui_context *ctx)
 	else if (!strncmp(data, "taken=", 6) || !strncmp(data, "dropped=", 8))
 		handle_item_event(ctx, data);
 	else if (!strcmp(ctx->last_cmd, "TALK"))
-	{
-		strncpy(ctx->state.current_npc, ctx->talk_npc, 31);
-		strncpy(ctx->state.current_dialogue, data, 255);
-		add_message(&ctx->chat, data);
-		net_send_command(ctx->sock_fd, "INVENTORY\n");
-		net_send_command(ctx->sock_fd, "QUESTS\n");
-	}
+		handle_talk_response(data, ctx);
 	else
 		add_message(&ctx->logs, data);
 }

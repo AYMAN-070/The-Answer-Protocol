@@ -27,6 +27,7 @@ void	apply_npc_side_effects(t_ui_context *ctx, int id)
 	else if (id == 7)
 	{
 		strncpy(ctx->talk_npc, ctx->state.npcs[ctx->sel_npc].name, 31);
+		strncpy(ctx->talk_npc_id, ctx->state.npcs[ctx->sel_npc].id, 31);
 		if (is_quest_giver(ctx, ctx->state.npcs[ctx->sel_npc].id))
 		{
 			snprintf(cmd, sizeof(cmd), "QUEST %s\n",
