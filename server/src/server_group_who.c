@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/16 17:11:42 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/18 23:54:18 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/19 14:11:20 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,24 +34,22 @@ static void	handle_group_target(t_player *p, t_player *c, char *a, char *tgt)
 	char	o[128];
 	int		i;
 
+	if (!strcmp(a, "JOIN"))
+	{
+		if (p->group_id != 0)
+			return ((void)write(p->sd, "ERR 402 ALREADY_IN_GROUP\n", 25));
+		p->group_id = atoi(tgt);
+		sprintf(o, "OK group=%d\n", p->group_id);
+		return ((void)write(p->sd, o, strlen(o)));
+	}
 	i = -1;
 	while (++i < 10)
 	{
-		if (!c[i].is_active || strcmp(c[i].name, tgt))
-			continue ;
-		if (!strcmp(a, "INVITE"))
+		if (c[i].is_active && !strcmp(c[i].name, tgt) && !strcmp(a, "INVITE"))
 		{
 			sprintf(o, "EVT GROUP INVITE %s\n", p->name);
 			write(c[i].sd, o, strlen(o));
 			return ((void)write(p->sd, "OK Invited\n", 11));
-		}
-		if (!strcmp(a, "JOIN") && p->group_id != 0)
-			return ((void)write(p->sd, "ERR 402 ALREADY_IN_GROUP\n", 25));
-		if (!strcmp(a, "JOIN"))
-		{
-			p->group_id = c[i].group_id;
-			sprintf(o, "OK group=%d\n", p->group_id);
-			return ((void)write(p->sd, o, strlen(o)));
 		}
 	}
 	write(p->sd, "ERR player not found\n", 21);

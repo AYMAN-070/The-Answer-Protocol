@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/28 14:27:59 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/17 16:08:13 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/19 14:40:50 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ void	handle_new_connection(int server_fd, t_player *clients)
 	{
 		if (clients[i].is_active == 0)
 		{
+			memset(&clients[i], 0, sizeof(t_player));
 			clients[i].sd = sd;
 			clients[i].is_active = 1;
 			strncpy(clients[i].ip, inet_ntoa(addr.sin_addr), 15);
@@ -74,7 +75,7 @@ static void	read_client_data(t_player *p, t_player *c, char *wld)
 		p->is_active = 0;
 		p->cmd_len = 0;
 		memset(p->cmd_buffer, 0, sizeof(p->cmd_buffer));
-		return ;
+		return (broadcast_player_stats(c));
 	}
 	p->cmd_len += b;
 	p->cmd_buffer[p->cmd_len] = '\0';
@@ -113,6 +114,7 @@ int	main(void)
 	char		*world_data;
 
 	srand(time(NULL));
+	setvbuf(stdout, NULL, _IOLBF, 0);
 	server_fd = init_server();
 	init_clients(clients);
 	world_data = load_world("data/world.json");

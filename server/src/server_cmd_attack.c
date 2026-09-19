@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/08 14:53:02 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/18 19:59:12 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/19 14:00:59 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,11 +73,13 @@ void	handle_attack(t_player *p, t_player *c, char *tgt, char *wld)
 		return ((void)write(p->sd, "ERR 404 NPC_NOT_FOUND\n", 22));
 	if (!is_npc_enemy(wld, tgt))
 		return ((void)write(p->sd, "ERR 405 NPC_NOT_HOSTILE\n", 24));
+	if (apply_damage_to_npc(p->location, tgt, 0, wld) <= 0)
+		return ((void)write(p->sd, "ERR 406 NPC_ALREADY_DEAD\n", 25));
 	d = 15 + (rand() % 11);
 	if (has_item(p, "laser_pistol"))
 		d = 30 + (rand() % 11);
 	t_hp = apply_damage_to_npc(p->location, tgt, d, wld);
-	if (t_hp <= 0 && strcmp(tgt, "alpha_drone") == 0)
+	if (t_hp <= 0 && !strcmp(tgt, "alpha_drone"))
 	{
 		give_item(p, "red_keycard");
 		p->quest_override = 2;
@@ -88,3 +90,4 @@ void	handle_attack(t_player *p, t_player *c, char *tgt, char *wld)
 		return (handle_death(p, c, wld));
 	send_combat_msg(p, d, t_hp);
 }
+
