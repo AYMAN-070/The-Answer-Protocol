@@ -71,6 +71,7 @@ void	handle_talk(t_player *player, int words, char *npc, char *world);
 void	handle_status(t_player *player);
 void	handle_quest(t_player *p, char *npc_name, char *wld);
 void	handle_quests(t_player *p);
+void	reward_override(t_player *p);
 void	server_log(char *level, char *ip, char *player, char *msg);
 int		check_abuse(t_player *player);
 void	handle_chat(t_player *p, t_player *c, char *arg);
@@ -87,6 +88,7 @@ void	handle_death(t_player *p, t_player *c, char *wld);
 void	get_room_desc(char *wld, char *room, char *out);
 void	resolve_id(char *wld, char *sect, char *name, char *out);
 void	validate_world(char *wld);
+int		world_state(int mode, char *key);
 void	broadcast_room(t_player *c, char *room, char *msg, int exclude_sd);
 void	broadcast_group(t_player *c, int group_id, char *msg, int exclude_sd);
 

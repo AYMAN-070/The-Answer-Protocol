@@ -36,8 +36,11 @@ void	handle_quit(t_player *player, t_player *c)
 	close(player->sd);
 	player->is_active = 0;
 	player->sd = -1;
-	sprintf(out, "EVT ROOM PRESENCE LEAVE %s\n", player->name);
-	broadcast_room(c, player->location, out, -1);
+	if (player->name[0] != '\0')
+	{
+		sprintf(out, "EVT ROOM PRESENCE LEAVE %s\n", player->name);
+		broadcast_room(c, player->location, out, -1);
+	}
 	broadcast_player_stats(c);
 	memset(player->name, 0, 32);
 	memset(player->inventory, 0, sizeof(player->inventory));
@@ -55,6 +58,7 @@ static void	complete_repair_quest(t_player *p)
 		if (!strcmp(p->inventory[i], "energy_cell"))
 			p->inventory[i][0] = '\0';
 	give_item(p, "laser_pistol");
+	world_state(2, "repair_done");
 	server_log("INFO", p->ip, p->name, "Quest repair completed");
 	write(p->sd, "OK Quest completed!\n", 20);
 }
@@ -68,8 +72,11 @@ void	handle_disconnect(t_player *p, t_player *c)
 	p->is_active = 0;
 	p->cmd_len = 0;
 	memset(p->cmd_buffer, 0, sizeof(p->cmd_buffer));
-	sprintf(out, "EVT ROOM PRESENCE LEAVE %s\n", p->name);
-	broadcast_room(c, p->location, out, -1);
+	if (p->name[0] != '\0')
+	{
+		sprintf(out, "EVT ROOM PRESENCE LEAVE %s\n", p->name);
+		broadcast_room(c, p->location, out, -1);
+	}
 	broadcast_player_stats(c);
 	memset(p->name, 0, 32);
 }
@@ -85,11 +92,11 @@ void	handle_talk(t_player *p, int words, char *npc, char *wld)
 		resolve_id(wld, "\"npcs\": {", npc, id);
 	if (words != 2 || !check_npc_in_room(wld, p->location, id))
 		return ((void)write(p->sd, "ERR 404 NPC_NOT_FOUND\n", 22));
-	if (!strcmp(id, "injured_engineer") && p->quest_status == 2)
+	if (!strcmp(id, "injured_engineer") && world_state(1, "repair_done"))
 		return ((void)write(p->sd, "OK System restored. Thanks!\n", 28));
 	if (!strcmp(id, "injured_engineer") && has_item(p, "energy_cell"))
 		return (complete_repair_quest(p));
-	if (!strcmp(id, "ai_terminal") && p->quest_override == 2)
+	if (!strcmp(id, "ai_terminal") && world_state(1, "override_done"))
 		return ((void)write(p->sd, "OK Lockdown lifted.\n", 20));
 	if (!strcmp(id, "ai_terminal") && p->quest_override == 0)
 	{

@@ -26,6 +26,20 @@ int	has_item(t_player *player, char *item)
 	return (0);
 }
 
+static int	ai_core_locked(t_player *p, char *dest)
+{
+	if (strcmp(dest, "ai_core") != 0 || world_state(1, "ai_core_open"))
+		return (0);
+	if (has_item(p, "red_keycard") == 0)
+	{
+		write(p->sd, "ERR 403 ACCESS_DENIED\n", 22);
+		return (1);
+	}
+	world_state(2, "ai_core_open");
+	server_log("INFO", p->ip, p->name, "AI core unlocked for everyone");
+	return (0);
+}
+
 void	handle_move(t_player *p, t_player *c, char *arg, char *wld)
 {
 	char	dest[32];
@@ -37,8 +51,8 @@ void	handle_move(t_player *p, t_player *c, char *arg, char *wld)
 	get_room_exit(wld, p->location, arg, dest);
 	if (dest[0] == '\0')
 		return ((void)write(p->sd, "ERR 301 NO_EXIT\n", 16));
-	if (strcmp(dest, "ai_core") == 0 && has_item(p, "red_keycard") == 0)
-		return ((void)write(p->sd, "ERR 403 ACCESS_DENIED\n", 22));
+	if (ai_core_locked(p, dest))
+		return ;
 	sprintf(out, "EVT ROOM PRESENCE LEAVE %s\n", p->name);
 	broadcast_room(c, p->location, out, p->sd);
 	strncpy(p->last_location, p->location, 31);

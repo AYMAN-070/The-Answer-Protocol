@@ -84,6 +84,9 @@ respawn. Le format suit la grammaire `EVT <category> <type> <data>` de la §7.1.
 | `server_group_who.c` | `group_join()`, `group_leave()` | idem |
 | `server_cmd_chat.c` | `chat_broadcast()` | idem |
 | `server_quests.c` | `send_quest()` | une quête déjà active se re-annonçait `"available"` ; elle renvoie maintenant `"active"` |
+| `server_world.c` | `world_state(mode, key)` | état de monde partagé (cf. §6). Fonction à état statique avec un paramètre `mode`, sur le modèle de `manage_taken()` et `manage_dropped()` |
+| `server_quests.c` | `reward_override()`, `append_quest()` | récompense du kill de l'`alpha_drone` et construction d'une entrée de `QUESTS` ; sortent `handle_attack` et `handle_quests` de la limite de 25 lignes |
+| `server_cmd_move.c` | `ai_core_locked()` | verrou de l'`ai_core`, sorti de `handle_move` pour la même raison |
 
 Signature modifiée : `handle_drop(t_player *, char *, char *)` — le paramètre
 `t_player *c` est devenu inutile, `DROP` ne renvoyant plus qu'une seule réponse.
@@ -102,3 +105,30 @@ Signature modifiée : `handle_drop(t_player *, char *, char *)` — le paramètr
   + `LOOK`, soit trois réponses pour une commande, ce qui empêche un client d'apparier
   réponse et requête).
 
+
+## 6. Conception du monde partagé — **à recopier dans le README**
+
+Le sujet impose que les objets soient des instances uniques (*« Items exist as unique
+instances in the world / no duplication »*) et laisse explicitement la mécanique de
+progression des quêtes au choix du groupe, à documenter. Le choix retenu est celui d'une
+**run partagée unique** : la station a un seul ingénieur blessé et un seul drone alpha,
+donc les quêtes sont un état **du monde**, pas du joueur.
+
+| Règle | Comportement |
+|---|---|
+| Quête déjà résolue par quelqu'un | `QUEST <pnj>` renvoie `ERR 406 NO_QUEST_AVAILABLE` aux joueurs suivants, conformément à la RFC §8.2 : *« NPC has no quests or quest already completed »* |
+| Dialogue après résolution | L'ingénieur répond « System restored. Thanks! » et le terminal « Lockdown lifted. » à **tout le monde**, plus seulement à celui qui a agi |
+| `QUESTS` d'un joueur ayant pris la quête avant sa résolution | l'entrée passe à `completed`, au lieu de rester bloquée en `active 0/1` sur un objectif devenu impossible |
+| Porte de l'`ai_core` | le `red_keycard` est exigé pour la **première** ouverture ; ensuite la salle reste ouverte à tous. Cohérent avec le dialogue du `core_mainframe` : *« Lockdown lifted. You are authorized to access the escape shuttles. »* Le confinement est un état de la station, pas un privilège personnel |
+| Mort d'un joueur | l'inventaire **tombe au sol** dans la salle où il est mort, au lieu d'être détruit. Récupérable par lui-même ou par un autre joueur |
+
+Sans la dernière règle, un joueur mourant en portant le `red_keycard` détruisait
+définitivement le seul exemplaire existant — le drone étant mort, aucun autre ne pouvait
+être obtenu, et l'`ai_core` devenait inaccessible à tous jusqu'au redémarrage du serveur.
+Le partage d'objets entre joueurs passe donc par le `DROP` ou par la mort, jamais par la
+duplication.
+
+Les trois drapeaux (`repair_done`, `override_done`, `ai_core_open`) vivent dans
+`world_state()` et ne sont pas persistés : redémarrer le serveur réinitialise le monde,
+ce que le sujet autorise explicitement (*« No persistence is required; state may reset
+when the server restarts »*).

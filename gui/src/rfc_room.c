@@ -119,10 +119,7 @@ void	rfc_apply_json(char *json, t_ui_context *ctx)
 	else if (cJSON_GetObjectItem(root, "attacker_hp"))
 		rfc_apply_combat(root, ctx);
 	else if (cJSON_GetObjectItem(root, "quest_id"))
-	{
 		rfc_apply_quest(root, ctx);
-		net_send_command(ctx->sock_fd, "QUESTS\n");
-	}
 	else if (cJSON_GetObjectItem(root, "hp"))
 		rfc_apply_status(root, ctx);
 	else if (cJSON_IsArray(root))

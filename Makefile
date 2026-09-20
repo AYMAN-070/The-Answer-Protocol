@@ -42,7 +42,7 @@ SERVER_SRC = server/src/server.c server/src/server_cmd_chat.c \
              server/src/server_cmd_talk.c server/src/server_logs.c server/src/server_cmd_defend.c \
              server/src/server_cmd_take_inventory.c server/src/server_cmd_look.c server/src/server_resolve.c
 
-CLIENT_SRC = cli/src/client.c
+CLIENT_SRC = cli/src/client.c cli/src/client_utils.c
 
 GUI_HEADERS = $(INC_DIR)/action_panel.h $(INC_DIR)/chat_panel.h \
               $(INC_DIR)/graphics.h $(INC_DIR)/layout.h $(INC_DIR)/map.h \
@@ -52,8 +52,10 @@ GUI_HEADERS = $(INC_DIR)/action_panel.h $(INC_DIR)/chat_panel.h \
 
 SERVER_HEADERS = server/include/server.h
 
+CLIENT_HEADERS = cli/include/client.h
+
 LINT_SRC = $(GUI_SRC) $(SERVER_SRC) $(CLIENT_SRC)
-LINT_HDR = $(GUI_HEADERS) $(SERVER_HEADERS)
+LINT_HDR = $(GUI_HEADERS) $(SERVER_HEADERS) $(CLIENT_HEADERS)
 
 all: $(SERVER) $(CLIENT) $(GUI_EXEC)
 
@@ -97,7 +99,7 @@ run-client: $(CLIENT)
 	./$(CLIENT)
 
 run-client-gui: $(GUI_EXEC)
-	./$(GUI_EXEC)
+	./$(GUI_EXEC) $(NAME) $(IP) $(PORT)
 
 lint:
 	norminette $(LINT_SRC) $(LINT_HDR)

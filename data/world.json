@@ -33,7 +33,7 @@
         "name": "Medbay",
         "description": "Secured area. The surgical equipment is still powered on.",
         "exits": { "east": "cafeteria", "south": "armory" },
-        "items": [],
+        "items": ["medkit"],
         "spawns": [ { "npc_type": "injured_engineer", "count": 1 } ]
       },
       "armory": {
@@ -72,6 +72,11 @@
       "energy_cell": {
         "name": "Energy Cell",
         "description": "A compact battery crackling with energy.",
+        "obtainable": true
+      },
+      "medkit": {
+        "name": "Emergency Medkit",
+        "description": "A sealed field medical kit, standard station issue.",
         "obtainable": true
       },
       "laser_pistol": {

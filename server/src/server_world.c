@@ -12,6 +12,32 @@
 
 #include "server.h"
 
+int	world_state(int mode, char *key)
+{
+	static char	flags[8][32];
+	int			i;
+
+	i = -1;
+	while (++i < 8)
+	{
+		if (strcmp(flags[i], key) == 0)
+			return (1);
+	}
+	if (mode == 1)
+		return (0);
+	i = -1;
+	while (++i < 8)
+	{
+		if (flags[i][0] == '\0')
+		{
+			strncpy(flags[i], key, 31);
+			flags[i][31] = '\0';
+			return (1);
+		}
+	}
+	return (0);
+}
+
 static int	room_exists(char *wld, char *room)
 {
 	char	key[64];

@@ -38,13 +38,15 @@ void	handle_quest(t_player *p, char *npc, char *wld)
 		resolve_id(wld, "\"npcs\": {", npc, id);
 	if (id[0] == '\0' || !check_npc_in_room(wld, p->location, id))
 		return ((void)write(p->sd, "ERR 404 NPC_NOT_FOUND\n", 22));
-	if (!strcmp(id, "injured_engineer") && p->quest_status < 2)
+	if (!strcmp(id, "injured_engineer") && p->quest_status < 2
+		&& !world_state(1, "repair_done"))
 	{
 		send_quest(p, "repair", "Bring an energy cell", p->quest_status);
 		p->quest_status = 1;
 		return (server_log("INFO", p->ip, p->name, "Quest repair offered"));
 	}
-	if (!strcmp(id, "ai_terminal") && p->quest_override < 2)
+	if (!strcmp(id, "ai_terminal") && p->quest_override < 2
+		&& !world_state(1, "override_done"))
 	{
 		send_quest(p, "override", "Destroy the alpha drone", p->quest_override);
 		p->quest_override = 1;
@@ -53,29 +55,45 @@ void	handle_quest(t_player *p, char *npc, char *wld)
 	write(p->sd, "ERR 406 NO_QUEST_AVAILABLE\n", 27);
 }
 
-void	handle_quests(t_player *p)
+void	reward_override(t_player *p)
 {
-	char	o[256];
+	give_item(p, "red_keycard");
+	p->quest_override = 2;
+	world_state(2, "override_done");
+	server_log("INFO", p->ip, p->name, "Quest override completed");
+}
+
+static void	append_quest(char *o, char *id, int done)
+{
 	char	*st;
 	char	*pr;
 
+	st = "active";
+	pr = "0/1";
+	if (done)
+	{
+		st = "completed";
+		pr = "1/1";
+	}
+	sprintf(o + strlen(o), "{\"quest_id\": \"%s\", "
+		"\"status\": \"%s\", \"progress\": \"%s\"}", id, st, pr);
+}
+
+void	handle_quests(t_player *p)
+{
+	char	o[256];
+	int		rdone;
+	int		odone;
+
+	rdone = (p->quest_status > 1 || world_state(1, "repair_done"));
+	odone = (p->quest_override > 1 || world_state(1, "override_done"));
 	strcpy(o, "OK [");
 	if (p->quest_status > 0)
-	{
-		st = p->quest_status > 1 ? "completed" : "active";
-		pr = p->quest_status > 1 ? "1/1" : "0/1";
-		sprintf(o + strlen(o), "{\"quest_id\": \"repair\", "
-			"\"status\": \"%s\", \"progress\": \"%s\"}", st, pr);
-	}
+		append_quest(o, "repair", rdone);
 	if (p->quest_status > 0 && p->quest_override > 0)
 		strcat(o, ", ");
 	if (p->quest_override > 0)
-	{
-		st = p->quest_override > 1 ? "completed" : "active";
-		pr = p->quest_override > 1 ? "1/1" : "0/1";
-		sprintf(o + strlen(o), "{\"quest_id\": \"override\", "
-			"\"status\": \"%s\", \"progress\": \"%s\"}", st, pr);
-	}
+		append_quest(o, "override", odone);
 	strcat(o, "]\n");
 	write(p->sd, o, strlen(o));
 }

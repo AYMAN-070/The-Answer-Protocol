@@ -35,6 +35,8 @@ void	init_item_assets(t_item_assets *items)
 	preload_item(items, "red_keycard");
 	preload_item(items, "laser_pistol");
 	preload_item(items, "energy_cell");
+	preload_item(items, "central_generator");
+	preload_item(items, "medkit");
 }
 
 void	unload_item_assets(t_item_assets *items)

@@ -20,6 +20,8 @@ void	handle_death(t_player *player, t_player *c, char *world)
 	i = 0;
 	while (i < 5)
 	{
+		if (player->inventory[i][0] != '\0')
+			manage_dropped(1, player->location, player->inventory[i], NULL);
 		player->inventory[i][0] = '\0';
 		i++;
 	}
@@ -104,11 +106,7 @@ void	handle_attack(t_player *p, t_player *c, char *tgt, char *wld)
 	t_hp = apply_damage_to_npc(p->location, id, d, wld);
 	p->in_combat = (t_hp > 0);
 	if (t_hp <= 0 && !strcmp(id, "alpha_drone"))
-	{
-		give_item(p, "red_keycard");
-		p->quest_override = 2;
-		server_log("INFO", p->ip, p->name, "Quest override completed");
-	}
+		reward_override(p);
 	if (t_hp > 0)
 		p->hp -= (10 + (rand() % 11));
 	if (p->hp <= 0)
