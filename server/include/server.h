@@ -53,6 +53,7 @@ char	*load_world(char *filename);
 void	extract_json_value(char *json, char *key, char *result);
 void	get_room_exit(char *json, char *room, char *dir, char *dest);
 void	handle_quit(t_player *player, t_player *c);
+void	handle_disconnect(t_player *p, t_player *c);
 void	handle_who(t_player *p, t_player *c);
 void	handle_look(t_player *p, t_player *c, char *wld);
 void	handle_move(t_player *p, t_player *c, char *buf, char *wld);
@@ -65,8 +66,7 @@ void	handle_attack(t_player *player, t_player *c, char *target, char *world);
 void	give_item(t_player *player, char *item);
 void	handle_defend(t_player *player, t_player *c, char *tgt, char *world);
 void	handle_flee(t_player *player, t_player *c, char *world);
-void	handle_drop(t_player *player, t_player *c,
-			char *item, char *world_data);
+void	handle_drop(t_player *player, char *item, char *world_data);
 void	handle_talk(t_player *player, int words, char *npc, char *world);
 void	handle_status(t_player *player);
 void	handle_quest(t_player *p, char *npc_name, char *wld);
@@ -85,6 +85,10 @@ int		apply_damage_to_npc(char *room, char *npc, int dmg, char *wld);
 void	get_npc_dialogue(char *wld, char *npc, char *out);
 void	handle_death(t_player *p, t_player *c, char *wld);
 void	get_room_desc(char *wld, char *room, char *out);
+void	resolve_id(char *wld, char *sect, char *name, char *out);
+void	validate_world(char *wld);
+void	broadcast_room(t_player *c, char *room, char *msg, int exclude_sd);
+void	broadcast_group(t_player *c, int group_id, char *msg, int exclude_sd);
 
 typedef struct s_drop
 {

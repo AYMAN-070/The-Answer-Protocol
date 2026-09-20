@@ -34,6 +34,34 @@ void	init_clients(t_player *clients)
 	}
 }
 
+void	broadcast_room(t_player *c, char *room, char *msg, int exclude_sd)
+{
+	int	i;
+
+	i = -1;
+	while (++i < 10)
+	{
+		if (c[i].is_active && c[i].sd != exclude_sd
+			&& strcmp(c[i].location, room) == 0)
+			write(c[i].sd, msg, strlen(msg));
+	}
+}
+
+void	broadcast_group(t_player *c, int group_id, char *msg, int exclude_sd)
+{
+	int	i;
+
+	if (group_id == 0)
+		return ;
+	i = -1;
+	while (++i < 10)
+	{
+		if (c[i].is_active && c[i].sd != exclude_sd
+			&& c[i].group_id == group_id)
+			write(c[i].sd, msg, strlen(msg));
+	}
+}
+
 int	init_server(void)
 {
 	int					server_fd;

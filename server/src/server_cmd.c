@@ -37,7 +37,7 @@ void	handle_connect(t_player *p, t_player *c, int words, char *arg)
 	int	i;
 
 	if (words < 2 || arg[0] == '\0')
-		return ((void)write(p->sd, "ERR missing name\n", 17));
+		return ((void)write(p->sd, "ERR 400 BAD_REQUEST\n", 20));
 	i = -1;
 	while (++i < 10)
 	{
@@ -103,9 +103,8 @@ void	process_command(t_player *p, t_player *c, char *b, char *wld)
 	cmd[0] = '\0';
 	arg[0] = '\0';
 	if (check_abuse(p) == 1 || sscanf(b, "%31s %[^\n]", cmd, arg) < 1)
-		return ((void)write(p->sd, "ERR ignored\n", 12));
-	server_log("INFO", p->ip, p->name, cmd);
-	printf("DEBUG - Commande reçue du client : [%s]\n", b);
+		return ((void)write(p->sd, "ERR 429 TOO_MANY_REQUESTS\n", 26));
+	server_log("INFO", p->ip, p->name, b);
 	if (strcmp(cmd, "CONNECT") == 0)
 		handle_connect(p, c, 1 + (arg[0] != '\0'), arg);
 	else if (strcmp(cmd, "LOOK") == 0)
@@ -115,10 +114,10 @@ void	process_command(t_player *p, t_player *c, char *b, char *wld)
 	else if (strcmp(cmd, "FLEE") == 0)
 		handle_flee(p, c, wld);
 	else if (strcmp(cmd, "DROP") == 0)
-		handle_drop(p, c, arg, wld);
+		handle_drop(p, arg, wld);
 	else if (exec_other_cmds(p, c, cmd, arg) == 0
 		&& process_combat_cmd(p, c, b, wld) == 0)
 	{
-		write(p->sd, "ERR unknown command\n", 20);
+		write(p->sd, "ERR 400 BAD_REQUEST\n", 20);
 	}
 }

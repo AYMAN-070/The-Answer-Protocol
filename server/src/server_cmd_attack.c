@@ -26,7 +26,9 @@ void	handle_death(t_player *player, t_player *c, char *world)
 	strncpy(player->location, "medbay", 31);
 	player->location[31] = '\0';
 	player->hp = 50;
-	write(player->sd, "DEAD:You died! Respawned in medbay.\n", 36);
+	player->in_combat = 0;
+	server_log("INFO", player->ip, player->name, "Player died and respawned");
+	write(player->sd, "EVT PLAYER DEATH respawn=medbay\n", 32);
 	handle_look(player, c, world);
 	handle_inventory(player);
 	handle_status(player);
@@ -61,28 +63,51 @@ static void	send_combat_msg(t_player *p, int d, int t_hp)
 	else
 		sprintf(msg, "OK {\"attacker_hp\": %d, \"target_hp\": %d, "
 			"\"damage\": %d, \"status\": \"combat\"}\n", p->hp, t_hp, d);
+	server_log("INFO", p->ip, p->name, "Combat round resolved");
 	write(p->sd, msg, strlen(msg));
+}
+
+static int	check_attack_err(t_player *p, char *id, char *wld)
+{
+	if (id[0] == '\0' || !check_npc_in_room(wld, p->location, id))
+	{
+		write(p->sd, "ERR 404 NPC_NOT_FOUND\n", 22);
+		return (1);
+	}
+	if (!is_npc_enemy(wld, id))
+	{
+		write(p->sd, "ERR 405 NPC_NOT_HOSTILE\n", 24);
+		return (1);
+	}
+	if (apply_damage_to_npc(p->location, id, 0, wld) <= 0)
+	{
+		write(p->sd, "ERR 409 NPC_ALREADY_DEAD\n", 25);
+		return (1);
+	}
+	return (0);
 }
 
 void	handle_attack(t_player *p, t_player *c, char *tgt, char *wld)
 {
-	int	d;
-	int	t_hp;
+	int		d;
+	int		t_hp;
+	char	id[32];
 
-	if (tgt[0] == '\0' || !check_npc_in_room(wld, p->location, tgt))
-		return ((void)write(p->sd, "ERR 404 NPC_NOT_FOUND\n", 22));
-	if (!is_npc_enemy(wld, tgt))
-		return ((void)write(p->sd, "ERR 405 NPC_NOT_HOSTILE\n", 24));
-	if (apply_damage_to_npc(p->location, tgt, 0, wld) <= 0)
-		return ((void)write(p->sd, "ERR 406 NPC_ALREADY_DEAD\n", 25));
+	id[0] = '\0';
+	if (tgt[0] != '\0')
+		resolve_id(wld, "\"npcs\": {", tgt, id);
+	if (check_attack_err(p, id, wld) == 1)
+		return ;
 	d = 15 + (rand() % 11);
 	if (has_item(p, "laser_pistol"))
 		d = 30 + (rand() % 11);
-	t_hp = apply_damage_to_npc(p->location, tgt, d, wld);
-	if (t_hp <= 0 && !strcmp(tgt, "alpha_drone"))
+	t_hp = apply_damage_to_npc(p->location, id, d, wld);
+	p->in_combat = (t_hp > 0);
+	if (t_hp <= 0 && !strcmp(id, "alpha_drone"))
 	{
 		give_item(p, "red_keycard");
 		p->quest_override = 2;
+		server_log("INFO", p->ip, p->name, "Quest override completed");
 	}
 	if (t_hp > 0)
 		p->hp -= (10 + (rand() % 11));

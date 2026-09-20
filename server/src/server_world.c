@@ -12,6 +12,71 @@
 
 #include "server.h"
 
+static int	room_exists(char *wld, char *room)
+{
+	char	key[64];
+
+	if (room[0] == '\0')
+		return (1);
+	sprintf(key, "\"%s\": {", room);
+	if (!strstr(wld, key))
+		return (0);
+	return (1);
+}
+
+static int	check_room_exits(char *wld, char *room)
+{
+	char	*dir[4];
+	char	dest[64];
+	int		i;
+	int		ok;
+
+	dir[0] = "north";
+	dir[1] = "south";
+	dir[2] = "east";
+	dir[3] = "west";
+	ok = 1;
+	i = -1;
+	while (++i < 4)
+	{
+		get_room_exit(wld, room, dir[i], dest);
+		if (!room_exists(wld, dest))
+		{
+			server_log("ERROR", "sys", room, "Exit points to unknown room");
+			ok = 0;
+		}
+	}
+	return (ok);
+}
+
+void	validate_world(char *wld)
+{
+	char	*end;
+	char	*p;
+	char	*k;
+	char	room[64];
+
+	end = strstr(wld, "\"items\": {");
+	p = strstr(wld, "\"locations\": {");
+	if (!p)
+		exit_error("Error : no locations in world.json");
+	p = strstr(p + 14, "\": {");
+	while (p && (!end || p < end))
+	{
+		k = p;
+		while (k > wld && *(k - 1) != '"')
+			k--;
+		if ((p - k) < 63)
+		{
+			strncpy(room, k, p - k);
+			room[p - k] = '\0';
+			if (!check_room_exits(wld, room))
+				exit(EXIT_FAILURE);
+		}
+		p = strstr(p + 4, "\": {");
+	}
+}
+
 char	*load_world(char *filename)
 {
 	FILE	*file;

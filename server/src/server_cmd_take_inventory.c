@@ -68,13 +68,13 @@ static int	check_take_err(t_player *p, int w, char *item, char *wld)
 	if (w != 2)
 	{
 		server_log("WARN", p->ip, p->name, "Take missing item");
-		write(p->sd, "ERR missing item\n", 17);
+		write(p->sd, "ERR 404 ITEM_NOT_FOUND\n", 23);
 		return (1);
 	}
 	if (has_item(p, item) == 1)
 	{
 		server_log("WARN", p->ip, p->name, "Take duplicate item");
-		write(p->sd, "ERR you already have this\n", 26);
+		write(p->sd, "ERR 404 ITEM_NOT_FOUND\n", 23);
 		return (1);
 	}
 	if ((!check_item_in_room(wld, p->location, item) || manage_taken(1, item))
@@ -87,28 +87,36 @@ static int	check_take_err(t_player *p, int w, char *item, char *wld)
 	return (0);
 }
 
+static void	take_item_slot(t_player *p, char *id, int i)
+{
+	char	out[64];
+
+	strncpy(p->inventory[i], id, 31);
+	p->inventory[i][31] = '\0';
+	manage_taken(2, id);
+	server_log("INFO", p->ip, p->name, "Item taken");
+	sprintf(out, "OK taken=%s\n", id);
+	write(p->sd, out, strlen(out));
+}
+
 void	handle_take(t_player *player, int words, char *item, char *world)
 {
 	int		i;
-	char	out[64];
+	char	id[32];
 
-	if (check_take_err(player, words, item, world) == 1)
+	id[0] = '\0';
+	if (words == 2)
+		resolve_id(world, "\"items\": {", item, id);
+	if (check_take_err(player, words, id, world) == 1)
 		return ;
-	if (!is_item_obtainable(world, item))
-		return ((void)write(player->sd, "ERR item cannot be taken\n", 25));
+	if (!is_item_obtainable(world, id))
+		return ((void)write(player->sd, "ERR 407 ITEM_NOT_OBTAINABLE\n", 28));
 	i = -1;
 	while (++i < 5)
 	{
 		if (player->inventory[i][0] == '\0')
-		{
-			strncpy(player->inventory[i], item, 31);
-			server_log("INFO", player->ip, player->name, "Item taken");
-			sprintf(out, "OK taken=%s\n", item);
-			write(player->sd, out, strlen(out));
-			manage_taken(2, item);
-			return ;
-		}
+			return (take_item_slot(player, id, i));
 	}
 	server_log("WARN", player->ip, player->name, "Inventory Full");
-	write(player->sd, "ERR inventory full\n", 19);
+	write(player->sd, "ERR 408 INVENTORY_FULL\n", 23);
 }

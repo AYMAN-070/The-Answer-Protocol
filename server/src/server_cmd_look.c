@@ -133,6 +133,5 @@ void	handle_look(t_player *p, t_player *c, char *wld)
 		"\"exits\": {%s}}, \"players\": [%s], "
 		"\"items\": [%s], \"npcs\": [%s]}\n",
 		p->location, b[0], b[5], b[2], b[1], b[3], b[4]);
-	printf("DEBUG LOOK JSON: %s", out);
 	write(p->sd, out, strlen(out));
 }

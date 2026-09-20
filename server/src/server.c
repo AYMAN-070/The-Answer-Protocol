@@ -69,14 +69,7 @@ static void	read_client_data(t_player *p, t_player *c, char *wld)
 
 	b = read(p->sd, p->cmd_buffer + p->cmd_len, 1023 - p->cmd_len);
 	if (b <= 0)
-	{
-		server_log("INFO", p->ip, p->name, "Disconnected");
-		close(p->sd);
-		p->is_active = 0;
-		p->cmd_len = 0;
-		memset(p->cmd_buffer, 0, sizeof(p->cmd_buffer));
-		return (broadcast_player_stats(c));
-	}
+		return (handle_disconnect(p, c));
 	p->cmd_len += b;
 	p->cmd_buffer[p->cmd_len] = '\0';
 	nl = strchr(p->cmd_buffer, '\n');
@@ -118,6 +111,7 @@ int	main(void)
 	server_fd = init_server();
 	init_clients(clients);
 	world_data = load_world("data/world.json");
+	validate_world(world_data);
 	server_log("INFO", "sys", "none", "World loaded successfully");
 	server_log("INFO", "sys", "none", "TAP server started on port 4242");
 	while (1)

@@ -31,7 +31,7 @@ char	*manage_dropped(int mode, char *room, char *item, char *buf)
 			d[i].room[0] = '\0';
 			return ("OK");
 		}
-		if (mode == 3 && buf && !strcmp(d[i].room, room))
+		if (mode == 3 && buf && !strcmp(d[i].room, room) && strlen(buf) < 200)
 		{
 			if (buf[0] != '\0')
 				strcat(buf, ", ");
@@ -41,31 +41,27 @@ char	*manage_dropped(int mode, char *room, char *item, char *buf)
 	return (NULL);
 }
 
-void	handle_drop(t_player *player, t_player *c, char *item, char *world_data)
+void	handle_drop(t_player *player, char *item, char *world_data)
 {
 	int		i;
+	char	id[32];
 	char	msg[128];
 
 	if (item == NULL || item[0] == '\0')
-	{
-		server_log("WARN", player->ip, player->name, "Drop missing item");
-		return ((void)write(player->sd, "ERR missing item\n", 17));
-	}
+		return ((void)write(player->sd, "ERR 404 ITEM_NOT_IN_INVENTORY\n", 30));
+	resolve_id(world_data, "\"items\": {", item, id);
 	i = -1;
 	while (++i < 5)
 	{
-		if (strcmp(player->inventory[i], item) == 0)
+		if (strcmp(player->inventory[i], id) == 0)
 		{
 			player->inventory[i][0] = '\0';
-			manage_dropped(1, player->location, item, NULL);
+			manage_dropped(1, player->location, id, NULL);
 			server_log("INFO", player->ip, player->name, "Item dropped");
-			sprintf(msg, "OK dropped=%s\n", item);
-			write(player->sd, msg, strlen(msg));
-			handle_inventory(player);
-			handle_look(player, c, world_data);
-			return ;
+			sprintf(msg, "OK dropped=%s\n", id);
+			return ((void)write(player->sd, msg, strlen(msg)));
 		}
 	}
-	server_log("WARN", player->ip, player->name, "Drop item not found");
-	write(player->sd, "ERR item not found\n", 19);
+	server_log("WARN", player->ip, player->name, "Drop item not in inventory");
+	write(player->sd, "ERR 404 ITEM_NOT_IN_INVENTORY\n", 30);
 }

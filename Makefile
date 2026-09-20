@@ -40,7 +40,7 @@ SERVER_SRC = server/src/server.c server/src/server_cmd_chat.c \
              server/src/server_json.c server/src/server_cmd_attack.c \
              server/src/Process_buffer.c server/src/server_quests.c server/src/server_utils2.c \
              server/src/server_cmd_talk.c server/src/server_logs.c server/src/server_cmd_defend.c \
-             server/src/server_cmd_take_inventory.c server/src/server_cmd_look.c
+             server/src/server_cmd_take_inventory.c server/src/server_cmd_look.c server/src/server_resolve.c
 
 CLIENT_SRC = cli/src/client.c
 
@@ -61,7 +61,7 @@ $(SERVER):
 	$(CC) $(CFLAGS) -I server/include -I common/include server/src/server.c server/src/server_cmd_chat.c server/src/server_group_who.c server/src/server_cmd_defend.c \
 	server/src/server_utils.c server/src/server_cmd.c server/src/server_cmd_move.c server/src/server_cmd_drop.c server/src/server_cmd_look.c \
 	server/src/server_world.c server/src/server_json.c server/src/server_cmd_attack.c server/src/server_quests.c server/src/broadcast_player_stats.c \
-	server/src/server_cmd_talk.c server/src/server_logs.c server/src/server_cmd_take_inventory.c server/src/server_utils2.c -o $(SERVER)
+	server/src/server_cmd_talk.c server/src/server_logs.c server/src/server_cmd_take_inventory.c server/src/server_utils2.c server/src/server_resolve.c -o $(SERVER)
 
 $(CLIENT): $(CLIENT_SRC)
 	$(CC) $(CFLAGS) -I cli/include -I common/include $(CLIENT_SRC) -o $(CLIENT)
