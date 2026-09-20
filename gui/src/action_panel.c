@@ -19,14 +19,14 @@
 
 static void	handle_click(int id, t_ui_context *ctx)
 {
-	const char	*commands[17] = {"LOOK", "MOVE north", "MOVE west",
-		"MOVE east", "MOVE south", "TAKE", "DROP", "TALK", "ATTACK",
-		"DEFEND", "FLEE", "INVENTORY", "STATUS", "QUESTS", "WHO",
-		"GROUP CREATE", "QUIT"};
+	const char	*commands[18] = {"LOOK", "MOVE north", "MOVE west",
+		"MOVE east", "MOVE south", "TAKE", "DROP", "TALK", "QUEST",
+		"ATTACK", "DEFEND", "FLEE", "INVENTORY", "STATUS", "QUESTS",
+		"WHO", "GROUP CREATE", "QUIT"};
 	char		cmd_buf[64];
 
 	snprintf(cmd_buf, 64, "%s\n", commands[id]);
-	if ((id >= 7 && id <= 9) && ctx->state.npc_count > 0)
+	if ((id >= 7 && id <= 10) && ctx->state.npc_count > 0)
 		snprintf(cmd_buf, 64, "%s %s\n", commands[id],
 			ctx->state.npcs[ctx->sel_npc].id);
 	else if (id == 5 && ctx->state.item_count > 0)
@@ -62,9 +62,9 @@ static void	update_btn_colors(int id, Rectangle btn_rect, t_ui_context *ctx,
 static void	draw_sys_btn(int id, Rectangle panel, t_ui_context *ctx,
 				int font_size)
 {
-	const char	*labels[17] = {"LOOK", "NORTH", "WEST", "EAST", "SOUTH",
-		"TAKE", "DROP", "TALK", "ATTACK", "DEFEND", "FLEE", "INVENTORY",
-		"STATUS", "QUEST LOG", "WHO", "GROUP", "QUIT"};
+	const char	*labels[18] = {"LOOK", "NORTH", "WEST", "EAST", "SOUTH",
+		"TAKE", "DROP", "TALK", "QUEST", "ATTACK", "DEFEND", "FLEE",
+		"INVENTORY", "STATUS", "QUEST LOG", "WHO", "GROUP", "QUIT"};
 	Rectangle	btn_rect;
 	Color		colors[2];
 	int			text_width;
@@ -85,7 +85,7 @@ static void	draw_dividers(Rectangle panel, float row_height)
 	float	bottom_y;
 
 	top_y = panel.y + 35 + row_height * 4.2f;
-	bottom_y = panel.y + 35 + row_height * 6.9f;
+	bottom_y = panel.y + 35 + row_height * 8.2f;
 	DrawLineEx((Vector2){panel.x + 20, top_y},
 		(Vector2){panel.x + panel.width - 20, top_y}, 2.0f,
 		Fade(LIGHTGRAY, 1.0f));
@@ -109,12 +109,12 @@ void	render_action_panel(Rectangle inv_panel, t_ui_context *ctx)
 	DrawRectangleLinesEx(panel, 2.0f, LIGHTGRAY);
 	DrawText("Command Matrix", (int)panel.x + 15, (int)panel.y + 10, 20,
 		WHITE);
-	row_height = (panel.height - 45) / 9.5f;
+	row_height = (panel.height - 45) / 11.0f;
 	draw_dividers(panel, row_height);
 	font_size = (row_height - 4) * 0.55f;
 	if (font_size > 14)
 		font_size = 14;
 	btn_id = -1;
-	while (++btn_id < 17)
+	while (++btn_id < 18)
 		draw_sys_btn(btn_id, panel, ctx, font_size);
 }

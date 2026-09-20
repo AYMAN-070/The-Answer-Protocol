@@ -44,13 +44,39 @@ static void	load_local_world(t_ui_context *ctx)
 		exit(EXIT_FAILURE);
 }
 
-static int	init_client(t_game_assets *assets, t_ui_context *ctx,
-				const char *name)
+static int	connect_to_server(int argc, char **argv, const char *name)
 {
-	int		sock_fd;
-	char	title[64];
-	char	cmd[64];
+	const char	*ip;
+	int			port;
+	int			sock_fd;
+	char		cmd[64];
 
+	ip = "127.0.0.1";
+	port = 4242;
+	if (argc > 2)
+		ip = argv[2];
+	if (argc > 3)
+		port = atoi(argv[3]);
+	sock_fd = net_connect(ip, port);
+	if (sock_fd < 0)
+		return (-1);
+	snprintf(cmd, sizeof(cmd), "CONNECT %s\n", name);
+	net_send_command(sock_fd, cmd);
+	net_send_command(sock_fd, "WHO\n");
+	net_send_command(sock_fd, "LOOK\n");
+	return (sock_fd);
+}
+
+static int	init_client(t_game_assets *assets, t_ui_context *ctx,
+				int argc, char **argv)
+{
+	const char	*name;
+	int			sock_fd;
+	char		title[64];
+
+	name = "gui_user";
+	if (argc > 1)
+		name = argv[1];
 	snprintf(title, sizeof(title), "Prometheus Station - %s", name);
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(1280, 720, title);
@@ -60,15 +86,8 @@ static int	init_client(t_game_assets *assets, t_ui_context *ctx,
 	ctx->player.hp = 100;
 	ctx->player.max_hp = 100;
 	load_local_world(ctx);
-	sock_fd = net_connect("127.0.0.1", 4242);
-	if (sock_fd >= 0)
-	{
-		ctx->connected = 1;
-		snprintf(cmd, sizeof(cmd), "CONNECT %s\n", name);
-		net_send_command(sock_fd, cmd);
-		net_send_command(sock_fd, "WHO\n");
-		net_send_command(sock_fd, "LOOK\n");
-	}
+	sock_fd = connect_to_server(argc, argv, name);
+	ctx->connected = (sock_fd >= 0);
 	return (sock_fd);
 }
 
@@ -92,12 +111,8 @@ int	main(int argc, char **argv)
 {
 	t_game_assets	assets;
 	t_ui_context	ctx;
-	const char		*name;
 
-	name = "gui_user";
-	if (argc > 1)
-		name = argv[1];
-	ctx.sock_fd = init_client(&assets, &ctx, name);
+	ctx.sock_fd = init_client(&assets, &ctx, argc, argv);
 	run_client(&assets, &ctx);
 	net_disconnect(&ctx.sock_fd);
 	unload_graphics_assets(&assets);

@@ -35,6 +35,8 @@ int	is_quest_giver(t_ui_context *ctx, const char *npc_id)
 	npcs = cJSON_GetObjectItem(ctx->world_db, "world");
 	npcs = cJSON_GetObjectItem(npcs, "npcs");
 	entry = cJSON_GetObjectItem(npcs, npc_id);
+	if (!entry)
+		return (1);
 	role = cJSON_GetObjectItem(entry, "role");
 	return (role && cJSON_IsString(role)
 		&& !strcmp(role->valuestring, "quest_giver"));
@@ -51,13 +53,13 @@ int	is_btn_active(int id, t_ui_context *ctx)
 	while (++idx < ctx->player.known_count)
 		if (!strcmp(ctx->player.known_rooms[idx], ctx->state.name))
 			room_known = 1;
-	if (!room_known && !(id == 0 || (id >= 11 && id <= 16)))
+	if (!room_known && !(id == 0 || (id >= 12 && id <= 17)))
 		return (0);
 	if (id == 5 && ctx->state.item_count == 0)
 		return (0);
 	if (id == 6 && ctx->player.inv_count == 0)
 		return (0);
-	if ((id >= 7 && id <= 10) && ctx->state.npc_count == 0)
+	if ((id >= 7 && id <= 11) && ctx->state.npc_count == 0)
 		return (0);
 	if (id >= 1 && id <= 4)
 		return (has_exit(ctx, exit_dirs[id]));
@@ -88,7 +90,7 @@ Rectangle	get_btn_rect(int btn_id, Rectangle panel)
 	Rectangle	rect;
 	float		row_height;
 
-	row_height = (panel.height - 45) / 9.5f;
+	row_height = (panel.height - 45) / 11.0f;
 	rect.height = row_height - 4;
 	rect.width = (panel.width - 50) / 3;
 	if (btn_id == 0)

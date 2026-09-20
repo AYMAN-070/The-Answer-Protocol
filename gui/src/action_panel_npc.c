@@ -22,7 +22,7 @@ void	apply_npc_side_effects(t_ui_context *ctx, int id)
 
 	if (ctx->state.npc_count == 0)
 		return ;
-	if (id == 8)
+	if (id == 9)
 		strncpy(ctx->attack_target, ctx->state.npcs[ctx->sel_npc].id, 31);
 	else if (id == 7)
 	{
