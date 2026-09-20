@@ -55,7 +55,7 @@ les codes suivants ont été ajoutés. Ils respectent la sémantique 4xx de la R
 | Code | Message | Sens |
 |---|---|---|
 | `400` | `BAD_REQUEST` | commande inconnue, argument manquant ou scope de chat invalide |
-| `403` | `ACCESS_DENIED` | salle verrouillée (`ai_core` exige le `red_keycard`) |
+| `403` | `ACCESS_DENIED` | salle verrouillée (`ai_core`, tant que personne n'y est entré avec le `red_keycard` — cf. §6) |
 | `407` | `ITEM_NOT_OBTAINABLE` | objet présent mais `obtainable: false` (décor fixe) |
 | `408` | `INVENTORY_FULL` | inventaire plein (5 emplacements) |
 | `409` | `NPC_ALREADY_DEAD` | cible déjà vaincue |
