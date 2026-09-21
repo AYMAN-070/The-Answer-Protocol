@@ -22,7 +22,7 @@ endif
 GUI_SRC = gui/src/main.c gui/src/layout.c gui/src/room_view.c gui/src/map.c \
           gui/src/graphics.c gui/src/graphics_items.c gui/src/action_panel.c \
           gui/src/action_panel_utils.c gui/src/action_panel_npc.c \
-          gui/src/network.c gui/src/network_parser.c gui/src/network_parser_utils.c \
+          gui/src/network.c gui/src/network_parser.c \
           gui/src/rfc_parser.c gui/src/rfc_room.c gui/src/rfc_payload.c \
           gui/src/rfc_events.c \
           gui/src/graphics_npcs.c\
@@ -40,7 +40,8 @@ SERVER_SRC = server/src/server.c server/src/server_cmd_chat.c \
              server/src/server_json.c server/src/server_cmd_attack.c \
              server/src/server_quests.c server/src/server_utils2.c \
              server/src/server_cmd_talk.c server/src/server_logs.c server/src/server_cmd_defend.c \
-             server/src/server_cmd_take_inventory.c server/src/server_cmd_look.c server/src/server_resolve.c
+             server/src/server_cmd_take_inventory.c server/src/server_cmd_look.c \
+             server/src/server_resolve.c server/src/broadcast_player_stats.c
 
 CLIENT_SRC = cli/src/client.c cli/src/client_utils.c
 
@@ -59,13 +60,10 @@ LINT_HDR = $(GUI_HEADERS) $(SERVER_HEADERS) $(CLIENT_HEADERS)
 
 all: $(SERVER) $(CLIENT) $(GUI_EXEC)
 
-$(SERVER):
-	$(CC) $(CFLAGS) -I server/include -I common/include server/src/server.c server/src/server_cmd_chat.c server/src/server_group_who.c server/src/server_cmd_defend.c \
-	server/src/server_utils.c server/src/server_cmd.c server/src/server_cmd_move.c server/src/server_cmd_drop.c server/src/server_cmd_look.c \
-	server/src/server_world.c server/src/server_json.c server/src/server_cmd_attack.c server/src/server_quests.c server/src/broadcast_player_stats.c \
-	server/src/server_cmd_talk.c server/src/server_logs.c server/src/server_cmd_take_inventory.c server/src/server_utils2.c server/src/server_resolve.c -o $(SERVER)
+$(SERVER): $(SERVER_SRC) $(SERVER_HEADERS)
+	$(CC) $(CFLAGS) -I server/include -I common/include $(SERVER_SRC) -o $(SERVER)
 
-$(CLIENT): $(CLIENT_SRC)
+$(CLIENT): $(CLIENT_SRC) $(CLIENT_HEADERS)
 	$(CC) $(CFLAGS) -I cli/include -I common/include $(CLIENT_SRC) -o $(CLIENT)
 
 $(GUI_EXEC): $(GUI_OBJ)

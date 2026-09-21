@@ -38,12 +38,12 @@ void	handle_chat(t_player *p, t_player *c, char *arg)
 	char	o[2048];
 
 	if (sscanf(arg, "%15s %[^\n]", s, m) < 2)
-		return ((void)write(p->sd, "ERR 400 BAD_REQUEST\n", 20));
+		return ((void)send_reply(p, "ERR 400 BAD_REQUEST\n"));
 	if (strcmp(s, "ROOM") && strcmp(s, "GLOBAL") && strcmp(s, "GROUP"))
-		return ((void)write(p->sd, "ERR 400 BAD_REQUEST\n", 20));
+		return ((void)send_reply(p, "ERR 400 BAD_REQUEST\n"));
 	if (!strcmp(s, "GROUP") && p->group_id == 0)
-		return ((void)write(p->sd, "ERR 401 NOT_IN_GROUP\n", 21));
+		return ((void)send_reply(p, "ERR 401 NOT_IN_GROUP\n"));
 	snprintf(o, sizeof(o), "EVT %s CHAT %s %s\n", s, p->name, m);
 	chat_broadcast(p, c, s, o);
-	write(p->sd, "OK\n", 3);
+	send_reply(p, "OK\n");
 }

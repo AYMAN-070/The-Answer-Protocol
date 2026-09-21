@@ -64,8 +64,8 @@ static void	draw_npc_sprite(Rectangle dest, Texture2D tex, const char *name,
 			(float)tex.height}, dest, (Vector2){0.0f, 0.0f}, 0.0f, WHITE);
 	else
 	{
-		DrawRectangleRec(dest, Fade(DARKPURPLE, 0.85f));
-		DrawText(name, (int)dest.x + 4, (int)dest.y + 4, 10, WHITE);
+		DrawRectangleLinesEx(dest, 2.0f, Fade(YELLOW, 0.45f));
+		DrawText(name, (int)dest.x + 4, (int)dest.y - 14, 10, YELLOW);
 	}
 	if (selected)
 		DrawRectangleLinesEx(dest, 2.0f, YELLOW);

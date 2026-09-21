@@ -32,7 +32,7 @@ static int	ai_core_locked(t_player *p, char *dest)
 		return (0);
 	if (has_item(p, "red_keycard") == 0)
 	{
-		write(p->sd, "ERR 403 ACCESS_DENIED\n", 22);
+		send_reply(p, "ERR 403 ACCESS_DENIED\n");
 		return (1);
 	}
 	world_state(2, "ai_core_open");
@@ -47,10 +47,10 @@ void	handle_move(t_player *p, t_player *c, char *arg, char *wld)
 
 	dest[0] = '\0';
 	if (arg[0] == '\0')
-		return ((void)write(p->sd, "ERR 301 NO_EXIT\n", 16));
+		return ((void)send_reply(p, "ERR 301 NO_EXIT\n"));
 	get_room_exit(wld, p->location, arg, dest);
 	if (dest[0] == '\0')
-		return ((void)write(p->sd, "ERR 301 NO_EXIT\n", 16));
+		return ((void)send_reply(p, "ERR 301 NO_EXIT\n"));
 	if (ai_core_locked(p, dest))
 		return ;
 	sprintf(out, "EVT ROOM PRESENCE LEAVE %s\n", p->name);
@@ -59,9 +59,10 @@ void	handle_move(t_player *p, t_player *c, char *arg, char *wld)
 	strncpy(p->location, dest, 31);
 	p->location[31] = '\0';
 	p->in_combat = 0;
+	p->defending = 0;
 	sprintf(out, "EVT ROOM PRESENCE ENTER %s\n", p->name);
 	broadcast_room(c, p->location, out, p->sd);
 	server_log("INFO", p->ip, p->name, "Moved to a new room");
 	sprintf(out, "OK room=%s\n", p->location);
-	write(p->sd, out, strlen(out));
+	send_reply(p, out);
 }

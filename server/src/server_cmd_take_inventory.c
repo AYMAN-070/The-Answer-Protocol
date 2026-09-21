@@ -34,7 +34,7 @@ void	handle_inventory(t_player *p)
 		}
 	}
 	strcat(msg, "]\n");
-	write(p->sd, msg, strlen(msg));
+	send_reply(p, msg);
 }
 
 char	*manage_taken(int mode, char *item)
@@ -68,20 +68,20 @@ static int	check_take_err(t_player *p, int w, char *item, char *wld)
 	if (w != 2)
 	{
 		server_log("WARN", p->ip, p->name, "Take missing item");
-		write(p->sd, "ERR 404 ITEM_NOT_FOUND\n", 23);
+		send_reply(p, "ERR 404 ITEM_NOT_FOUND\n");
 		return (1);
 	}
 	if (has_item(p, item) == 1)
 	{
 		server_log("WARN", p->ip, p->name, "Take duplicate item");
-		write(p->sd, "ERR 404 ITEM_NOT_FOUND\n", 23);
+		send_reply(p, "ERR 404 ITEM_NOT_FOUND\n");
 		return (1);
 	}
 	if ((!check_item_in_room(wld, p->location, item) || manage_taken(1, item))
 		&& !manage_dropped(2, p->location, item, NULL))
 	{
 		server_log("WARN", p->ip, p->name, "Take item not available");
-		write(p->sd, "ERR 404 ITEM_NOT_FOUND\n", 23);
+		send_reply(p, "ERR 404 ITEM_NOT_FOUND\n");
 		return (1);
 	}
 	return (0);
@@ -96,7 +96,7 @@ static void	take_item_slot(t_player *p, char *id, int i)
 	manage_taken(2, id);
 	server_log("INFO", p->ip, p->name, "Item taken");
 	sprintf(out, "OK taken=%s\n", id);
-	write(p->sd, out, strlen(out));
+	send_reply(p, out);
 }
 
 void	handle_take(t_player *player, int words, char *item, char *world)
@@ -110,7 +110,7 @@ void	handle_take(t_player *player, int words, char *item, char *world)
 	if (check_take_err(player, words, id, world) == 1)
 		return ;
 	if (!is_item_obtainable(world, id))
-		return ((void)write(player->sd, "ERR 407 ITEM_NOT_OBTAINABLE\n", 28));
+		return ((void)send_reply(player, "ERR 407 ITEM_NOT_OBTAINABLE\n"));
 	i = -1;
 	while (++i < 5)
 	{
@@ -118,5 +118,5 @@ void	handle_take(t_player *player, int words, char *item, char *world)
 			return (take_item_slot(player, id, i));
 	}
 	server_log("WARN", player->ip, player->name, "Inventory Full");
-	write(player->sd, "ERR 408 INVENTORY_FULL\n", 23);
+	send_reply(player, "ERR 408 INVENTORY_FULL\n");
 }

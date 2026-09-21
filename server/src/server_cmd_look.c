@@ -68,8 +68,10 @@ static void	build_items_list(char *wld, char *room, char *out)
 	p = strstr(wld, n);
 	if (p)
 		p = strstr(p, "\"items\": [");
-	l = p ? strchr(p, ']') : NULL;
-	p = p ? strchr(p, '[') : NULL;
+	if (!p)
+		return ;
+	l = strchr(p, ']');
+	p = strchr(p, '[');
 	while (p && l)
 	{
 		p = strchr(p + 1, '"');
@@ -77,10 +79,7 @@ static void	build_items_list(char *wld, char *room, char *out)
 			break ;
 		sprintf(n, "%.*s", (int)(strchr(p + 1, '"') - (p + 1)), p + 1);
 		p = strchr(p + 1, '"');
-		if (!manage_taken(1, n) && out[0] != '\0')
-			strcat(out, ", ");
-		if (!manage_taken(1, n))
-			sprintf(out + strlen(out), "\"%s\"", n);
+		append_room_item(out, n);
 	}
 }
 
@@ -122,7 +121,7 @@ void	handle_look(t_player *p, t_player *c, char *wld)
 	b[0][0] = '\0';
 	extract_json_value(wld, out, b[0]);
 	if (b[0][0] == '\0')
-		return ((void)write(p->sd, "ERR 404 ROOM_NOT_FOUND\n", 23));
+		return ((void)send_reply(p, "ERR 404 ROOM_NOT_FOUND\n"));
 	build_players_list(p, c, b[1]);
 	build_exits_list(wld, p->location, b[2]);
 	build_items_list(wld, p->location, b[3]);
@@ -133,5 +132,5 @@ void	handle_look(t_player *p, t_player *c, char *wld)
 		"\"exits\": {%s}}, \"players\": [%s], "
 		"\"items\": [%s], \"npcs\": [%s]}\n",
 		p->location, b[0], b[5], b[2], b[1], b[3], b[4]);
-	write(p->sd, out, strlen(out));
+	send_reply(p, out);
 }

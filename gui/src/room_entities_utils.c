@@ -17,12 +17,13 @@
 
 static Vector3	get_layout(const char *id)
 {
-	const t_npc_layout	table[5] = {
+	const t_npc_layout	table[6] = {
 	{"sec_drone", 0.6f, 0.6f, 0.65f},
 	{"alpha_drone", 0.6f, 0.36f, 0.75f},
 	{"injured_engineer", 1.0f, 0.65f, 0.70f},
 	{"ai_terminal", 0.3f, 0.54f, 0.59f},
-	{"cleaning_bot", 0.3f, 0.65f, 0.65f}};
+	{"cleaning_bot", 0.3f, 0.65f, 0.65f},
+	{"core_mainframe", 0.76f, 0.605f, 0.455f}};
 	Vector3				layout;
 	int					idx;
 
@@ -30,7 +31,7 @@ static Vector3	get_layout(const char *id)
 	layout.y = 0.5f;
 	layout.z = 0.5f;
 	idx = -1;
-	while (++idx < 5)
+	while (++idx < 6)
 	{
 		if (!strcmp(id, table[idx].id))
 		{

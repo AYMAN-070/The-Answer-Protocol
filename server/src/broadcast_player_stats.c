@@ -22,7 +22,7 @@ void	broadcast_player_stats(t_player *c)
 	i = -1;
 	while (++i < 10)
 	{
-		if (c[i].is_active == 1)
+		if (c[i].is_active == 1 && c[i].name[0] != '\0')
 			total++;
 	}
 	sprintf(out, "EVT STATS players=%d\n", total);

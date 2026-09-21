@@ -15,8 +15,11 @@
 
 void	handle_death(t_player *player, t_player *c, char *world)
 {
-	int	i;
+	int		i;
+	char	evt[128];
 
+	sprintf(evt, "EVT ROOM COMBAT %s defeated\n", player->name);
+	broadcast_room(c, player->location, evt, player->sd);
 	i = 0;
 	while (i < 5)
 	{
@@ -29,8 +32,9 @@ void	handle_death(t_player *player, t_player *c, char *world)
 	player->location[31] = '\0';
 	player->hp = 50;
 	player->in_combat = 0;
+	player->defending = 0;
 	server_log("INFO", player->ip, player->name, "Player died and respawned");
-	write(player->sd, "EVT PLAYER DEATH respawn=medbay\n", 32);
+	send_reply(player, "EVT PLAYER DEATH respawn=medbay\n");
 	handle_look(player, c, world);
 	handle_inventory(player);
 	handle_status(player);
@@ -55,7 +59,7 @@ void	give_item(t_player *player, char *item)
 	player->inventory[4][31] = '\0';
 }
 
-static void	send_combat_msg(t_player *p, int d, int t_hp)
+static void	send_combat_msg(t_player *p, t_player *c, int d, int t_hp)
 {
 	char	msg[256];
 
@@ -66,24 +70,27 @@ static void	send_combat_msg(t_player *p, int d, int t_hp)
 		sprintf(msg, "OK {\"attacker_hp\": %d, \"target_hp\": %d, "
 			"\"damage\": %d, \"status\": \"combat\"}\n", p->hp, t_hp, d);
 	server_log("INFO", p->ip, p->name, "Combat round resolved");
-	write(p->sd, msg, strlen(msg));
+	send_reply(p, msg);
+	sprintf(msg, "EVT ROOM COMBAT %s damage=%d target_hp=%d\n",
+		p->name, d, t_hp * (t_hp > 0));
+	broadcast_room(c, p->location, msg, p->sd);
 }
 
 static int	check_attack_err(t_player *p, char *id, char *wld)
 {
 	if (id[0] == '\0' || !check_npc_in_room(wld, p->location, id))
 	{
-		write(p->sd, "ERR 404 NPC_NOT_FOUND\n", 22);
+		send_reply(p, "ERR 404 NPC_NOT_FOUND\n");
 		return (1);
 	}
 	if (!is_npc_enemy(wld, id))
 	{
-		write(p->sd, "ERR 405 NPC_NOT_HOSTILE\n", 24);
+		send_reply(p, "ERR 405 NPC_NOT_HOSTILE\n");
 		return (1);
 	}
 	if (apply_damage_to_npc(p->location, id, 0, wld) <= 0)
 	{
-		write(p->sd, "ERR 409 NPC_ALREADY_DEAD\n", 25);
+		send_reply(p, "ERR 409 NPC_ALREADY_DEAD\n");
 		return (1);
 	}
 	return (0);
@@ -92,6 +99,7 @@ static int	check_attack_err(t_player *p, char *id, char *wld)
 void	handle_attack(t_player *p, t_player *c, char *tgt, char *wld)
 {
 	int		d;
+	int		cd;
 	int		t_hp;
 	char	id[32];
 
@@ -107,10 +115,11 @@ void	handle_attack(t_player *p, t_player *c, char *tgt, char *wld)
 	p->in_combat = (t_hp > 0);
 	if (t_hp <= 0 && !strcmp(id, "alpha_drone"))
 		reward_override(p);
+	cd = (10 + (rand() % 11)) / (1 + p->defending);
+	p->defending = 0;
 	if (t_hp > 0)
-		p->hp -= (10 + (rand() % 11));
+		p->hp -= cd;
 	if (p->hp <= 0)
 		return (handle_death(p, c, wld));
-	send_combat_msg(p, d, t_hp);
+	send_combat_msg(p, c, d, t_hp);
 }
-

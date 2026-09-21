@@ -22,6 +22,7 @@
 # include <sys/select.h>
 # include <arpa/inet.h>
 # include <time.h>
+# include <signal.h>
 
 typedef struct s_player
 {
@@ -33,6 +34,7 @@ typedef struct s_player
 	int		hp;
 	int		max_hp;
 	int		in_combat;
+	int		defending;
 	char	inventory[5][32];
 	char	ip[16];
 	long	last_cmd_time;
@@ -64,7 +66,7 @@ int		has_item(t_player *player, char *item);
 int		check_npc_in_room(char *json, char *room, char *npc);
 void	handle_attack(t_player *player, t_player *c, char *target, char *world);
 void	give_item(t_player *player, char *item);
-void	handle_defend(t_player *player, t_player *c, char *tgt, char *world);
+void	handle_defend(t_player *player, char *tgt, char *world);
 void	handle_flee(t_player *player, t_player *c, char *world);
 void	handle_drop(t_player *player, char *item, char *world_data);
 void	handle_talk(t_player *player, int words, char *npc, char *world);
@@ -73,6 +75,7 @@ void	handle_quest(t_player *p, char *npc_name, char *wld);
 void	handle_quests(t_player *p);
 void	reward_override(t_player *p);
 void	server_log(char *level, char *ip, char *player, char *msg);
+void	send_reply(t_player *p, char *msg);
 int		check_abuse(t_player *player);
 void	handle_chat(t_player *p, t_player *c, char *arg);
 void	handle_group(t_player *p, t_player *c, char *arg);
@@ -86,6 +89,8 @@ int		apply_damage_to_npc(char *room, char *npc, int dmg, char *wld);
 void	get_npc_dialogue(char *wld, char *npc, char *out);
 void	handle_death(t_player *p, t_player *c, char *wld);
 void	get_room_desc(char *wld, char *room, char *out);
+void	get_quest_reward(char *wld, char *quest, char *out);
+void	get_dialogue_line(char *p, int line, char *out);
 void	resolve_id(char *wld, char *sect, char *name, char *out);
 void	validate_world(char *wld);
 int		world_state(int mode, char *key);
@@ -99,5 +104,6 @@ typedef struct s_drop
 }	t_drop;
 
 char	*manage_dropped(int mode, char *room, char *item, char *buf);
+void	append_room_item(char *out, char *id);
 
 #endif

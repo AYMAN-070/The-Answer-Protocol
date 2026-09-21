@@ -15,19 +15,34 @@
 #include <stdio.h>
 #include <string.h>
 
-void	confirm_status(t_ui_context *ctx)
-{
-	char	msg[64];
-
-	snprintf(msg, sizeof(msg), "Status: HP %d/%d", ctx->player.hp,
-		ctx->player.max_hp);
-	add_message(&ctx->logs, msg);
-}
-
 void	confirm_who(t_ui_context *ctx, int count, const char *raw)
 {
 	ctx->server_players = count;
 	add_message(&ctx->logs, raw);
+}
+
+int	quests_changed(t_ui_context *ctx, cJSON *root)
+{
+	char	sig[320];
+	cJSON	*node;
+	cJSON	*f;
+
+	strcpy(sig, "#");
+	node = root->child;
+	while (node)
+	{
+		f = cJSON_GetObjectItem(node, "quest_id");
+		if (f && cJSON_IsString(f))
+			strncat(sig, f->valuestring, sizeof(sig) - strlen(sig) - 1);
+		f = cJSON_GetObjectItem(node, "status");
+		if (f && cJSON_IsString(f))
+			strncat(sig, f->valuestring, sizeof(sig) - strlen(sig) - 1);
+		node = node->next;
+	}
+	if (!strcmp(sig, ctx->last_quest_sig))
+		return (0);
+	strncpy(ctx->last_quest_sig, sig, sizeof(ctx->last_quest_sig) - 1);
+	return (1);
 }
 
 void	confirm_inventory(t_ui_context *ctx)

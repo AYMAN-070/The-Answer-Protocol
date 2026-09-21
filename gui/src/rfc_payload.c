@@ -112,10 +112,14 @@ static void	rfc_apply_inventory(cJSON *arr, t_ui_context *ctx)
 void	rfc_apply_list(cJSON *root, t_ui_context *ctx)
 {
 	cJSON	*node;
+	int		asked;
 
 	node = root->child;
-	if (!strcmp(ctx->last_cmd, "QUESTS") || (node && !cJSON_IsString(node)))
+	asked = !strcmp(ctx->last_cmd, "QUESTS");
+	if (asked || (node && !cJSON_IsString(node)))
 	{
+		if (!quests_changed(ctx, root) && !asked)
+			return ;
 		if (!node)
 			add_message(&ctx->logs, "No active quest");
 		while (node)

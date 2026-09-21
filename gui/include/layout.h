@@ -36,7 +36,6 @@ typedef struct s_room_state
 	int			npc_count;
 	char		current_npc[32];
 	char		current_dialogue[256];
-	char		key[32];
 }	t_room_state;
 
 typedef struct s_player_state
@@ -71,6 +70,7 @@ typedef struct s_ui_context
 	char				attack_target[32];
 	char				last_cmd[16];
 	char				last_inv_sig[320];
+	char				last_quest_sig[320];
 	char				group_id[32];
 	int					sel_item;
 	int					sel_room_item;

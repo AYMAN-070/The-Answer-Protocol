@@ -32,6 +32,54 @@ static int	name_matches(char *entry, char *name)
 	return (strcmp(disp, name) == 0);
 }
 
+void	get_dialogue_line(char *p, int line, char *out)
+{
+	char	*e;
+
+	out[0] = '\0';
+	while (p)
+	{
+		p = strchr(p, '"');
+		if (!p)
+			return ;
+		e = strchr(p + 1, '"');
+		if (!e || (e - (p + 1)) >= 255)
+			return ;
+		if (line <= 0)
+		{
+			strncpy(out, p + 1, e - (p + 1));
+			out[e - (p + 1)] = '\0';
+			return ;
+		}
+		if (*(e + 1) != ',')
+			return ;
+		line--;
+		p = e + 1;
+	}
+}
+
+void	get_quest_reward(char *wld, char *quest, char *out)
+{
+	char	k[64];
+	char	*p;
+	char	*e;
+
+	strcpy(out, "none");
+	sprintf(k, "\"%s\": {", quest);
+	p = strstr(wld, k);
+	if (p)
+		p = strstr(p, "\"reward\": \"");
+	if (!p)
+		return ;
+	p += 11;
+	e = strchr(p, '"');
+	if (e && (e - p) < 31)
+	{
+		strncpy(out, p, e - p);
+		out[e - p] = '\0';
+	}
+}
+
 void	resolve_id(char *wld, char *sect, char *name, char *out)
 {
 	char	*p;

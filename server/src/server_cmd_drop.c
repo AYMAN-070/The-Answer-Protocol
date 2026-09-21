@@ -41,6 +41,15 @@ char	*manage_dropped(int mode, char *room, char *item, char *buf)
 	return (NULL);
 }
 
+void	append_room_item(char *out, char *id)
+{
+	if (manage_taken(1, id))
+		return ;
+	if (out[0] != '\0')
+		strcat(out, ", ");
+	sprintf(out + strlen(out), "\"%s\"", id);
+}
+
 void	handle_drop(t_player *player, char *item, char *world_data)
 {
 	int		i;
@@ -48,7 +57,7 @@ void	handle_drop(t_player *player, char *item, char *world_data)
 	char	msg[128];
 
 	if (item == NULL || item[0] == '\0')
-		return ((void)write(player->sd, "ERR 404 ITEM_NOT_IN_INVENTORY\n", 30));
+		return ((void)send_reply(player, "ERR 404 ITEM_NOT_IN_INVENTORY\n"));
 	resolve_id(world_data, "\"items\": {", item, id);
 	i = -1;
 	while (++i < 5)
@@ -59,9 +68,9 @@ void	handle_drop(t_player *player, char *item, char *world_data)
 			manage_dropped(1, player->location, id, NULL);
 			server_log("INFO", player->ip, player->name, "Item dropped");
 			sprintf(msg, "OK dropped=%s\n", id);
-			return ((void)write(player->sd, msg, strlen(msg)));
+			return ((void)send_reply(player, msg));
 		}
 	}
 	server_log("WARN", player->ip, player->name, "Drop item not in inventory");
-	write(player->sd, "ERR 404 ITEM_NOT_IN_INVENTORY\n", 30);
+	send_reply(player, "ERR 404 ITEM_NOT_IN_INVENTORY\n");
 }

@@ -24,7 +24,7 @@ void	handle_status(t_player *p)
 		st = "in_combat";
 	sprintf(msg, "OK {\"hp\": %d, \"max_hp\": %d, \"status\": \"%s\"}\n",
 		p->hp, p->max_hp, st);
-	write(p->sd, msg, strlen(msg));
+	send_reply(p, msg);
 }
 
 void	handle_quit(t_player *player, t_player *c)
@@ -32,7 +32,7 @@ void	handle_quit(t_player *player, t_player *c)
 	char	out[128];
 
 	server_log("INFO", player->ip, player->name, "Player quit");
-	write(player->sd, "OK bye\n", 7);
+	send_reply(player, "OK bye\n");
 	close(player->sd);
 	player->is_active = 0;
 	player->sd = -1;
@@ -60,7 +60,7 @@ static void	complete_repair_quest(t_player *p)
 	give_item(p, "laser_pistol");
 	world_state(2, "repair_done");
 	server_log("INFO", p->ip, p->name, "Quest repair completed");
-	write(p->sd, "OK Quest completed!\n", 20);
+	send_reply(p, "OK Quest completed!\n");
 }
 
 void	handle_disconnect(t_player *p, t_player *c)
@@ -91,13 +91,13 @@ void	handle_talk(t_player *p, int words, char *npc, char *wld)
 	if (words == 2)
 		resolve_id(wld, "\"npcs\": {", npc, id);
 	if (words != 2 || !check_npc_in_room(wld, p->location, id))
-		return ((void)write(p->sd, "ERR 404 NPC_NOT_FOUND\n", 22));
+		return ((void)send_reply(p, "ERR 404 NPC_NOT_FOUND\n"));
 	if (!strcmp(id, "injured_engineer") && world_state(1, "repair_done"))
-		return ((void)write(p->sd, "OK System restored. Thanks!\n", 28));
+		return ((void)send_reply(p, "OK System restored. Thanks!\n"));
 	if (!strcmp(id, "injured_engineer") && has_item(p, "energy_cell"))
 		return (complete_repair_quest(p));
 	if (!strcmp(id, "ai_terminal") && world_state(1, "override_done"))
-		return ((void)write(p->sd, "OK Lockdown lifted.\n", 20));
+		return ((void)send_reply(p, "OK Lockdown lifted.\n"));
 	if (!strcmp(id, "ai_terminal") && p->quest_override == 0)
 	{
 		p->quest_override = 1;
@@ -105,5 +105,5 @@ void	handle_talk(t_player *p, int words, char *npc, char *wld)
 	}
 	get_npc_dialogue(wld, id, d);
 	snprintf(o, sizeof(o), "OK %.245s\n", d);
-	write(p->sd, o, strlen(o));
+	send_reply(p, o);
 }

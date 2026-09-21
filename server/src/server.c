@@ -107,6 +107,7 @@ int	main(void)
 	char		*world_data;
 
 	srand(time(NULL));
+	signal(SIGPIPE, SIG_IGN);
 	setvbuf(stdout, NULL, _IOLBF, 0);
 	server_fd = init_server();
 	init_clients(clients);

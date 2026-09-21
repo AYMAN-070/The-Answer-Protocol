@@ -87,9 +87,9 @@ int	apply_damage_to_npc(char *room, char *npc, int dmg, char *wld)
 
 void	get_npc_dialogue(char *wld, char *npc, char *out)
 {
-	char	k[64];
-	char	*p;
-	char	*e;
+	static int	turn;
+	char		k[64];
+	char		*p;
 
 	out[0] = '\0';
 	sprintf(k, "\"%s\": {", npc);
@@ -97,16 +97,10 @@ void	get_npc_dialogue(char *wld, char *npc, char *out)
 	if (p)
 		p = strstr(p, "\"dialogue\": [");
 	if (p)
-		p = strchr(p + 13, '"');
-	if (p)
-	{
-		e = strchr(p + 1, '"');
-		if (e && (e - (p + 1)) < 255)
-		{
-			strncpy(out, p + 1, e - (p + 1));
-			out[e - (p + 1)] = '\0';
-		}
-	}
+		get_dialogue_line(p + 13, turn % 2, out);
+	if (p && out[0] == '\0')
+		get_dialogue_line(p + 13, 0, out);
+	turn++;
 	if (out[0] == '\0')
 		strcpy(out, "*Silence*");
 }

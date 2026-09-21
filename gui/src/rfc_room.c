@@ -12,7 +12,6 @@
 
 #include "rfc.h"
 #include "network_parser.h"
-#include "network.h"
 #include <string.h>
 
 static void	apply_id_list(cJSON *arr, t_entity *dest, int *count, cJSON *defs)
@@ -45,9 +44,6 @@ static void	rfc_apply_room(cJSON *root, t_ui_context *ctx)
 	room = cJSON_GetObjectItem(root, "room");
 	world = cJSON_GetObjectItem(ctx->world_db, "world");
 	memset(&ctx->state, 0, sizeof(t_room_state));
-	field = cJSON_GetObjectItem(room, "id");
-	if (field && cJSON_IsString(field))
-		strncpy(ctx->state.key, field->valuestring, 31);
 	field = cJSON_GetObjectItem(room, "name");
 	if (field && cJSON_IsString(field))
 		strncpy(ctx->state.name, field->valuestring, 63);

@@ -1,20 +1,9 @@
-# Corrections client CLI — mise en conformité RFC 42TAP / sujet
-
-Date : 2026-09-20
-Auteur des corrections : qdecross
-Périmètre : `cli/` uniquement (le GUI et le serveur ont été corrigés séparément, voir
-`server/CORRECTIONS.md`).
-
-Ce fichier documente **exactement** ce qui a été modifié et pourquoi.
-
----
-
 ## 1. Conformité RFC 42TAP
 
-| Point | Avant | Après | Référence |
-|---|---|---|---|
-| `QUIT` | intercepté **localement** (`!strncmp(buffer, "QUIT\n", 5)` → `return (0)`), la socket était fermée sans que la commande parte. Le serveur ne recevait jamais `QUIT`, ne répondait jamais `OK bye`, et la déconnexion passait systématiquement par le chemin brutal (`read() <= 0`) | la ligne est envoyée au serveur comme n'importe quelle autre commande. Le serveur répond `OK bye` puis ferme ; la boucle se termine sur le `read()` à 0 | RFC 5.1.4 et 3.3 |
-| Réassemblage des lignes | `read()` puis `printf` du buffer brut. Deux réponses arrivées dans le même paquet TCP s'affichaient collées, et une réponse coupée en deux paquets s'affichait en deux morceaux | accumulation dans un buffer persistant, découpage sur `\n`, une ligne affichée à la fois, le reste conservé pour le prochain `read()` | RFC 9.2 (fragmentation et coalescence) |
+| Point | Avant | Après |
+|---|---|---|
+| `QUIT` | intercepté **localement** (`!strncmp(buffer, "QUIT\n", 5)` → `return (0)`), la socket était fermée sans que la commande parte. Le serveur ne recevait jamais `QUIT`, ne répondait jamais `OK bye`, et la déconnexion passait systématiquement par le chemin brutal (`read() <= 0`) | la ligne est envoyée au serveur comme n'importe quelle autre commande. Le serveur répond `OK bye` puis ferme ; la boucle se termine sur le `read()` à 0 |
+| Réassemblage des lignes | `read()` puis `printf` du buffer brut. Deux réponses arrivées dans le même paquet TCP s'affichaient collées, et une réponse coupée en deux paquets s'affichait en deux morceaux | accumulation dans un buffer persistant, découpage sur `\n`, une ligne affichée à la fois, le reste conservé pour le prochain `read()` |
 
 Le découpage reprend exactement le motif déjà utilisé côté serveur dans
 `read_client_data()` (`strchr('\n')` + `memmove` du reliquat), pour rester cohérent
@@ -25,14 +14,6 @@ avec le code existant.
 | Exigence | Avant | Après |
 |---|---|---|
 | « CLI and GUI clients must be interchangeable between different groups » | IP et port écrits en dur (`127.0.0.1`, `4242`), aucun argument : impossible de se connecter au serveur d'un autre groupe | `./client_app [ip] [port]`, avec les mêmes valeurs par défaut. `make run-client` fonctionne sans argument |
-
-Points qui étaient **déjà conformes** et n'ont pas été touchés :
-
-- « Keeps receiving events while waiting for user input » : le `select()` sur `stdin` et
-  la socket était déjà correct.
-- « Command Interface Choice » : le client envoie la saisie telle quelle au serveur,
-  c'est l'approche (1) du sujet V.3. Ce choix reste inchangé, mais il doit être
-  documenté dans le README (cf. §6).
 
 ## 3. Fichiers ajoutés
 

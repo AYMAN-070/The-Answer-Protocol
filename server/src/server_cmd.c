@@ -24,6 +24,7 @@ static void	init_player_data(t_player *p, char *arg)
 	p->hp = 100;
 	p->max_hp = 100;
 	p->in_combat = 0;
+	p->defending = 0;
 	p->group_id = 0;
 	p->quest_status = 0;
 	p->quest_override = 0;
@@ -37,16 +38,16 @@ void	handle_connect(t_player *p, t_player *c, int words, char *arg)
 	int	i;
 
 	if (words < 2 || arg[0] == '\0')
-		return ((void)write(p->sd, "ERR 400 BAD_REQUEST\n", 20));
+		return ((void)send_reply(p, "ERR 400 BAD_REQUEST\n"));
 	i = -1;
 	while (++i < 10)
 	{
 		if (c[i].is_active == 1 && strcmp(c[i].name, arg) == 0)
-			return ((void)write(p->sd, "ERR 201 NAME_IN_USE\n", 20));
+			return ((void)send_reply(p, "ERR 201 NAME_IN_USE\n"));
 	}
 	init_player_data(p, arg);
 	server_log("INFO", p->ip, p->name, "Connected to server");
-	write(p->sd, "OK connected\n", 13);
+	send_reply(p, "OK connected\n");
 	broadcast_player_stats(c);
 }
 
@@ -62,7 +63,7 @@ int	process_combat_cmd(t_player *p, t_player *c, char *buf, char *wld)
 	if (strcmp(cmd, "ATTACK") == 0)
 		handle_attack(p, c, arg, wld);
 	else if (strcmp(cmd, "DEFEND") == 0)
-		handle_defend(p, c, arg, wld);
+		handle_defend(p, arg, wld);
 	else if (strcmp(cmd, "TAKE") == 0)
 		handle_take(p, w, arg, wld);
 	else if (strcmp(cmd, "TALK") == 0)
@@ -102,9 +103,13 @@ void	process_command(t_player *p, t_player *c, char *b, char *wld)
 
 	cmd[0] = '\0';
 	arg[0] = '\0';
-	if (check_abuse(p) == 1 || sscanf(b, "%31s %[^\n]", cmd, arg) < 1)
-		return ((void)write(p->sd, "ERR 429 TOO_MANY_REQUESTS\n", 26));
+	if (check_abuse(p) == 1)
+		return ((void)send_reply(p, "ERR 429 TOO_MANY_REQUESTS\n"));
+	if (sscanf(b, "%31s %[^\n]", cmd, arg) < 1)
+		return ((void)send_reply(p, "ERR 400 BAD_REQUEST\n"));
 	server_log("INFO", p->ip, p->name, b);
+	if (p->name[0] == '\0' && strcmp(cmd, "CONNECT") != 0)
+		return ((void)send_reply(p, "ERR 202 NOT_AUTHENTICATED\n"));
 	if (strcmp(cmd, "CONNECT") == 0)
 		handle_connect(p, c, 1 + (arg[0] != '\0'), arg);
 	else if (strcmp(cmd, "LOOK") == 0)
@@ -117,7 +122,5 @@ void	process_command(t_player *p, t_player *c, char *b, char *wld)
 		handle_drop(p, arg, wld);
 	else if (exec_other_cmds(p, c, cmd, arg) == 0
 		&& process_combat_cmd(p, c, b, wld) == 0)
-	{
-		write(p->sd, "ERR 400 BAD_REQUEST\n", 20);
-	}
+		send_reply(p, "ERR 400 BAD_REQUEST\n");
 }

@@ -22,11 +22,11 @@ void	handle_who(t_player *p, t_player *clients)
 	i = -1;
 	while (++i < 10)
 	{
-		if (clients[i].is_active == 1)
+		if (clients[i].is_active == 1 && clients[i].name[0] != '\0')
 			count++;
 	}
 	sprintf(msg, "OK players=%d\n", count);
-	write(p->sd, msg, strlen(msg));
+	send_reply(p, msg);
 }
 
 static void	group_join(t_player *p, t_player *c, t_player *leader)
@@ -34,15 +34,15 @@ static void	group_join(t_player *p, t_player *c, t_player *leader)
 	char	o[128];
 
 	if (p->group_id != 0)
-		return ((void)write(p->sd, "ERR 402 ALREADY_IN_GROUP\n", 25));
+		return ((void)send_reply(p, "ERR 402 ALREADY_IN_GROUP\n"));
 	if (leader->group_id == 0)
-		return ((void)write(p->sd, "ERR 401 NOT_IN_GROUP\n", 21));
+		return ((void)send_reply(p, "ERR 401 NOT_IN_GROUP\n"));
 	p->group_id = leader->group_id;
 	sprintf(o, "EVT GROUP JOIN %s\n", p->name);
 	broadcast_group(c, p->group_id, o, p->sd);
 	server_log("INFO", p->ip, p->name, "Joined a group");
 	sprintf(o, "OK group=%d\n", p->group_id);
-	write(p->sd, o, strlen(o));
+	send_reply(p, o);
 }
 
 static void	group_leave(t_player *p, t_player *c)
@@ -53,7 +53,7 @@ static void	group_leave(t_player *p, t_player *c)
 	broadcast_group(c, p->group_id, o, p->sd);
 	p->group_id = 0;
 	server_log("INFO", p->ip, p->name, "Left the group");
-	write(p->sd, "OK\n", 3);
+	send_reply(p, "OK\n");
 }
 
 static void	handle_group_target(t_player *p, t_player *c, char *a, char *tgt)
@@ -70,12 +70,12 @@ static void	handle_group_target(t_player *p, t_player *c, char *a, char *tgt)
 		{
 			sprintf(o, "EVT GROUP INVITE %s\n", p->name);
 			write(c[i].sd, o, strlen(o));
-			return ((void)write(p->sd, "OK Invited\n", 11));
+			return ((void)send_reply(p, "OK Invited\n"));
 		}
 		if (!strcmp(a, "JOIN"))
 			return (group_join(p, c, &c[i]));
 	}
-	write(p->sd, "ERR 410 PLAYER_NOT_FOUND\n", 25);
+	send_reply(p, "ERR 410 PLAYER_NOT_FOUND\n");
 }
 
 void	handle_group(t_player *p, t_player *c, char *arg)
@@ -88,18 +88,18 @@ void	handle_group(t_player *p, t_player *c, char *arg)
 
 	ac = sscanf(arg, "%31s %31s", a, t);
 	if (ac > 0 && !strcmp(a, "CREATE") && p->group_id != 0)
-		return ((void)write(p->sd, "ERR 402 ALREADY_IN_GROUP\n", 25));
+		return ((void)send_reply(p, "ERR 402 ALREADY_IN_GROUP\n"));
 	if (ac > 0 && !strcmp(a, "CREATE"))
 	{
 		p->group_id = g++;
 		sprintf(o, "OK group=%d\n", p->group_id);
-		return ((void)write(p->sd, o, strlen(o)));
+		return ((void)send_reply(p, o));
 	}
 	if (ac > 0 && !strcmp(a, "LEAVE") && p->group_id == 0)
-		return ((void)write(p->sd, "ERR 401 NOT_IN_GROUP\n", 21));
+		return ((void)send_reply(p, "ERR 401 NOT_IN_GROUP\n"));
 	if (ac > 0 && !strcmp(a, "LEAVE"))
 		return (group_leave(p, c));
 	if (ac == 2)
 		return (handle_group_target(p, c, a, t));
-	write(p->sd, "ERR 400 BAD_REQUEST\n", 20);
+	send_reply(p, "ERR 400 BAD_REQUEST\n");
 }
