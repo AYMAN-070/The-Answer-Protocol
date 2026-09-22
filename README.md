@@ -1,79 +1,84 @@
-*This project has been created as part of the 42 curriculum by ayhammou, qdecross.*
+*This project has been created as part of the 42 curriculum by ayhammou and qdecross.*
 
 # The Answer Protocol (TAP)
 
 ## Description
-The Answer Protocol (TAP) is a small multiplayer text adventure. The project consists of a TCP server and two clients: a Command Line Interface (CLI) and a Graphical User Interface (GUI). The game provides a shared, persistent-feeling world where multiple players can explore rooms, chat, and cooperate in real time. 
+The Answer Protocol (TAP) is a multiplayer text-based adventure game. The project consists of a TCP server and two clients: a Command Line Interface (CLI) and a Graphical User Interface (GUI). The game provides a shared, persistent-feeling world where multiple players can explore rooms, chat, and cooperate (or compete) in real time to escape a locked-down space station.
 
-## Architecture
-This section explains our server design choices.
-* The server is written entirely in C and relies on a non-blocking TCP concurrency model using `select()` multiplexing. 
-* Instead of a complex threaded dispatcher, we use an inline command routing system (`process_command`). This ensures strict compliance with the 42 Norminette (max 25 lines, max 4 parameters) while maintaining high performance.
-* Dynamic world states (like dropped items) are managed in a static memory array (`t_drop`) to avoid heavy real-time file I/O operations.
+## Server Architecture & Technical Choices
+This section explains our server design choices, handled primarily by **ayhammou**.
+* **Mono-thread Multiplexing:** The server is written entirely in C and relies on a non-blocking TCP concurrency model using `select()`. Instead of a heavy multi-threaded approach, a single thread efficiently handles multiple clients, completely avoiding data races and mutex bottlenecks.
+* **TCP Stream Safety:** TCP is a stream, not a message-based protocol. We implemented robust buffer management using `memmove()` and pointer arithmetic to accurately slice incomplete or grouped commands sent by clients.
+* **Ghost Data Prevention:** We ensure strict memory safety. Upon a client's disconnection (whether a clean `QUIT` or a brutal socket crash), their session slot is entirely wiped using `memset()` to prevent "ghost data" (lingering HP, quests, or group IDs) from affecting the next player taking that slot.
+* **Crash-Proofing:** Server signals (`SIGPIPE`) are ignored to prevent the server from crashing when writing to unexpectedly closed sockets. Standard output (`stdout`) is unbuffered (`setvbuf`) to ensure real-time logs even in case of a fatal error.
 
-## Protocol Implementation
-Our server implements all commands and events from the protocol.
-* The server handles malformed commands with protocol-compliant error responses.
-* **Deviation:** The official protocol suggests using `CHAT GLOBAL <msg>` for communication. To alleviate server-side network parsing and drastically improve the GUI client's rendering speed, we deviated from this specification by implementing `GCHAT <msg>` (Global) and `RCHAT <msg>` (Room). This deviation is documented here as required.
+## World Design & Graphical Interface (Raylib)
+Designed by **qdecross**, the game world is not just a text-based JSON file; it is fully brought to life through a custom 2D Graphical User Interface built from scratch using the **Raylib** library.
+
+* **Raylib Engine Integration:** The GUI client uses Raylib to manage the rendering loop, texture loading, custom fonts, and mouse interactions. The visual loop runs smoothly alongside the non-blocking network socket listener, ensuring real-time server synchronization without freezing the graphics.
+* **Visual Rooms & NPCs:** Every room defined in the server's world data was carefully crafted with specific background artworks. NPCs (like the Security Drone or Injured Engineer) and items are dynamically rendered as 2D sprites in the environment. Their presence on screen is entirely dictated by the server's real-time state.
+* **Dynamic Command Matrix:** Instead of typing commands, the Raylib interface features a clickable UI grid. Clicking on a 2D NPC or item sprite directly in the room highlights it, and clicking action buttons (`TALK`, `TAKE`, `ATTACK`) automatically generates and sends the correct formatted protocol string to the server.
+* **Shared Ecosystem (Game Design):** To respect the project's "unique instances" rule, the world logic is a **Shared Run**. Quests are first-come, first-served (using our `world_state()` engine). When a player drops an inventory item, its sprite instantly appears on the floor of the room's UI for any other player to visually see and pick up.
 
 ## Combat System
 Our turn-based combat mechanics are built to be simple but punishing.
 * Players start with 100 health points (HP).
-* The `ATTACK` command deals damage to enemy NPCs based on a fixed formula, and NPCs execute a counter-attack based on their predefined difficulty.
-* Additional combat commands like `DEFEND` (reduces incoming damage for one turn) and `FLEE` (allows escape to a random adjacent room) are fully implemented.
-* **Death Penalty:** When a player's HP reaches 0, they respawn at a safe location with reduced health. We set this respawn health to 50 HP, and penalize the player by completely emptying their inventory. Combat results are logged and broadcasted to relevant players.
+* **ATTACK:** Deals 15-25 damage (30-40 with the Laser Pistol). If the NPC survives, it automatically counter-attacks (10-20 damage).
+* **DEFEND:** Raises a guard state for the player's *next* attack, halving the incoming counter-attack damage. Optimal combat loop: `DEFEND` → `ATTACK`.
+* **FLEE:** Allows a 50% chance to escape to an adjacent room without taking damage.
+* **Death Penalty:** When a player's HP reaches 0, they respawn in the Medbay with 50 HP. Their entire inventory drops on the floor. Combat results are broadcasted to everyone in the room.
 
-## Quest System
-Our project implements at least 2 simple quests.
-* **Progression & Validation:** Quests are triggered by the `TALK` command with specific NPCs. Validation is handled server-side by checking the player's inventory for required items (e.g., fetch quests).
-* **Reward System:** Upon completion, the server removes the requested item from the player's inventory and grants a unique key-item necessary to access the final boss room.
+## Protocol Implementation & Deviations
+Our server strictly implements the TAP RFC, with necessary deviations and additions documented below to improve the multiplayer and GUI experience.
 
-## World Design
-The world is loaded from a static JSON data file and features a coherent map.
-* **Rooms:** The map contains at least 8 interconnected rooms forming a loop, allowing a full circuit without being a "line-only" map.
-* **NPCs & Items:** The world includes at least 3 distinct NPC roles (dialogue, quest-giver, enemy) and at least 4 distinct items, with at least 2 being obtainable in-world. 
-* Multi-word item names are fully supported (e.g., `energy cell`). Dropping an item in a room makes it available for other players to pick up.
+**Deviations & Additions:**
+1. **Chat Scopes:** The official protocol suggests `CHAT GLOBAL <msg>`. To alleviate server-side network parsing and drastically improve GUI rendering speed, we implemented `CHAT GLOBAL <msg>` (Global) and `CHAT ROOM <msg>` (Room).
+2. **Custom Error Codes (4xx/2xx):** The RFC requires a `3DIGIT` error code but lacks specific codes for many edge cases. We added standard HTTP-like codes to maintain ABNF compliance:
+   * `202 NOT_AUTHENTICATED`: Issued if commands are sent before `CONNECT`.
+   * `400 BAD_REQUEST`: Unknown command or missing arguments.
+   * `403 ACCESS_DENIED`: Locked doors (e.g., `ai_core` without the keycard).
+   * `404 ROOM_NOT_FOUND`: Room ID mapping error.
+   * `407 ITEM_NOT_OBTAINABLE`: Trying to take background scenery.
+   * `408 INVENTORY_FULL`: Maximum 5 slots reached.
+   * `409 NPC_ALREADY_DEAD`: Target is already defeated.
+   * `410 PLAYER_NOT_FOUND`: Target for `GROUP JOIN/INVITE` does not exist.
+   * `429 TOO_MANY_REQUESTS`: Anti-flood protection triggered (more than 5 cmds/sec).
+3. **Custom Events:** Added `EVT PLAYER DEATH respawn=<room-id>` to notify clients of respawns, and `EVT ROOM COMBAT <player> damage=<d> target_hp=<hp>` to broadcast fight actions to everyone in the same room.
+
+## Graphical User Interface (GUI)
+The GUI client provides a fully immersive layout:
+* **Room View:** Displays room artwork, floor items, NPCs, and dynamic dialogues.
+* **Status Panel:** Visual health bar, inventory slots, and the Command Matrix (clickable buttons for actions).
+* **Chat & Logs:** Multi-channel chat (`TAB` to cycle between Room, Global, Group) and real-time Action Logs for server events.
+* *Note: To connect multiple GUI instances locally, use `make run-client-gui NAME=player_name`.*
 
 ## Server Logging
-We implemented comprehensive server logging to monitor server behavior.
-* All logs use a structured format containing precise timestamps, IP addresses, and log levels (INFO, WARN, ERROR).
-* The server logs all client connections, disconnections, received commands, server responses, world state changes, and quest progress.
-* **Abuse Monitoring:** The server actively monitors potential abuse patterns like command flooding. If a client sends more than 5 commands per second, the server ignores the inputs and issues a `WARN` log to protect the main thread.
+We implemented comprehensive, JSON-escaped server logging to monitor server behavior.
+* All logs use a structured format containing precise timestamps, IP addresses, and log levels (`INFO`, `WARN`, `ERROR`).
+* The server logs all client connections, received commands, server responses, world state changes, combat rounds, and quest progress.
 
 ## Group Contributions
-* **ayhammou (Server & CLI):** Responsible for the core TCP server architecture, multiplexing, command parsing, and the CLI client implementation.
-* **qdecross (GUI & World Design):** Responsible for the graphical client interface, visual parsers, and the design of the JSON world data (rooms, quests, NPCs).
+* **ayhammou (Server & CLI):** Core TCP server architecture, `select()` multiplexing, socket memory safety, strict TCP stream buffering (`memmove`), Norminette compliance, and CLI client implementation.
+* **qdecross (GUI & World Design):** Graphical client interface development, visual parsing, RFC compliance audits, Shared World state mechanics (`world_state`), JSON data mapping, and game design.
 
 ## Instructions (Building and Running)
-The repository includes a Makefile with the necessary targets to compile and run the project.
 
 ### 1. Install Dependencies & Compile
-```bash
 make install-deps
 make
 
 ### 2. Run the Server
-```bash
 make run-server
-```
 
 ### 3. Run the Clients
-```bash
 make run-client       # Launches the CLI client
 make run-client-gui   # Launches the GUI client
-```
 
-### 4. Code Quality
-```bash
+### 3. Code Quality
 make lint             # Checks the code against standard linting practices
 make clean            # Cleans object files
-```
-
-## Testing
-This section explains how to test the core features.
-* **Multiplayer:** Launch the server, then open multiple terminal windows and run `make run-client` in each. Use `GCHAT` to verify broadcast messaging.
-* **Combat & Quests:** Navigate to the guard NPC and use `TALK guard`. Pick up the required item using `TAKE` and return to the NPC to observe the quest completion logic. Engage an enemy with `ATTACK` to test the HP reduction and death/respawn mechanics.
 
 ## Resources
-* **References:** Beej's Guide to Network Programming (TCP/IP sockets).
-* **AI Usage:** Generative AI (LLMs) was used strictly to assist with C syntax optimization and debugging complex network behavior (understanding TCP Streams and blocking sockets). AI was also used to help structure this README document to ensure compliance with the project specifications. All AI-generated logic was peer-reviewed and manually integrated.
+References: Beej's Guide to Network Programming (TCP/IP sockets).
+
+AI Usage: Generative AI was used strictly to assist with C syntax optimization (Norminette formatting) and debugging complex network edge-cases (TCP Stream chunking, memmove logic, blocking sockets). AI also assisted in formatting this README. All AI-generated logic was peer-reviewed, deeply understood, and manually integrated.
