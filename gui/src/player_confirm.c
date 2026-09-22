@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/17 00:00:00 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/17 00:00:00 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/22 08:30:31 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,13 +50,15 @@ void	confirm_inventory(t_ui_context *ctx)
 	char	sig[320];
 	char	msg[64];
 	int		idx;
+	int		asked;
 
+	asked = !strcmp(ctx->last_cmd, "INVENTORY");
 	sig[0] = '\0';
 	idx = -1;
 	while (++idx < ctx->player.inv_count)
 		strncat(sig, ctx->player.inventory[idx].id,
 			sizeof(sig) - strlen(sig) - 1);
-	if (!strcmp(sig, ctx->last_inv_sig))
+	if (!strcmp(sig, ctx->last_inv_sig) && !asked)
 		return ;
 	strncpy(ctx->last_inv_sig, sig, sizeof(ctx->last_inv_sig) - 1);
 	if (ctx->player.inv_count == 0)
