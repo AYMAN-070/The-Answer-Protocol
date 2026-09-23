@@ -10,7 +10,7 @@ RAYLIB_VER = 6.0
 INC_DIR = gui/include
 LIB_DIR = gui/lib
 
-GUI_CFLAGS = -Wall -Wextra -I$(INC_DIR)
+GUI_CFLAGS = -Wall -Wextra -Werror -I$(INC_DIR)
 GUI_LDFLAGS = -L$(LIB_DIR) -lraylib -lm -lpthread
 
 ifeq ($(OS), Darwin)
