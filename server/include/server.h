@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 10:28:08 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/18 23:12:30 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/23 10:11:20 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,7 @@ void	handle_take(t_player *player, int words, char *item, char *world);
 int		check_item_in_room(char *json, char *room, char *item);
 int		has_item(t_player *player, char *item);
 int		check_npc_in_room(char *json, char *room, char *npc);
+int		check_room_exits(char *wld, char *room);
 void	handle_attack(t_player *player, t_player *c, char *target, char *world);
 void	give_item(t_player *player, char *item);
 void	handle_defend(t_player *player, char *tgt, char *world);

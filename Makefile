@@ -33,9 +33,9 @@ GUI_SRC = gui/src/main.c gui/src/layout.c gui/src/room_view.c gui/src/map.c \
 GUI_OBJ = $(GUI_SRC:.c=.o) $(LIB_DIR)/cJSON.o
 
 
-SERVER_SRC = server/src/server.c server/src/server_cmd_chat.c \
+SERVER_SRC = server/src/server.c server/src/server_cmd_chat.c server/lib/cJSON/cJSON.c \
              server/src/server_group_who.c server/src/server_utils.c \
-             server/src/server_cmd.c server/src/server_cmd_move.c \
+             server/src/server_cmd.c server/src/server_cmd_move.c server/src/server_world2.c\
              server/src/server_cmd_drop.c server/src/server_world.c \
              server/src/server_json.c server/src/server_cmd_attack.c \
              server/src/server_quests.c server/src/server_utils2.c \
@@ -55,13 +55,13 @@ SERVER_HEADERS = server/include/server.h
 
 CLIENT_HEADERS = cli/include/client.h
 
-LINT_SRC = $(GUI_SRC) $(SERVER_SRC) $(CLIENT_SRC)
+LINT_SRC = $(GUI_SRC) $(filter-out server/lib/cJSON/cJSON.c, $(SERVER_SRC)) $(CLIENT_SRC)
 LINT_HDR = $(GUI_HEADERS) $(SERVER_HEADERS) $(CLIENT_HEADERS)
 
 all: $(SERVER) $(CLIENT) $(GUI_EXEC)
 
 $(SERVER): $(SERVER_SRC) $(SERVER_HEADERS)
-	$(CC) $(CFLAGS) -I server/include -I common/include $(SERVER_SRC) -o $(SERVER)
+	$(CC) $(CFLAGS) -I server/include -I common/include -I server/lib/cJSON $(SERVER_SRC) -o $(SERVER)
 
 $(CLIENT): $(CLIENT_SRC) $(CLIENT_HEADERS)
 	$(CC) $(CFLAGS) -I cli/include -I common/include $(CLIENT_SRC) -o $(CLIENT)
