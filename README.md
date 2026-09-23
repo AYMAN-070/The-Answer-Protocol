@@ -28,7 +28,24 @@ Our turn-based combat mechanics are built to be simple but punishing.
 * **FLEE:** Allows a 50% chance to escape to an adjacent room without taking damage.
 * **Death Penalty:** When a player's HP reaches 0, they respawn in the Medbay with 50 HP. Their entire inventory drops on the floor. Combat results are broadcasted to everyone in the room.
 
-## Protocol Implementation & Deviations
+## Quest System
+Our quest progression mechanics are based on a "Shared World" philosophy. Quests act as global server states.
+* **Progression & Validation:** Quests are triggered using the `TALK` command with specific NPCs (like the `injured_engineer` or `ai_terminal`). Validation happens server-side by checking the player's inventory for required items (e.g., `Energy Cell`) or by verifying the defeat of specific enemies (e.g., `alpha_drone`).
+* **Reward System:** Upon successful completion, the server removes the requested item from the player's inventory and grants a unique key-item (e.g., `laser_pistol`, `red_keycard`) necessary to progress or access the final boss room. Since quests are global, subsequent players asking for the quest will receive an `ERR 406 NO_QUEST_AVAILABLE` and a unique dialogue indicating the task is already done.
+
+## World Design
+The world is loaded from a static JSON data file and features a coherent, interconnected map.
+* **Layout & Room Connections:** The map contains at least 8 interconnected rooms forming a continuous loop (e.g., `main_corridor` -> `armory` -> `medbay` -> `cafeteria` -> `crew_quarters` -> `main_corridor`), ensuring players can make a full circuit without being trapped in a "line-only" map. Rooms like the `airlock` and `ai_core` serve as optional branches or dead-ends.
+* **NPC Roles:** The station is populated by at least 3 distinct NPC roles: dialogue-only NPCs (e.g., `Cleaning Bot`), quest-givers (e.g., `Injured Engineer`, `AI Terminal`), and enemies (e.g., `Security Drone`, `Alpha Drone`).
+* **Item Distribution:** The world includes at least 4 distinct items, with unique instances initially placed in specific rooms (e.g., `Energy Cell`, `Emergency Medkit`). Dropping an item makes it instantly available for other players in that room to pick up, reinforcing the shared economy.
+
+## Testing
+This section explains how to test the core features of the game.
+* **Multiplayer Functionality:** Launch the server, then open multiple terminal windows and run `make run-client` (or `make run-client-gui NAME=player2`) in each. Use the `WHO` command to see connected players, and test `CHAT GLOBAL` or `CHAT ROOM` to verify broadcast messaging.
+* **Quest Mechanics:** Navigate to the `medbay` and use `TALK injured_engineer`. Locate the `Energy Cell` in the `crew_quarters`, pick it up using `TAKE`, and return to the NPC to observe the global quest completion logic and receive your reward.
+* **Combat System:** Find a hostile NPC (e.g., `Security Drone` in the `main_corridor`) and engage it with `ATTACK`. Test the damage reduction by using `DEFEND` before an attack. To test the death penalty, allow your HP to drop to 0 to verify the respawn in the `medbay` and confirm that your inventory drops in the combat room.
+
+## Protocol Implementation
 Our server strictly implements the TAP RFC, with necessary deviations and additions documented below to improve the multiplayer and GUI experience.
 
 **Deviations & Additions:**
