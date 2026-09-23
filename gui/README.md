@@ -194,14 +194,3 @@ See the root `Makefile`: `make install-deps && make client_gui`, then
 `make run-client-gui` (accepts `NAME=`, `IP=` and `PORT=`). No build step is
 specific to this directory beyond what is already wired into `GUI_SRC`.
 
-## 9. Known limitations
-
-- The room-player counter updates on `LOOK` and on `EVT ROOM PRESENCE`, never
-  by polling — a deliberate choice, since periodic polling was removed once it
-  was found to flood the server.
-- Item and NPC display names, sprites and the quest-giver test are resolved
-  from the locally loaded `data/world.json`, not from the server. Against
-  another group's server, names fall back to the raw id and sprites are
-  missing; the client stays functional but looks plainer.
-- The NPC placement ratios in `room_entities_utils.c` are calibrated for the
-  default window size (see §6).
