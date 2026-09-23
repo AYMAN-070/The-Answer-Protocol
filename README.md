@@ -64,18 +64,18 @@ We implemented comprehensive, JSON-escaped server logging to monitor server beha
 ## Instructions (Building and Running)
 
 ### 1. Install Dependencies & Compile
-make install-deps
+make install-deps\
 make
 
 ### 2. Run the Server
 make run-server
 
 ### 3. Run the Clients
-make run-client       # Launches the CLI client
+make run-client       # Launches the CLI client\
 make run-client-gui   # Launches the GUI client
 
 ### 3. Code Quality
-make lint             # Checks the code against standard linting practices
+make lint             # Checks the code against standard linting practices\
 make clean            # Cleans object files
 
 ## Resources
