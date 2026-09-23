@@ -6,7 +6,7 @@
 /*   By: qdecross <qdecross@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/16 09:00:39 by qdecross          #+#    #+#             */
-/*   Updated: 2026/09/23 07:59:48 by qdecross         ###   ########.fr       */
+/*   Updated: 2026/09/23 08:51:33 by qdecross         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,6 +130,6 @@ void	rfc_apply_list(cJSON *root, t_ui_context *ctx)
 		return ;
 	}
 	if (!node && !strcmp(ctx->last_cmd, "TALK"))
-        return ;
+		return ;
 	rfc_apply_inventory(root, ctx);
 }
