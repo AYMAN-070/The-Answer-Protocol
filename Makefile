@@ -35,10 +35,10 @@ GUI_OBJ = $(GUI_SRC:.c=.o) $(LIB_DIR)/cJSON.o
 
 SERVER_SRC = server/src/server.c server/src/server_cmd_chat.c server/lib/cJSON/cJSON.c \
              server/src/server_group_who.c server/src/server_utils.c \
-             server/src/server_cmd.c server/src/server_cmd_move.c server/src/server_world2.c\
+             server/src/server_cmd.c server/src/server_cmd_move.c server/src/server_world_bis.c\
              server/src/server_cmd_drop.c server/src/server_world.c \
              server/src/server_json.c server/src/server_cmd_attack.c \
-             server/src/server_quests.c server/src/server_utils2.c \
+             server/src/server_quests.c server/src/server_utils_bis.c \
              server/src/server_cmd_talk.c server/src/server_logs.c server/src/server_cmd_defend.c \
              server/src/server_cmd_take_inventory.c server/src/server_cmd_look.c \
              server/src/server_resolve.c server/src/broadcast_player_stats.c
