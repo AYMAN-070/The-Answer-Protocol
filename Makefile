@@ -25,17 +25,14 @@ GUI_SRC = gui/src/main.c gui/src/layout.c gui/src/room_view.c gui/src/map.c \
           gui/src/network.c gui/src/network_parser.c \
           gui/src/rfc_parser.c gui/src/rfc_room.c gui/src/rfc_payload.c \
           gui/src/rfc_events.c \
-          gui/src/graphics_npcs.c\
+          gui/src/graphics_npcs.c \
           gui/src/status_panel.c gui/src/chat_panel.c \
           gui/src/chat_panel_utils.c gui/src/room_entities.c \
           gui/src/room_entities_utils.c gui/src/player_confirm.c
 
-GUI_OBJ = $(GUI_SRC:.c=.o) $(LIB_DIR)/cJSON.o
-
-
 SERVER_SRC = server/src/server.c server/src/server_cmd_chat.c gui/lib/cJSON.c \
              server/src/server_group_who.c server/src/server_utils.c \
-             server/src/server_cmd.c server/src/server_cmd_move.c server/src/server_world_bis.c\
+             server/src/server_cmd.c server/src/server_cmd_move.c server/src/server_world_bis.c \
              server/src/server_cmd_drop.c server/src/server_world.c \
              server/src/server_json.c server/src/server_cmd_attack.c \
              server/src/server_quests.c server/src/server_utils_bis.c \
@@ -45,6 +42,11 @@ SERVER_SRC = server/src/server.c server/src/server_cmd_chat.c gui/lib/cJSON.c \
 
 CLIENT_SRC = cli/src/client.c cli/src/client_utils.c
 
+# Création dynamique des listes d'objets (.o)
+GUI_OBJ = $(GUI_SRC:.c=.o) $(LIB_DIR)/cJSON.o
+SERVER_OBJ = $(SERVER_SRC:.c=.o)
+CLIENT_OBJ = $(CLIENT_SRC:.c=.o)
+
 GUI_HEADERS = $(INC_DIR)/action_panel.h $(INC_DIR)/chat_panel.h \
               $(INC_DIR)/graphics.h $(INC_DIR)/layout.h $(INC_DIR)/map.h \
               $(INC_DIR)/network.h $(INC_DIR)/network_parser.h \
@@ -52,7 +54,6 @@ GUI_HEADERS = $(INC_DIR)/action_panel.h $(INC_DIR)/chat_panel.h \
               $(INC_DIR)/status_panel.h
 
 SERVER_HEADERS = server/include/server.h
-
 CLIENT_HEADERS = cli/include/client.h
 
 LINT_SRC = $(GUI_SRC) $(filter-out gui/lib/cJSON.c, $(SERVER_SRC)) $(CLIENT_SRC)
@@ -60,16 +61,27 @@ LINT_HDR = $(GUI_HEADERS) $(SERVER_HEADERS) $(CLIENT_HEADERS)
 
 all: $(SERVER) $(CLIENT) $(GUI_EXEC)
 
-$(SERVER): $(SERVER_SRC) $(SERVER_HEADERS)
-	$(CC) $(CFLAGS) -I server/include -I common/include -I gui/include $(SERVER_SRC) -o $(SERVER)
+# Règles principales de l'éditeur de liens (Linker)
+$(SERVER): $(SERVER_OBJ)
+	$(CC) $(CFLAGS) $(SERVER_OBJ) -o $(SERVER)
 
-$(CLIENT): $(CLIENT_SRC) $(CLIENT_HEADERS)
-	$(CC) $(CFLAGS) -I cli/include -I common/include $(CLIENT_SRC) -o $(CLIENT)
+$(CLIENT): $(CLIENT_OBJ)
+	$(CC) $(CFLAGS) $(CLIENT_OBJ) -o $(CLIENT)
 
 $(GUI_EXEC): $(GUI_OBJ)
 	$(CC) $(GUI_OBJ) -o $@ $(GUI_LDFLAGS)
 
+# Règles de compilation des objets (.o)
+server/src/%.o: server/src/%.c $(SERVER_HEADERS)
+	$(CC) $(CFLAGS) -I server/include -I common/include -I gui/include -c $< -o $@
+
+cli/src/%.o: cli/src/%.c $(CLIENT_HEADERS)
+	$(CC) $(CFLAGS) -I cli/include -I common/include -c $< -o $@
+
 gui/%.o: gui/%.c $(GUI_HEADERS)
+	$(CC) $(GUI_CFLAGS) -c $< -o $@
+
+$(LIB_DIR)/cJSON.o: $(LIB_DIR)/cJSON.c
 	$(CC) $(GUI_CFLAGS) -c $< -o $@
 
 install-deps:
@@ -103,7 +115,7 @@ lint:
 	norminette $(LINT_SRC) $(LINT_HDR)
 
 clean:
-	rm -f $(GUI_OBJ)
+	rm -f $(GUI_OBJ) $(SERVER_OBJ) $(CLIENT_OBJ)
 
 fclean: clean
 	rm -f $(SERVER) $(CLIENT) $(GUI_EXEC)

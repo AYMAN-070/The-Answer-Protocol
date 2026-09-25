@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/28 14:27:59 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/19 14:40:50 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/25 16:40:47 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,7 @@ void	handle_new_connection(int server_fd, t_player *clients)
 			return ;
 		}
 	}
+	close(sd);
 }
 
 static void	read_client_data(t_player *p, t_player *c, char *wld)
