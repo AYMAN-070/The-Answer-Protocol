@@ -42,10 +42,15 @@ SERVER_SRC = server/src/server.c server/src/server_cmd_chat.c gui/lib/cJSON.c \
 
 CLIENT_SRC = cli/src/client.c cli/src/client_utils.c
 
+# Dossiers dédiés aux objets (.o), un par binaire
+GUI_OBJ_DIR = gui/obj
+SERVER_OBJ_DIR = server/obj
+CLIENT_OBJ_DIR = cli/obj
+
 # Création dynamique des listes d'objets (.o)
-GUI_OBJ = $(GUI_SRC:.c=.o) $(LIB_DIR)/cJSON.o
-SERVER_OBJ = $(SERVER_SRC:.c=.o)
-CLIENT_OBJ = $(CLIENT_SRC:.c=.o)
+GUI_OBJ = $(patsubst gui/src/%.c,$(GUI_OBJ_DIR)/%.o,$(GUI_SRC)) $(GUI_OBJ_DIR)/cJSON.o
+SERVER_OBJ = $(patsubst server/src/%.c,$(SERVER_OBJ_DIR)/%.o,$(filter server/src/%.c,$(SERVER_SRC))) $(GUI_OBJ_DIR)/cJSON.o
+CLIENT_OBJ = $(patsubst cli/src/%.c,$(CLIENT_OBJ_DIR)/%.o,$(CLIENT_SRC))
 
 GUI_HEADERS = $(INC_DIR)/action_panel.h $(INC_DIR)/chat_panel.h \
               $(INC_DIR)/graphics.h $(INC_DIR)/layout.h $(INC_DIR)/map.h \
@@ -72,17 +77,20 @@ $(GUI_EXEC): $(GUI_OBJ)
 	$(CC) $(GUI_OBJ) -o $@ $(GUI_LDFLAGS)
 
 # Règles de compilation des objets (.o)
-server/src/%.o: server/src/%.c $(SERVER_HEADERS)
+$(SERVER_OBJ_DIR)/%.o: server/src/%.c $(SERVER_HEADERS) | $(SERVER_OBJ_DIR)
 	$(CC) $(CFLAGS) -I server/include -I common/include -I gui/include -c $< -o $@
 
-cli/src/%.o: cli/src/%.c $(CLIENT_HEADERS)
+$(CLIENT_OBJ_DIR)/%.o: cli/src/%.c $(CLIENT_HEADERS) | $(CLIENT_OBJ_DIR)
 	$(CC) $(CFLAGS) -I cli/include -I common/include -c $< -o $@
 
-gui/%.o: gui/%.c $(GUI_HEADERS)
+$(GUI_OBJ_DIR)/%.o: gui/src/%.c $(GUI_HEADERS) | $(GUI_OBJ_DIR)
 	$(CC) $(GUI_CFLAGS) -c $< -o $@
 
-$(LIB_DIR)/cJSON.o: $(LIB_DIR)/cJSON.c
+$(GUI_OBJ_DIR)/cJSON.o: $(LIB_DIR)/cJSON.c | $(GUI_OBJ_DIR)
 	$(CC) $(GUI_CFLAGS) -c $< -o $@
+
+$(GUI_OBJ_DIR) $(SERVER_OBJ_DIR) $(CLIENT_OBJ_DIR):
+	mkdir -p $@
 
 install-deps:
 	@if [ -f "$(LIB_DIR)/libraylib.a" ] && [ -f "$(LIB_DIR)/cJSON.c" ]; then \
@@ -115,7 +123,7 @@ lint:
 	norminette $(LINT_SRC) $(LINT_HDR)
 
 clean:
-	rm -f $(GUI_OBJ) $(SERVER_OBJ) $(CLIENT_OBJ)
+	rm -rf $(GUI_OBJ_DIR) $(SERVER_OBJ_DIR) $(CLIENT_OBJ_DIR)
 
 fclean: clean
 	rm -f $(SERVER) $(CLIENT) $(GUI_EXEC)

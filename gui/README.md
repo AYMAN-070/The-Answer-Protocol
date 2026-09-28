@@ -194,3 +194,30 @@ See the root `Makefile`: `make install-deps && make client_gui`, then
 `make run-client-gui` (accepts `NAME=`, `IP=` and `PORT=`). No build step is
 specific to this directory beyond what is already wired into `GUI_SRC`.
 
+## 9. Valgrind: known noise, not bugs
+
+Running `valgrind ./client_gui <name>` reports a handful of "still reachable"
+/ "indirectly lost" blocks and one "uninitialised byte(s)" warning on
+`write()`. None of them trace into this codebase (`gui/src/*.c`) — every
+stack bottoms out in a third-party library initializing once at startup:
+
+- **Xlib locale/charset tables** (`_XlcCreateLC`, `_XlcAddUtf8LocaleConverters`,
+  `XrmGetStringDatabase`, reached via `glfwInit → _glfwInitX11 → InitPlatform
+  → InitWindow`). Xlib builds these conversion tables once and intentionally
+  keeps them alive for the process lifetime; this is documented Xlib
+  behaviour, not a leak in the app.
+- **libdbus-1, called from the NVIDIA driver** (`dbus_bus_register`,
+  `dbus_connection_send_with_reply_and_block`, under `libnvidia-glcore.so`).
+  The proprietary driver opens its own D-Bus connection during GL context
+  init (power-management/session notifications); entirely internal to the
+  closed-source driver.
+- **The dynamic linker** (`dl_open`/`dlopen` frames loading `libnvidia-*.so`)
+  — normal `ld.so` bookkeeping for the driver's shared libraries, held until
+  the process exits.
+- **The "uninitialised byte(s)" warning on `write()`** happens inside
+  `libnvidia-glcore.so` itself (reached via `rlLoadShaderProgramEx → rlglInit
+  → InitWindow`, raylib compiling its default shader). It's a known false
+  positive with the proprietary NVIDIA driver under valgrind.
+
+None of this is fixable from application code.
+
