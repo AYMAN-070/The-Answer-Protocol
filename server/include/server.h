@@ -6,7 +6,7 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 10:28:08 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/23 10:11:20 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/28 09:41:16 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,6 +97,8 @@ void	validate_world(char *wld);
 int		world_state(int mode, char *key);
 void	broadcast_room(t_player *c, char *room, char *msg, int exclude_sd);
 void	broadcast_group(t_player *c, int group_id, char *msg, int exclude_sd);
+void	handle_server_input(int *running, fd_set *readfds);
+int		setup_fd_set(int server_fd, t_player *clients, fd_set *readfds);
 
 typedef struct s_drop
 {

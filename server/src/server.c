@@ -6,33 +6,11 @@
 /*   By: ayhammou <ayhammou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/28 14:27:59 by ayhammou          #+#    #+#             */
-/*   Updated: 2026/09/25 16:40:47 by ayhammou         ###   ########.fr       */
+/*   Updated: 2026/09/28 09:36:58 by ayhammou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server.h"
-
-int	setup_fd_set(int server_fd, t_player *clients, fd_set *readfds)
-{
-	int	i;
-	int	max_sd;
-
-	FD_ZERO(readfds);
-	FD_SET(server_fd, readfds);
-	max_sd = server_fd;
-	i = 0;
-	while (i < 10)
-	{
-		if (clients[i].is_active == 1)
-		{
-			FD_SET(clients[i].sd, readfds);
-			if (clients[i].sd > max_sd)
-				max_sd = clients[i].sd;
-		}
-		i++;
-	}
-	return (max_sd);
-}
 
 void	handle_new_connection(int server_fd, t_player *clients)
 {
@@ -99,12 +77,37 @@ void	handle_client_messages(t_player *clients, fd_set *readfds, char *wld)
 	}
 }
 
+void	run_server(int server_fd, t_player *clients, char *world_data)
+{
+	fd_set	readfds;
+	int		max_sd;
+	int		running;
+	int		i;
+
+	running = 1;
+	while (running)
+	{
+		max_sd = setup_fd_set(server_fd, clients, &readfds);
+		if (select(max_sd + 1, &readfds, NULL, NULL, NULL) < 0)
+			exit_error("Select error");
+		handle_server_input(&running, &readfds);
+		if (running && FD_ISSET(server_fd, &readfds))
+			handle_new_connection(server_fd, clients);
+		if (running)
+			handle_client_messages(clients, &readfds, world_data);
+	}
+	i = -1;
+	while (++i < 10)
+	{
+		if (clients[i].is_active)
+			close(clients[i].sd);
+	}
+}
+
 int	main(void)
 {
 	int			server_fd;
 	t_player	clients[10];
-	fd_set		readfds;
-	int			max_sd;
 	char		*world_data;
 
 	srand(time(NULL));
@@ -116,14 +119,9 @@ int	main(void)
 	validate_world(world_data);
 	server_log("INFO", "sys", "none", "World loaded successfully");
 	server_log("INFO", "sys", "none", "TAP server started on port 4242");
-	while (1)
-	{
-		max_sd = setup_fd_set(server_fd, clients, &readfds);
-		if (select(max_sd + 1, &readfds, NULL, NULL, NULL) < 0)
-			exit_error("Select error");
-		if (FD_ISSET(server_fd, &readfds))
-			handle_new_connection(server_fd, clients);
-		handle_client_messages(clients, &readfds, world_data);
-	}
+	run_server(server_fd, clients, world_data);
+	close(server_fd);
+	free(world_data);
+	server_log("INFO", "sys", "none", "Serveur arrete avec succes.");
 	return (0);
 }

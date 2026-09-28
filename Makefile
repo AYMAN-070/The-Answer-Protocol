@@ -34,7 +34,7 @@ SERVER_SRC = server/src/server.c server/src/server_cmd_chat.c gui/lib/cJSON.c \
              server/src/server_group_who.c server/src/server_utils.c \
              server/src/server_cmd.c server/src/server_cmd_move.c server/src/server_world_bis.c \
              server/src/server_cmd_drop.c server/src/server_world.c \
-             server/src/server_json.c server/src/server_cmd_attack.c \
+             server/src/server_json.c server/src/server_cmd_attack.c server/src/server_setup_fd.c \
              server/src/server_quests.c server/src/server_utils_bis.c \
              server/src/server_cmd_talk.c server/src/server_logs.c server/src/server_cmd_defend.c \
              server/src/server_cmd_take_inventory.c server/src/server_cmd_look.c \
